@@ -1,0 +1,12 @@
+# idea files
+/.idea/*
+!/.idea/google-java-format.xml
+!/.idea/copyright
+!/.idea/codeStyles
+
+/build
+
+#apple
+.DS_Store
+
+/.gradle
