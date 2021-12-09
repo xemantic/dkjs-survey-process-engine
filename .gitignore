@@ -1,10 +1,10 @@
 # idea files
 /.idea/*
 !/.idea/google-java-format.xml
-!/.idea/copyright
 !/.idea/codeStyles
 
 /build
+/out
 
 #apple
 .DS_Store
