@@ -12,7 +12,7 @@ plugins {
 
 apply(plugin = "io.spring.dependency-management")
 
-/*val ktorVersion = "1.6.6" */
+val ktorVersion = "1.6.6"
 val kotlinxSerializationVersion = "1.3.1"
 
 group = "de.dkjs.survey"
@@ -29,10 +29,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-undertow")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
-  /*implementation("io.ktor:ktor-client-core:$ktorVersion")
+  implementation("io.ktor:ktor-client-core:$ktorVersion")
   implementation("io.ktor:ktor-client-cio:$ktorVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
-  implementation("io.ktor:ktor-client-serialization:$ktorVersion")*/
+  implementation("io.ktor:ktor-client-serialization:$ktorVersion")
   implementation("org.springframework.boot:spring-boot-starter-web") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
