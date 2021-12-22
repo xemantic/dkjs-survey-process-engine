@@ -4,20 +4,21 @@
 
 package de.dkjs.survey.mail
 
-import de.dkjs.survey.model.ProcessPhase
-import de.dkjs.survey.model.SurveyProcess
+import de.dkjs.survey.model.*
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.*
 
+/**
+ * [MailGenerator] unit test.
+ */
 class MailGeneratorTest {
 
   @Test
-  fun shouldGenerateMailFromTemplate() {
+  fun `should generate mail from project data and template`() {
     // given
-    val now = LocalDate.now()
-    val process = SurveyProcess(
+    val project = Project(
       projectName = "Foo",
       projectNumber = "42",
       projectContact = "Herr Max Mustermann",
@@ -25,10 +26,16 @@ class MailGeneratorTest {
       endDate = parseDate("20220130"),
       //goals = setOf(Goal.A),
       email = "max@musterman.de",
-      processPhase = ProcessPhase.READY_TO_NOTIFY_THE_PROJECT,
+      // next values will not influence mail
+      goals = setOf(Goal(1)),
+      participantCount = 42,
+      surveyProcess = SurveyProcess(
+        phase = SurveyProcess.Phase.PERSISTED,
+        notifications = mutableListOf()
+      )
     )
-    val templates = EnumMap<MailTemplate, MailTemplateData>(MailTemplate::class.java)
-    templates[MailTemplate.INFOMAIL_PRE_POST] = MailTemplateData(
+    val templates = EnumMap<MailType, MailTemplateData>(MailType::class.java)
+    templates[MailType.INFOMAIL_PRE_POST] = MailTemplateData(
       subject = "Information regarding your AUF!leben-project {projectName}",
       body = """
         Dear {projectContact},
@@ -54,7 +61,7 @@ class MailGeneratorTest {
     )
 
     // when
-    val mail = mailGenerator.generate(MailTemplate.INFOMAIL_PRE_POST, process)
+    val mail = mailGenerator.generate(MailType.INFOMAIL_PRE_POST, project)
 
     // then
     mail.subject shouldBe "Information regarding your AUF!leben-project Foo"
