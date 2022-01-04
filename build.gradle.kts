@@ -5,16 +5,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.6.0"
-  kotlin("plugin.serialization") version "1.6.0"
-  id("org.springframework.boot") version "2.6.1"
+  kotlin("jvm") version "1.6.10"
+  kotlin("plugin.serialization") version "1.6.10"
+  id("org.springframework.boot") version "2.6.2"
 }
 
 apply(plugin = "io.spring.dependency-management")
 
-val ktorVersion = "1.6.6"
-val kotlinxSerializationVersion = "1.3.1"
-val kotestVersion = "5.0.2"
+val ktorVersion = "1.6.7"
+val kotlinxSerializationVersion = "1.3.2"
+val kotestVersion = "5.0.3"
+val greenmailVersion = "2.0.0-alpha-2"
 
 group = "de.dkjs.survey"
 version = "1.0-SNAPSHOT"
@@ -26,7 +27,7 @@ repositories {
 dependencies {
   implementation(kotlin("stdlib"))
   implementation("javax.inject:javax.inject:1")
-//  implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.0")
+  implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
   implementation("org.springframework.boot:spring-boot-starter-undertow")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -44,6 +45,7 @@ dependencies {
   implementation("org.hsqldb:hsqldb:2.6.1")
 
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+  testImplementation("io.mockk:mockk:1.12.2")
 }
 
 tasks.withType<KotlinCompile> {
