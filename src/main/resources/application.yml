@@ -1,13 +1,27 @@
 typeform:
-  clientId: foo
+  clientId: 1234
+  formId: j6aFWMgy
   linkBase: https://typeform
+pdf:
+  linkBase: https://dkjs.de
 mail:
   from: test@xemantic.com
-  subject: Foo
-  template: fadsfadf
+  templateDir: src/mail
 
 spring:
-#  config:
+  profiles:
+    active: prod
+  #  profiles:
+  #  config:port: 2525
+#    properties:
+#      mail:
+#        debug: false
+#        smtp:
+#          debug: false
+#          auth: true
+#          starttls: true
+#    protocol: smtp
+#    test-connection: false
 #    activate:
 #      on-profile: test
   datasource:
