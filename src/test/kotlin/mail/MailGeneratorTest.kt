@@ -7,7 +7,6 @@ package de.dkjs.survey.mail
 import de.dkjs.survey.model.*
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 import java.util.*
 
 /**
@@ -27,7 +26,8 @@ class MailGeneratorTest {
       //goals = setOf(Goal.A),
       email = "max@musterman.de",
       // next values will not influence mail
-      goals = setOf(Goal(1)),
+      //goals = setOf(Goal(1)),
+      goals = setOf(1),
       participantCount = 42,
       surveyProcess = SurveyProcess(
         phase = SurveyProcess.Phase.PERSISTED,
