@@ -4,6 +4,11 @@
 
 package de.dkjs.survey.goal
 
+import org.springframework.stereotype.Component
+import javax.inject.Singleton
+
+@Singleton
+@Component
 class GoalParser {
 
   val captureGoalRegex = Regex("[0-9]{2} : \\w+(\\s+\\w+)*")
