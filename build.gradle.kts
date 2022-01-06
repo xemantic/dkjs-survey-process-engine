@@ -42,9 +42,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-rest")
   implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
-
   implementation("org.springframework.data:spring-data-rest-hal-explorer")
-
+  implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("io.ktor:ktor-client-core:$ktorVersion")
   implementation("io.ktor:ktor-client-cio:$ktorVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")

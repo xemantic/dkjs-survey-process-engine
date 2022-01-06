@@ -1,0 +1,58 @@
+<!doctype html>
+
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css?v=5.1.3"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3">
+    <link rel="stylesheet" href="css/styles.css?v=1.0">
+
+    <title>A Basic HTML5 Template</title>
+</head>
+
+<body>
+    <!--script src="js/scripts.js"></script-->
+    <h1>Testing with autoreload</h1>
+    Current time: <b th:text="${time}"/> ms
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Year</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="person: ${people}">
+                <th th:text="${person.name}"/>
+                <td th:text="${person.birthYear}"/>
+            </tr>
+        </tbody>
+    </table>
+
+    <form method="post" th:action="@{/upload}"
+          enctype="multipart/form-data" class="row g-3">
+        <div class="col-12">
+            <p th:text="${message}" th:if="${message ne null}"
+               class="alert alert-primary"></p>
+        </div>
+        <div class="col-12">
+            <label for="file" class="form-label">Choose CSV file</label>
+            <input type="file" name="file" class="form-control" id="file">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Upload File</button>
+        </div>
+    </form>
+
+    End of page.
+
+    <script src="js/bootstrap.bundle.min.js?5.1.3"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"></script>
+</body>
+</html>
