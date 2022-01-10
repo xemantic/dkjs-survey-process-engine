@@ -31,17 +31,18 @@ class MailGenerator @Inject constructor(
     return MailData(subject, body)
   }
 
+  // TODO this should be completely adjusted now after model is stable
   fun replaceTokens(
     input: String,
     project: Project,
     typeformLink: String = "",
     pdfLink: String = ""
   ) = input
-    .replace("{projectContact}",  project.projectContact)
-    .replace("{projectName}",     project.projectName)
-    .replace("{projectNumber}",   project.projectNumber)
-    .replace("{startDate}",       project.startDate.format(dateFormatter))
-    .replace("{endDate}",         project.endDate.format(dateFormatter))
+    .replace("{projectContact}",  project.contactPerson.firstName)
+    .replace("{projectName}",     project.name)
+    .replace("{projectNumber}",   project.id)
+    .replace("{startDate}",       project.start.format(dateFormatter))
+    .replace("{endDate}",         project.end.format(dateFormatter))
     .replace("{typeformLink}",    typeformLink)
     .replace("{pdfLink}",         pdfLink)
 

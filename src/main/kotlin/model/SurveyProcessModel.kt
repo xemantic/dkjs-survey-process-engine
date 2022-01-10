@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kazimierz Pogoda / Xemantic
+ * Copyright (c) 2022 Kazimierz Pogoda / Xemantic
  */
 
 package de.dkjs.survey.model
@@ -10,41 +10,54 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.*
 
-@JvmInline
-value class Goal(val goalNumber: Int) {
-  init {
-    require(goalNumber in 1..7) { // TODO is it true?
-      "Goal number must be in range [-90, 90], but was: $goalNumber"
-    }
-  }
-}
-
-
 @Entity
 data class Project(
   @Id
-  val projectNumber: String,
-  val projectName: String,
-  val projectContact: String,
-  val startDate: LocalDate,
-  val endDate: LocalDate,
-  val email: String,
+  val id: String,               // project.number in input data
+  val status: String,
+  val name: String,
+  @OneToOne
+  val provider: Provider,
+  @Embedded
+  val contactPerson: ContactPerson,
   @ElementCollection
   val goals: Set<Int>,
-  val participantCount: Int,
   @Embedded
-  val surveyProcess: SurveyProcess
-) {
-//  @ElementCollection(targetClass=Goal.class)
-//    @Enumerated(EnumType.STRING) // Possibly optional (I'm not sure) but defaults to ORDINAL.
-//    @CollectionTable(name="person_interest")
-//    @Column(name="goal") // Column name in person_interest
-//    var goals: Set<Goal>? = null
+  val participants: Participants,
+  val start: LocalDate,
+  val end: LocalDate,
+  @OneToOne
+  val surveyProcess: SurveyProcess,
+)
 
-}
+@Entity
+data class Provider(
+  @Id
+  val id: String,
+  val name: String
+)
 
 @Embeddable
+data class Participants(
+  val from1To5: Int,
+  val from6To10: Int,
+  val from11To15: Int,
+  val from16To19: Int,
+  val from20To26: Int
+)
+
+@Embeddable
+data class ContactPerson(
+  var pronoun: String,
+  var firstName: String,
+  var lastName: String,
+  var email: String,
+)
+
+@Entity
 data class SurveyProcess(
+  @Id
+  val id: String, // should be always the same as project id
   var phase: Phase,
   @OneToMany
   val notifications: MutableList<Notification>

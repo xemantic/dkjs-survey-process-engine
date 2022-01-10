@@ -17,7 +17,7 @@ class TypeformSurveyLinkGenerator @Inject constructor(
 ) {
 
   fun generate(project: Project) =
-    "$typeformLinkBase?projectNumber=${project.projectNumber}&blocks=${project.projectName}"
+    "$typeformLinkBase?projectNumber=${project.id}&blocks=${project.name}"
 
 }
 

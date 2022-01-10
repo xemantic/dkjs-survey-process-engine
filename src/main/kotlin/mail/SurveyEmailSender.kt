@@ -29,7 +29,7 @@ class DefaultSurveyEmailSender @Inject constructor(
     val mail = mailGenerator.generate(template, project)
     val message = SimpleMailMessage()
     message.from = config.from
-    message.setTo(project.email)
+    message.setTo(project.contactPerson.email)
     message.subject = mail.subject
     message.text = mail.body
     mailSender.send(message)
