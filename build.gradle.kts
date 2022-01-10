@@ -47,6 +47,8 @@ dependencies {
   implementation("javax.validation:validation-api:2.0.1.Final")
   implementation("org.hibernate:hibernate-validator:7.0.1.Final")
   implementation("org.hsqldb:hsqldb:2.6.1")
+  implementation("com.opencsv:opencsv:5.5.2")
+
 
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
   testImplementation("io.mockk:mockk:1.12.2")
