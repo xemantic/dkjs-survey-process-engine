@@ -7,16 +7,20 @@ package de.dkjs.survey
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
 import de.dkjs.survey.model.Project
+import de.dkjs.survey.model.ProjectRepository
 import org.springframework.core.io.InputStreamSource
 import org.springframework.stereotype.Component
 import java.io.InputStreamReader
+import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @Singleton
 @Component
 // TODO we will need to inject ProjectRepository
-class ProjectCsvParser {
+class ProjectCsvParser @Inject constructor(
+  private val projectRepository: ProjectRepository
+) {
 
   fun parse(projectCsv: InputStreamSource): List<ProjectParsingResult> =
     CSVReaderBuilder(
