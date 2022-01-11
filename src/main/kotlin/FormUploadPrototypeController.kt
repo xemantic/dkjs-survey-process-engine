@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Abe Pazos - https://hamoid.com
+ * Copyright (c) 2022 Abe Pazos / Xemantic
  */
 
 package de.dkjs.survey
