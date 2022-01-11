@@ -18,20 +18,33 @@ class MailGeneratorTest {
   fun `should generate mail from project data and template`() {
     // given
     val project = Project(
-      projectName = "Foo",
-      projectNumber = "42",
-      projectContact = "Herr Max Mustermann",
-      startDate = parseDate("20220115"),
-      endDate = parseDate("20220130"),
+      name = "Foo",
+      id = "42",
+      contactPerson = ContactPerson(
+        pronoun = "Herr",
+        firstName = "Max",
+        lastName = "Mustermann",
+        email = "max@musterman.de"
+      ),
+      start = parseDate("20220115"),
+      end = parseDate("20220130"),
       //goals = setOf(Goal.A),
-      email = "max@musterman.de",
       // next values will not influence mail
       //goals = setOf(Goal(1)),
       goals = setOf(1),
-      participantCount = 42,
+      //participantCount = 42,
       surveyProcess = SurveyProcess(
+        id = "42",
         phase = SurveyProcess.Phase.PERSISTED,
         notifications = mutableListOf()
+      ),
+      status = "foo",
+      provider = Provider(
+        "123",
+        "foo"
+      ),
+      participants = Participants(
+        0, 0, 0, 0, 0
       )
     )
     val templates = EnumMap<MailType, MailTemplateData>(MailType::class.java)

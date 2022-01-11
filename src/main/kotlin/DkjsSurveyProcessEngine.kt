@@ -47,34 +47,34 @@ class DkjsSurveyProcessEngine @Inject constructor(
   fun projectExists(projectNumber: String) = repository.existsById(projectNumber)
 
   fun handleNew(project: Project) {
-    logger.info("Starting process for project: ${project.projectNumber}")
+    logger.info("Starting process for project: ${project.id}")
     project.surveyProcess.phase = SurveyProcess.Phase.PERSISTED
     handle(repository.save(project))
   }
 
   private fun handle(project: Project) {
 
-    logger.debug("Handling project: ${project.projectNumber}")
+    logger.debug("Handling project: ${project.id}")
 
     fun send(mailType: MailType) = send(project, mailType)
     fun scheduleAt(date: LocalDate, call: () -> Unit) = scheduleAt(project, date, call)
-    fun hasNoAnswers() = typeformChecker.countSurveys(project.projectName) == 0
+    fun hasNoAnswers() = typeformChecker.countSurveys(project.id) == 0
 
     val now = LocalDate.now()
 
-    val projectDurationDays = Duration.between(project.startDate, project.endDate).toDays()
+    val projectDurationDays = Duration.between(project.start, project.end).toDays()
     // TODO is it really a good condition to trigger short scenario?
     val shortScenario = projectDurationDays <= 13
 
     if (shortScenario) {
 
-      logger.debug("Duration longer than 2 weeks = short short scenario for project: ${project.projectNumber}")
+      logger.debug("Duration longer than 2 weeks = short short scenario for project: ${project.id}")
 
       if (project.surveyProcess.notifications.isEmpty()) {
         send(MailType.INFOMAIL_RETRO)
       }
 
-      scheduleAt(project.endDate.minusWeeks(2)) {
+      scheduleAt(project.end.minusWeeks(2)) {
         send(MailType.REMINDER_1_RETRO)
         project.surveyProcess.phase = SurveyProcess.Phase.FINISHED
         repository.save(project)
@@ -82,7 +82,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
     } else {
 
-      logger.debug("Duration shorter than 2 weeks = long scenario for project: ${project.projectNumber}")
+      logger.debug("Duration shorter than 2 weeks = long scenario for project: ${project.id}")
 
       if (project.surveyProcess.notifications.isEmpty()) {
         send(MailType.INFOMAIL_PRE_POST)
@@ -93,7 +93,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
       }) {
 
       }
-      if (now.isAfter(project.startDate.plusWeeks(1))) {
+      if (now.isAfter(project.start.plusWeeks(1))) {
 
         if (projectDurationDays < 14) {
           send(MailType.REMINDER_1_RETRO)
@@ -101,7 +101,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
           send(MailType.REMINDER_1_T0)
         }
 
-        scheduleAt(project.startDate) { //TODO Julia - start date or end date?
+        scheduleAt(project.start) { //TODO Julia - start date or end date?
           if (hasNoAnswers()) {
             send(MailType.REMINDER_2_T0)
           }
@@ -111,11 +111,11 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
       }
 
-      scheduleAt(project.endDate.minusWeeks(1)) {
+      scheduleAt(project.end.minusWeeks(1)) {
         send(MailType.INFOMAIL_T1)
       }
 
-      scheduleAt(project.endDate) {
+      scheduleAt(project.end) {
         send(MailType.REMINDER_1_T1)
         if (hasNoAnswers()) {
           send(MailType.REMINDER_2_RETRO)
@@ -127,7 +127,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
   }
 
   private fun send(project: Project, mailType: MailType) {
-    logger.debug("Sending ${mailType.name} mail to project: ${project.projectNumber}")
+    logger.debug("Sending ${mailType.name} mail to project: ${project.id}")
     emailService.send(mailType, project)
     project.surveyProcess.notifications.add(Notification(
       id = 0,
@@ -137,10 +137,10 @@ class DkjsSurveyProcessEngine @Inject constructor(
   }
 
   private fun scheduleAt(project: Project, date: LocalDate, call: () -> Unit) {
-    logger.debug("Scheduling action at $date for project: ${project.projectNumber}")
+    logger.debug("Scheduling action at $date for project: ${project.id}")
     taskScheduler.schedule(
       {
-        logger.debug("Running scheduled action for project: ${project.projectNumber}")
+        logger.debug("Running scheduled action for project: ${project.id}")
         call()
       },
       // TODO is it correct?
