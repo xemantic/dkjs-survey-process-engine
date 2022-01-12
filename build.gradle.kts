@@ -33,23 +33,27 @@ dependencies {
   implementation("javax.inject:javax.inject:1")
   implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+
+  implementation("org.springframework.boot:spring-boot-starter-web") {
+    exclude("org.springframework.boot", "spring-boot-starter-tomcat")
+  }
   implementation("org.springframework.boot:spring-boot-starter-undertow")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+  implementation("org.springframework.boot:spring-boot-starter-data-rest")
   implementation("org.springframework.boot:spring-boot-starter-mail")
-  implementation("org.springframework.boot:spring-boot-starter-test")
+  implementation("org.springframework.data:spring-data-rest-hal-explorer")
+
   implementation("io.ktor:ktor-client-core:$ktorVersion")
   implementation("io.ktor:ktor-client-cio:$ktorVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-serialization:$ktorVersion")
-  implementation("org.springframework.boot:spring-boot-starter-web") {
-    exclude("org.springframework.boot", "spring-boot-starter-tomcat")
-  }
+
   implementation("javax.validation:validation-api:2.0.1.Final")
   implementation("org.hibernate:hibernate-validator:7.0.1.Final")
   implementation("org.hsqldb:hsqldb:2.6.1")
   implementation("com.opencsv:opencsv:5.5.2")
 
-
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
   testImplementation("io.mockk:mockk:1.12.2")
 }
