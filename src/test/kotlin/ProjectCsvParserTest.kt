@@ -4,21 +4,23 @@
 
 package de.dkjs.survey
 
-import de.dkjs.survey.model.ProjectRepository
+import de.dkjs.survey.model.*
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.InputStreamSource
 import java.io.File
+import java.time.LocalDate
 
 class ProjectCsvParserTest {
+  private val repository = mockk<ProjectRepository>(relaxed = true)
   private fun csvToProjects(path: String): List<ProjectParsingResult> {
-    val projectRepository = mockk<ProjectRepository>()
-    val parser = ProjectCsvParser(projectRepository)
+    val parser = ProjectCsvParser(repository)
     val file = InputStreamSource { File("src/test/sheets/$path").inputStream() }
     return parser.parse(file)
   }
@@ -91,6 +93,16 @@ class ProjectCsvParserTest {
 
   @Test
   fun `should report error if project already exists`() {
-    // TODO: query database
+    // given
+    every { repository.existsById("4021000014 -1") } answers { true }
+
+    // when
+    val results = csvToProjects("single.csv")
+
+    // then
+    results shouldHaveSize 1
+    val result = results[0]
+    result.message shouldContain "already exists"
+    result.project shouldBe null
   }
 }

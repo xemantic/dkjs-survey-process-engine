@@ -83,6 +83,10 @@ class ProjectCsvParser @Inject constructor(
       val pNumber = row[col++]
       val pStatus = row[col++]
 
+      if(repository.existsById(pNumber)) {
+        return@map projectParsingError("project '$pNumber' already exists")
+      }
+
       // Provider
       val pProvider = row[col++]
       val pProviderNumber = row[col++]
