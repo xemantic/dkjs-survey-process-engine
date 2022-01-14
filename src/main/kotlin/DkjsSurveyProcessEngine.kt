@@ -48,8 +48,10 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
   fun handleNew(project: Project) {
     logger.info("Starting process for project: ${project.id}")
-    project.surveyProcess.phase = SurveyProcess.Phase.PERSISTED
-    handle(repository.save(project))
+    logger.info("TODO")
+    // TODO: create a surveyProcess if it is null
+    //project.surveyProcess.phase = SurveyProcess.Phase.PERSISTED
+    //handle(repository.save(project))
   }
 
   private fun handle(project: Project) {
@@ -70,13 +72,15 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
       logger.debug("Duration longer than 2 weeks = short short scenario for project: ${project.id}")
 
-      if (project.surveyProcess.notifications.isEmpty()) {
-        send(MailType.INFOMAIL_RETRO)
-      }
+      // TODO: create a surveyProcess if it is null
+//      if (project.surveyProcess.notifications.isEmpty()) {
+//        send(MailType.INFOMAIL_RETRO)
+//      }
 
       scheduleAt(project.end.minusWeeks(2)) {
         send(MailType.REMINDER_1_RETRO)
-        project.surveyProcess.phase = SurveyProcess.Phase.FINISHED
+        // TODO: create a surveyProcess if it is null
+        // project.surveyProcess.phase = SurveyProcess.Phase.FINISHED
         repository.save(project)
       }
 
@@ -84,15 +88,16 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
       logger.debug("Duration shorter than 2 weeks = long scenario for project: ${project.id}")
 
-      if (project.surveyProcess.notifications.isEmpty()) {
-        send(MailType.INFOMAIL_PRE_POST)
-      }
+      // TODO: project.surveyProcess can be null
+//      if (project.surveyProcess.notifications.isEmpty()) {
+//        send(MailType.INFOMAIL_PRE_POST)
+//      }
+//
+//      if (!project.surveyProcess.notifications.any {
+//        it.mailType in setOf(MailType.REMINDER_1_RETRO, MailType.REMINDER_1_T0)
+//      }) {
+//      }
 
-      if (!project.surveyProcess.notifications.any {
-        it.mailType in setOf(MailType.REMINDER_1_RETRO, MailType.REMINDER_1_T0)
-      }) {
-
-      }
       if (now.isAfter(project.start.plusWeeks(1))) {
 
         if (projectDurationDays < 14) {
@@ -129,10 +134,11 @@ class DkjsSurveyProcessEngine @Inject constructor(
   private fun send(project: Project, mailType: MailType) {
     logger.debug("Sending ${mailType.name} mail to project: ${project.id}")
     emailService.send(mailType, project)
-    project.surveyProcess.notifications.add(Notification(
-      id = 0,
-      mailType = mailType
-    ))
+    // TODO: init project.surveyProcess
+//    project.surveyProcess.notifications.add(Notification(
+//      id = 0,
+//      mailType = mailType
+//    ))
     repository.save(project)
   }
 
