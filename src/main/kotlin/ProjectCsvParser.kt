@@ -93,6 +93,11 @@ class ProjectCsvParser @Inject constructor(
       val pContactLastname = row[col++]
       val pContactMail = row[col++]
 
+      // TODO: use proper e-mail validation
+      if(pContactMail.count { it == '@'} != 1) {
+        return@map projectParsingError("invalid e-mail")
+      }
+
       val pName = row[col++]
 
       // Participants
@@ -106,8 +111,8 @@ class ProjectCsvParser @Inject constructor(
         ?: return@map projectParsingError("invalid age16to19")
       val pAge20to26 = parseInt(row[col++], 0)
         ?: return@map projectParsingError("invalid age20to26")
-      val pWorker = if (row[col] == "NA") null else row[col].toInt()
-      col++
+      val pWorker = parseInt(row[col++], 0)
+        ?: return@map projectParsingError("invalid worker")
 
       val pGoals = row[col++].split(",").map { it.toInt() }.toSet()
 

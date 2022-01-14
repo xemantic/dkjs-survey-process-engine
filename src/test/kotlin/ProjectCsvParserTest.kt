@@ -75,9 +75,18 @@ class ProjectCsvParserTest {
 
   @Test
   fun `should report error if CSV file contains incorrect data`() {
-    // TODO: detect invalid date format
-    // TODO: detect `age11to15` not matching Int or "NA"
-    // TODO: detect incorrect column count
+    // given
+    val results = csvToProjects("invalidData.csv")
+    // when
+
+    // then
+    results shouldHaveSize 6
+    results[0].message shouldBe "CSV parsing error: invalid e-mail"
+    results[1].message shouldBe "CSV parsing error: invalid start date"
+    results[2].message shouldBe "CSV parsing error: invalid end date"
+    results[3].message shouldBe "CSV parsing error: invalid worker"
+    results[4].message shouldBe "CSV parsing error: invalid age1to5"
+    results[5].message shouldContain "CSV parsing error: wrong column count"
   }
 
   @Test

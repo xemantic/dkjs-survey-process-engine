@@ -1,0 +1,7 @@
+"project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+"4021000014 -1";"50 - bewilligt";"invalid e-mail";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example@.com";"project1";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022"
+"4022000131 -1";"50 - bewilligt";"invalid project.start";234567;"Frau";"Maxi";"Musterfrau";"p2gärung@example.net";"project2";794;0;0;0;0;NA;"03,02,01";"17-01-2022";"01.07.2022"
+"4022000132 -1";"50 - bewilligt";"invalid project.end";234567;"Frau";"Maxi";"Musterfrau";"p2gärung@example.net";"project2";794;0;0;0;0;NA;"03,02,01";"17.01.2022";"01-07-2022"
+"4022000090 -1";"50 - bewilligt";"invalid participants.worker";345678;"Herr";"Max ";"Mustermann";"p3möglich@example.com";"project3";0;0;20;0;0;FOO;"03,01,04";"09.03.2022";"09.03.2022"
+"4021000014 -2";"50 - bewilligt";"invalid participants.ageXtoY";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"project4";A;B;C;D;E;NA;"04,03,01";"03.01.2022";"31.08.2022"
+"4022000005 -1";"50 - bewilligt";"invalid column count";456789;"Herr";"Mäxi";"Mäxi";"p5tetrapack@example.com";"project5"
