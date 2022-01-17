@@ -4,7 +4,6 @@
 
 package de.dkjs.survey
 
-import de.dkjs.survey.de.dkjs.survey.model.Person
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.util.StringUtils
@@ -18,6 +17,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
+data class TestObject(var name: String, var birthYear: Int)
 
 @Controller
 class FormUploadPrototypeController {
@@ -28,9 +28,9 @@ class FormUploadPrototypeController {
         model.addAttribute("time", System.currentTimeMillis().toString())
         model.addAttribute(
             "people", listOf(
-                Person("A", 1),
-                Person("B", 2),
-                Person("C", 3)
+                TestObject("A", 1),
+                TestObject("B", 2),
+                TestObject("C", 3)
             )
         )
         return "index"
