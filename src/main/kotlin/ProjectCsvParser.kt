@@ -13,6 +13,8 @@ import org.springframework.core.io.InputStreamSource
 import org.springframework.stereotype.Component
 import java.io.InputStreamReader
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,10 +24,7 @@ import javax.inject.Singleton
 class ProjectCsvParser @Inject constructor(
   private val repository: ProjectRepository
 ) {
-  /**
-   * Regex used to extract values out of "DD.MM.YYYY" String
-   */
-  private val rxDayMonthYear = """(\d\d)\.(\d\d)\.(\d\d\d\d)""".toRegex()
+  private val csvDateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
   /**
    * Converts a String into an Int? If the String equals "NA" then
@@ -42,9 +41,10 @@ class ProjectCsvParser @Inject constructor(
    * Converts a DD.MM.YYYY formatted String into a LocalDate object
    */
   private fun parseDate(dayMonthYear: String): LocalDate? =
-    rxDayMonthYear.find(dayMonthYear)?.run {
-      val (d, m, y) = this.destructured
-      LocalDate.parse("$y-$m-$d")
+    try {
+      LocalDate.from(csvDateFormat.parse(dayMonthYear))
+    } catch (e: DateTimeParseException) {
+      null
     }
 
 
