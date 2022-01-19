@@ -39,11 +39,11 @@ data class Provider(
 
 @Embeddable
 data class Participants(
-  val from1To5: Int,
-  val from6To10: Int,
-  val from11To15: Int,
-  val from16To19: Int,
-  val from20To26: Int,
+  val age1to5: Int,
+  val age6to10: Int,
+  val age11to15: Int,
+  val age16to19: Int,
+  val age20to26: Int,
   val worker: Int?
 )
 
