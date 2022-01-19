@@ -27,65 +27,96 @@ class ProjectCsvParser @Inject constructor(
   private val csvDateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
   /**
+   * [ProjectCsvParser] creates temporary [invalidProject]s
+   * when lines can not be parsed. When this happens
+   * an [CsvParsingException] is thrown after attempting
+   * to parse all CSV lines containing details about all parsing issues.
+   * The [invalidProject] is never actually returned.
+   */
+  private fun invalidProject() = Project(
+    "invalid-" + System.currentTimeMillis(),
+    "invalid",
+    "invalid",
+    Provider("", ""),
+    ContactPerson("", "", "", ""),
+    setOf(),
+    Participants(0, 0, 0, 0, 0, null),
+    LocalDate.MIN,
+    LocalDate.MIN,
+    null
+  )
+
+  /**
    * Converts a String into an Int? If the String equals "NA" then
    * the [default] argument is used as return value
    */
-  private fun parseInt(num: String, default: Int): Int? =
-    if (num == "NA") default else try {
-      num.toInt()
-    } catch (e: NumberFormatException) {
-      null
-    }
+  private fun parseInt(num: String, default: Int): Int =
+    if (num == "NA") default else num.toInt()
 
   /**
    * Converts a DD.MM.YYYY formatted String into a LocalDate object
    */
-  private fun parseDate(dayMonthYear: String): LocalDate? =
-    try {
-      LocalDate.from(csvDateFormat.parse(dayMonthYear))
-    } catch (e: DateTimeParseException) {
-      null
-    }
-
-
-  /**
-   * Create a [ProjectParsingResult] with an error message and a null [Project]
-   */
-  private fun projectParsingError(msg: String): ProjectParsingResult =
-    ProjectParsingResult(null, "CSV parsing error: $msg")
+  private fun parseDate(dayMonthYear: String) =
+    LocalDate.from(csvDateFormat.parse(dayMonthYear))
 
   /**
    * Parses a CSV file creating a list of items, each item containing
    * a [Project] and null `message` on success, or
    * a null [Project] and a `message` describing why it couldn't be created.
    */
-  fun parse(projectCsv: InputStreamSource): List<ProjectParsingResult> {
+  fun parse(projectCsv: InputStreamSource): List<Project> {
+    val exceptions = mutableListOf<CsvParsingException.CsvRowErrors>()
     val projectNumbers = mutableListOf<String>()
 
-    val result = CSVReaderBuilder(
-      InputStreamReader(projectCsv.inputStream, "ISO_8859-15")
+    val projects = CSVReaderBuilder(
+      InputStreamReader(projectCsv.inputStream, "UTF-8")
     ).withCSVParser(
       CSVParserBuilder().withSeparator(';').build()
     ).build().use { csvReader ->
       try {
         csvReader.readAll()
       } catch (e: CsvMalformedLineException) {
-        return listOf()
+        throw CsvParsingException(
+          listOf(
+            CsvParsingException.CsvRowErrors(
+              e.lineNumber.toInt(), listOf("malformed csv line")
+            )
+          )
+        )
       }
     }.filterIndexed { i, _ ->
-      i > 0 // skip header row
-    }.map { row ->
+      // skip header row
+      i > 0
+    }.mapIndexed { rowNumber, row ->
       if (row.size != 18) {
-        return@map projectParsingError("wrong column count (${row.size})")
+        // This exception can not be combined
+        // with other parsing issues. Add the
+        // exception and jump to the next line.
+        exceptions.add(
+          CsvParsingException.CsvRowErrors(
+            rowNumber, listOf("wrong column count")
+          )
+        )
+        return@mapIndexed invalidProject()
       }
 
       var col = 0
       val pNumber = row[col++]
       val pStatus = row[col++]
 
-      if(repository.existsById(pNumber)) {
-        return@map projectParsingError("project '$pNumber' already exists")
+      if (repository.existsById(pNumber)) {
+        // This exception can not be combined
+        // with other parsing issues. Add the
+        // exception and jump to the next line.
+        exceptions.add(
+          CsvParsingException.CsvRowErrors(
+            rowNumber, listOf("project already exists")
+          )
+        )
+        return@mapIndexed invalidProject()
       }
+
+      val errorMessages = mutableListOf<String>()
 
       // Provider
       val pProvider = row[col++]
@@ -98,40 +129,76 @@ class ProjectCsvParser @Inject constructor(
       val pContactMail = row[col++]
 
       // TODO: use proper e-mail validation
-      if(pContactMail.count { it == '@'} != 1) {
-        return@map projectParsingError("invalid e-mail")
+      if (pContactMail.count { it == '@' } != 1) {
+        errorMessages.add("invalid e-mail")
       }
 
       val pName = row[col++]
 
       // Participants
-      val pAge1to5 = parseInt(row[col++], 0)
-        ?: return@map projectParsingError("invalid age1to5")
-      val pAge6to10 = parseInt(row[col++], 0)
-        ?: return@map projectParsingError("invalid age6to10")
-      val pAge11to15 = parseInt(row[col++], 0)
-        ?: return@map projectParsingError("invalid age11to15")
-      val pAge16to19 = parseInt(row[col++], 0)
-        ?: return@map projectParsingError("invalid age16to19")
-      val pAge20to26 = parseInt(row[col++], 0)
-        ?: return@map projectParsingError("invalid age20to26")
-      val pWorker = parseInt(row[col++], 0)
-        ?: return@map projectParsingError("invalid worker")
+      val pAge1to5 = try {
+        parseInt(row[col++], 0)
+      } catch (e: NumberFormatException) {
+        errorMessages.add("invalid age1to5")
+        0
+      }
+      val pAge6to10 = try {
+        parseInt(row[col++], 0)
+      } catch (e: NumberFormatException) {
+        errorMessages.add("invalid age6to10")
+        0
+      }
+      val pAge11to15 = try {
+        parseInt(row[col++], 0)
+      } catch (e: NumberFormatException) {
+        errorMessages.add("invalid age11to15")
+        0
+      }
+      val pAge16to19 = try {
+        parseInt(row[col++], 0)
+      } catch (e: NumberFormatException) {
+        errorMessages.add("invalid age16to19")
+        0
+      }
+      val pAge20to26 = try {
+        parseInt(row[col++], 0)
+      } catch (e: NumberFormatException) {
+        errorMessages.add("invalid age20to26")
+        0
+      }
+      val pWorker = try {
+        parseInt(row[col++], 0)
+      } catch (e: NumberFormatException) {
+        errorMessages.add("invalid worker")
+        0
+      }
 
-      val pGoals = row[col++].split(",").map { it.toInt() }.toSet()
+      val pGoals = row[col++].split(",")
+        .map { it.toInt() }.toSet()
 
-      val pStart = parseDate(row[col++])
-        ?: return@map projectParsingError("invalid start date")
+      val pStart = try {
+        parseDate(row[col++])
+      } catch (e: DateTimeParseException) {
+        errorMessages.add("invalid start date")
+        LocalDate.MIN
+      }
 
-      val pEnd = parseDate(row[col])
-        ?: return@map projectParsingError("invalid end date")
+      val pEnd = try {
+        parseDate(row[col])
+      } catch (e: DateTimeParseException) {
+        errorMessages.add("invalid end date")
+        LocalDate.MIN
+      }
 
       val provider = Provider(
         pProviderNumber,
         pProvider
       )
       val contactPerson = ContactPerson(
-        pContactPronoun, pContactFirstname, pContactLastname, pContactMail
+        pContactPronoun,
+        pContactFirstname,
+        pContactLastname,
+        pContactMail
       )
       val participants = Participants(
         pAge1to5,
@@ -155,19 +222,31 @@ class ProjectCsvParser @Inject constructor(
         surveyProcess = null
       )
 
-      if(projectNumbers.contains(pNumber)) {
-        projectParsingError("duplicate project number")
-      } else {
-        projectNumbers.add(pNumber)
-        ProjectParsingResult(project, null)
+      if (projectNumbers.contains(pNumber)) {
+        errorMessages.add("duplicate project number")
       }
+
+      if (errorMessages.isNotEmpty()) {
+        exceptions.add(
+          CsvParsingException.CsvRowErrors(
+            rowNumber, errorMessages
+          )
+        )
+      }
+
+      projectNumbers.add(pNumber)
+      project
     }
-    return result
+
+    if (exceptions.isNotEmpty()) {
+      throw CsvParsingException(exceptions)
+    }
+
+    return projects
   }
 }
 
-// either project or a message when it cannot be parsed
-class ProjectParsingResult(
-  val project: Project?,
-  val message: String?
-)
+class CsvParsingException(val rows: List<CsvRowErrors>) :
+  Exception("Error while parsing CSV data") {
+  class CsvRowErrors(val csvRow: Int, val messages: List<String>)
+}

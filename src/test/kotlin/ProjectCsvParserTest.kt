@@ -4,12 +4,13 @@
 
 package de.dkjs.survey
 
+import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.ProjectRepository
-import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ import java.time.LocalDate
 class ProjectCsvParserTest {
   private val repository = mockk<ProjectRepository>(relaxed = true)
   private val parser = ProjectCsvParser(repository)
-  private fun csvToProjects(csv: String): List<ProjectParsingResult> {
+  private fun csvToProjects(csv: String): List<Project> {
     val targetStream = ByteArrayInputStream(csv.toByteArray())
     return parser.parse { targetStream }
   }
@@ -34,15 +35,11 @@ class ProjectCsvParserTest {
     """.trimIndent()
 
     // when
-    val results = csvToProjects(csv)
+    val projects = csvToProjects(csv)
 
     // then
-    results shouldHaveSize 1
-    val result = results[0]
-    result.message shouldBe null
-    result.project shouldNotBe null
-    val project = result.project!!
-    project.name shouldBe projectName
+    projects shouldHaveSize 1
+    projects[0].name shouldBe projectName
   }
 
   @Test
@@ -60,16 +57,16 @@ class ProjectCsvParserTest {
     """.trimIndent()
 
     // when
-    val results = csvToProjects(csv)
+    val projects = csvToProjects(csv)
 
     // then
-    results shouldHaveSize 1
-    val result = results[0]
-    result.message shouldBe null
-    result.project shouldNotBe null
-    val project = result.project!!
-    project.start shouldBe LocalDate.of(startYear.toInt(), startMonth.toInt(), startDay.toInt())
-    project.end shouldBe LocalDate.of(endYear.toInt(), endMonth.toInt(), endDay.toInt())
+    projects shouldHaveSize 1
+    projects[0].start shouldBe LocalDate.of(
+      startYear.toInt(), startMonth.toInt(), startDay.toInt()
+    )
+    projects[0].end shouldBe LocalDate.of(
+      endYear.toInt(), endMonth.toInt(), endDay.toInt()
+    )
   }
 
   @Test
@@ -81,16 +78,18 @@ class ProjectCsvParserTest {
     """.trimIndent()
 
     // when
-    val results = csvToProjects(csv)
-
+    val e = shouldThrow<CsvParsingException> {
+      csvToProjects(csv)
+    }
     // then
-    results.shouldBeEmpty()
+    e.rows.size shouldBe 1
+    e.rows[0].messages shouldContain "malformed csv line"
   }
 
   @Test
   fun `should parse project CSV file with multiple entries`() {
     // given
-    val projectName = List(5) { "project$it"}
+    val projectName = List(5) { "project$it" }
     val csv = """
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
       "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"${projectName[0]}";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022"
@@ -101,14 +100,11 @@ class ProjectCsvParserTest {
     """.trimIndent()
 
     // when
-    val results = csvToProjects(csv)
+    val projects = csvToProjects(csv)
 
     // then
-    results shouldHaveSize 5
-    results.forEachIndexed { i, result ->
-      result.message shouldBe null
-      result.project!!.name shouldBe projectName[i]
-    }
+    projects shouldHaveSize 5
+    projectName shouldBe projects.map { it.name }
   }
 
   @Test
@@ -124,11 +120,12 @@ class ProjectCsvParserTest {
     """.trimIndent()
 
     // when
-    val results = csvToProjects(csv)
+    val e = shouldThrow<CsvParsingException> {
+      csvToProjects(csv)
+    }
 
     // then
-    results shouldHaveSize 5
-    results[3].message shouldContain "CSV parsing error: duplicate project number"
+    e.rows.any { it.messages.contains("duplicate project number") } shouldBe true
   }
 
   @Test
@@ -150,16 +147,23 @@ class ProjectCsvParserTest {
     """.trimIndent()
 
     // when
-    val results = csvToProjects(csv)
+    val e = shouldThrow<CsvParsingException> {
+      csvToProjects(csv)
+    }
 
     // then
-    results shouldHaveSize 6
-    results[0].message shouldBe "CSV parsing error: invalid e-mail"
-    results[1].message shouldBe "CSV parsing error: invalid start date"
-    results[2].message shouldBe "CSV parsing error: invalid end date"
-    results[3].message shouldBe "CSV parsing error: invalid worker"
-    results[4].message shouldBe "CSV parsing error: invalid age1to5"
-    results[5].message shouldContain "CSV parsing error: wrong column count"
+    e.rows[0].messages shouldContain "invalid e-mail"
+    e.rows[1].messages shouldContain "invalid start date"
+    e.rows[2].messages shouldContain "invalid end date"
+    e.rows[3].messages shouldContain "invalid worker"
+    e.rows[4].messages shouldContainAll listOf(
+      "invalid age1to5",
+      "invalid age6to10",
+      "invalid age11to15",
+      "invalid age16to19",
+      "invalid age20to26"
+    )
+    e.rows[5].messages shouldContain "wrong column count"
   }
 
   @Test
@@ -167,18 +171,17 @@ class ProjectCsvParserTest {
     // given
     val id = "4021000014 -1"
     val csv = """
-      "this file ends with a dangling double quote character";"x";"x"
+      "x";"x";"x"
       "$id";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022"
     """.trimIndent()
     every { repository.existsById(id) } answers { true }
 
     // when
-    val results = csvToProjects(csv)
+    val e = shouldThrow<CsvParsingException> {
+      csvToProjects(csv)
+    }
 
     // then
-    results shouldHaveSize 1
-    val result = results[0]
-    result.message shouldContain "already exists"
-    result.project shouldBe null
+    e.rows[0].messages shouldContain "project already exists"
   }
 }
