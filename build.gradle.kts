@@ -38,11 +38,11 @@ dependencies {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
   implementation("org.springframework.boot:spring-boot-starter-undertow")
+  implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-data-rest")
   implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
-
   implementation("org.springframework.data:spring-data-rest-hal-explorer")
 
   implementation("io.ktor:ktor-client-core:$ktorVersion")
