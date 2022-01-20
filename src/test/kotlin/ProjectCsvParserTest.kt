@@ -16,10 +16,12 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.time.LocalDate
+import javax.validation.Validation
 
 class ProjectCsvParserTest {
   private val repository = mockk<ProjectRepository>(relaxed = true)
-  private val parser = ProjectCsvParser(repository)
+  private val validator = Validation.buildDefaultValidatorFactory().validator
+  private val parser = ProjectCsvParser(repository, validator)
   private fun csvToProjects(csv: String): List<Project> {
     val targetStream = ByteArrayInputStream(csv.toByteArray())
     return parser.parse { targetStream }
