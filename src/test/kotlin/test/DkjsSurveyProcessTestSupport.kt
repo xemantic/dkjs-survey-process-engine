@@ -19,7 +19,7 @@ fun WebTestClient.uploadProjectsCsv(csv: String): WebTestClient.ResponseSpec =
     .uri("/upload-projects")
     .body(
       BodyInserters.fromMultipartData(MultipartBodyBuilder().also {
-        it.part("projectsCsv", csv.trimIndent().toByteArray())
+        it.part("projectsCsv", csv.trimIndent().trim().toByteArray())
           .header("Content-Disposition", "form-data; name=projectsCsv; filename=projects.csv")
       }.build())
     )
