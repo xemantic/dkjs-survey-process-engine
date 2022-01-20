@@ -47,7 +47,8 @@ class SurveyProcessTest {
 
     val process = repository.findByIdOrNull("4021000014 -1")
     process shouldNotBe null
-    process!!.surveyProcess.phase shouldBe SurveyProcess.Phase.FINISHED
+    process!!.surveyProcess shouldNotBe null
+    process.surveyProcess!!.phase shouldBe SurveyProcess.Phase.FINISHED
     verifyOrder {
       surveyEmailSender.send(MailType.INFOMAIL_PRE_POST, any())
       surveyEmailSender.send(MailType.INFOMAIL_RETRO, any())
