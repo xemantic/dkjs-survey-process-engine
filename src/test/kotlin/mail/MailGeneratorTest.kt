@@ -44,7 +44,8 @@ class MailGeneratorTest {
         "foo"
       ),
       participants = Participants(
-        0, 0, 0, 0, 0
+        0, 0, 0, 0, 0,
+        0
       )
     )
     val templates = EnumMap<MailType, MailTemplateData>(MailType::class.java)

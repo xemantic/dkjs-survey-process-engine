@@ -28,9 +28,7 @@ open class SurveyProcessController @Inject constructor(
     redirectAttributes: RedirectAttributes
   ): String {
 
-    val result = projectCsv.inputStream.use {
-      parser.parse(it)
-    }
+    val result = parser.parse(projectCsv)
 
     // TODO render result in case of errors
 
