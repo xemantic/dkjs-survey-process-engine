@@ -4,6 +4,7 @@
 
 package de.dkjs.survey
 
+import org.slf4j.Logger
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
@@ -13,6 +14,7 @@ import javax.inject.Inject
 
 @RestController
 open class SurveyProcessController @Inject constructor(
+  private val logger: Logger,
   private val parser: ProjectCsvParser,
   private val engine: DkjsSurveyProcessEngine
 ) {
@@ -24,7 +26,11 @@ open class SurveyProcessController @Inject constructor(
     @RequestPart("projectsCsv") projectCsv: MultipartFile
   ): String {
 
-    val result = parser.parse(projectCsv)
+    try {
+      parser.parse(projectCsv)
+    } catch (e: CsvParsingException) {
+      logger.error("Error parsing CSV file: ${projectCsv.name}", e)
+    }
 
     // TODO render result in case of errors
 
