@@ -13,7 +13,7 @@ import org.slf4j.Logger
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.stereotype.Component
 import java.time.Duration
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import javax.annotation.PostConstruct
 import javax.inject.Inject
@@ -59,10 +59,10 @@ class DkjsSurveyProcessEngine @Inject constructor(
     logger.debug("Handling project: ${project.id}")
 
     fun send(mailType: MailType) = send(project, mailType)
-    fun scheduleAt(date: LocalDate, call: () -> Unit) = scheduleAt(project, date, call)
+    fun scheduleAt(date: LocalDateTime, call: () -> Unit) = scheduleAt(project, date, call)
     fun hasNoAnswers() = typeformChecker.countSurveys(project.id) == 0
 
-    val now = LocalDate.now()
+    val now = LocalDateTime.now()
 
     val projectDurationDays = Duration.between(project.start, project.end).toDays()
     // TODO is it really a good condition to trigger short scenario?
@@ -142,7 +142,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
     repository.save(project)
   }
 
-  private fun scheduleAt(project: Project, date: LocalDate, call: () -> Unit) {
+  private fun scheduleAt(project: Project, date: LocalDateTime, call: () -> Unit) {
     logger.debug("Scheduling action at $date for project: ${project.id}")
     taskScheduler.schedule(
       {
@@ -150,7 +150,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
         call()
       },
       // TODO is it correct?
-      date.atStartOfDay().toInstant(ZoneOffset.UTC)
+      date.toInstant(ZoneOffset.UTC)
     )
   }
 
