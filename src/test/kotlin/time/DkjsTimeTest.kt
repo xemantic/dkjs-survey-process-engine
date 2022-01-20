@@ -12,39 +12,51 @@ import java.time.LocalDateTime
 class DkjsTimeTest {
 
   @Test
-  fun `should format date without time component for LocalDate instance`() {
+  fun `should format DKJS date without time component for LocalDate instance`() {
     // given
     val moment = LocalDate.of(2022, 1, 20)
 
     // when
-    val date = DKJS_DATE_FORMAT.format(moment)
+    val date = moment.dkjsDate
 
     // then
     date shouldBe "2022.01.20"
   }
 
   @Test
-  fun `should format date with time component for LocalDateTime instance`() {
+  fun `should format DKJS date without time component for LocalDateTime instance`() {
     // given
-    val moment = LocalDate.of(2022, 1, 20).atStartOfDay()
+    val moment = LocalDateTime.of(2022, 1, 20, 1, 1, 1)
 
     // when
-    val date = DKJS_DATE_FORMAT.format(moment)
+    val date = moment.dkjsDate
 
     // then
-    date shouldBe "2022.01.20 00:00:00"
+    date shouldBe "2022.01.20"
+  }
+
+  @Test
+  fun `should format DKJS date with time component for LocalDateTime instance`() {
+    // given
+    val moment = LocalDateTime.of(2022, 1, 20, 1, 2, 3)
+
+    // when
+    val date = moment.dkjsDateTime
+
+    // then
+    date shouldBe "2022.01.20 01:02:03"
   }
 
   @Test
   fun `should parse date with time component for LocalDateTime instance`() {
     // given
-    val date = "2022.01.20 00:00:01"
+    val date = "2022.01.20 03:02:01"
 
     // when
-    val moment = LocalDateTime.parse(date, DKJS_DATE_FORMAT)
+    val moment = parseDkjsDate(date)
 
     // then
-    moment shouldBe LocalDateTime.of(2022, 1, 20, 0, 0, 1)
+    moment shouldBe LocalDateTime.of(2022, 1, 20, 3, 2, 1)
   }
 
 }
