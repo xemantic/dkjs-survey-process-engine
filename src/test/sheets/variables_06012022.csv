@@ -1,0 +1,20 @@
+varnr;name;type;content;function;changable
+1;name of the variable;variable type e.g. numerical;information stored in the variable;function of the variable in the system;are later changes in variable content allowed?
+2;project.number;string;id of a project;as text insert in mails;no
+3;project.status;string;status of application process (e.g. granted);as verification step for starting the email process;no
+4;project.provider;string;name of the project provider (e.g. a club);as text insert in mails;no
+5;provider.number;string;id of the provider;-;no
+6;project.pronoun;string;"""Herr"" or ""Frau"" for adressing someone";as text insert in mails;yes
+7;project.firstname;string;first name of applicant;as text insert in mails;yes
+8;project.lastname;string;last name of applicant;as text insert in mails;yes
+9;project.mail;string;email of applicant;as mailto for project specific mails;yes
+10;project.name;string;name of the granted project;as text insert in mails;no
+11;participants.age1to5;string;number of participants aged 1 to 5 ;as decision criterion for version of typeform (smiley scales);no
+12;participants.age6to10;string;number of participants aged 6 to 10 ;as decision criterion for version of typeform (text scales);no
+13;participants.age11to15;string;number of participants aged 11 to 15 ;as decision criterion for version of typeform (text scales);no
+14;participants.age16to19;string;number of participants aged 16 to 19 ;as decision criterion for version of typeform (text scales);no
+15;participants.age20to26;string;number of participants aged 20 to 26 ;as decision criterion for version of typeform (text scales);no
+16;participants.worker;string;number of adult participants in projects for qualification ;as decision criterion for version of typeform (text scales);no
+17;project.goals;string;goals of the projects;as logical criterion for questionnaire creation;no
+18;project.start;string;date of project start;as logical criterion for mailto send date (e.g. initial mail);no
+19;project.end;string;date of project end;as logical criterion for mailto send date (e.g. reminder mail);no
