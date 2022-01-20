@@ -4,10 +4,7 @@
 
 package de.dkjs.survey.mail
 
-import de.dkjs.survey.DkjsSurveyProcessEngineTest
-import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.SurveyProcess
-import io.mockk.confirmVerified
+import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.mail.MailSender
