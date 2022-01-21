@@ -36,7 +36,7 @@ class ModelValidationTest {
         age11to15 = -1,
         age16to19 = -1,
         age20to26 = -1,
-        worker    = null
+        worker    = -1
       ),
       start       = LocalDateTime.MIN,
       end         = LocalDateTime.MIN
@@ -47,7 +47,7 @@ class ModelValidationTest {
     val violations = validator.validate(project)
 
     // then
-    violations shouldHaveSize  15
+    violations shouldHaveSize 16
     violations.map { "${it.propertyPath} - ${it.message}" }
       .shouldContainExactlyInAnyOrder(
         "id - must match \"[0-9-]+\"",
@@ -60,11 +60,12 @@ class ModelValidationTest {
         "contactPerson.lastName - must not be empty",
         "contactPerson.email - must not be empty",
         "goals - must not be empty",
-        "participants.age11to15 - must be greater than or equal to 0",
+        "participants.age1to5 - must be greater than or equal to 0",
         "participants.age6to10 - must be greater than or equal to 0",
+        "participants.age11to15 - must be greater than or equal to 0",
         "participants.age16to19 - must be greater than or equal to 0",
         "participants.age20to26 - must be greater than or equal to 0",
-        "participants.age1to5 - must be greater than or equal to 0"
+        "participants.worker - must be greater than or equal to 0"
       )
   }
 

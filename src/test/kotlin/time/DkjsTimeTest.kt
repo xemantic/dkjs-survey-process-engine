@@ -20,7 +20,7 @@ class DkjsTimeTest {
     val date = moment.dkjsDate
 
     // then
-    date shouldBe "2022.01.20"
+    date shouldBe "20.01.2022"
   }
 
   @Test
@@ -32,7 +32,7 @@ class DkjsTimeTest {
     val date = moment.dkjsDate
 
     // then
-    date shouldBe "2022.01.20"
+    date shouldBe "20.01.2022"
   }
 
   @Test
@@ -44,19 +44,31 @@ class DkjsTimeTest {
     val date = moment.dkjsDateTime
 
     // then
-    date shouldBe "2022.01.20 01:02:03"
+    date shouldBe "20.01.2022 01:02:03"
   }
 
   @Test
   fun `should parse date with time component for LocalDateTime instance`() {
     // given
-    val date = "2022.01.20 03:02:01"
+    val date = "20.01.2022 03:02:01"
 
     // when
     val moment = parseDkjsDate(date)
 
     // then
     moment shouldBe LocalDateTime.of(2022, 1, 20, 3, 2, 1)
+  }
+
+  @Test
+  fun `should parse date without time component for LocalDateTime instance`() {
+    // given
+    val date = "20.01.2022"
+
+    // when
+    val moment = parseDkjsDate(date)
+
+    // then
+    moment shouldBe LocalDateTime.of(2022, 1, 20, 0, 0, 0)
   }
 
 }

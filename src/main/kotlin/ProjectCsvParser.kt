@@ -149,7 +149,7 @@ class ProjectCsvParser @Inject constructor(
 
       val violations = validator.validate(project)
       errorMessages.addAll(
-        violations.map { it.message }
+        violations.map { "invalid value in '${it.propertyPath}': ${it.message}" }
       )
 
       if (repository.existsById(project.id)) {
@@ -191,7 +191,7 @@ class ProjectCsvParser @Inject constructor(
 }
 
 class CsvParsingException(val rows: List<CsvRowErrors>) :
-  Exception("Error while parsing CSV data") {
+  Exception("Error while parsing CSV data: ${rows.flatMap { it.messages }.map { "\n$it" }}") {
   class CsvRowErrors(val csvRow: Int, val messages: List<String>)
 }
 

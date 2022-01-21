@@ -71,8 +71,8 @@ data class Participants(
   @get:Min(0)
   val age6to10: Int?,
 
-  @get:Min(0) val
-  age11to15: Int?,
+  @get:Min(0)
+  val age11to15: Int?,
 
   @get:Min(0)
   val age16to19: Int?,

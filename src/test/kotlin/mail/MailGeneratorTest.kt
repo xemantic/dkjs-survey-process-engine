@@ -27,8 +27,8 @@ class MailGeneratorTest {
         lastName = "Mustermann",
         email = "max@musterman.de"
       ),
-      start = parseDkjsDate("2022.01.15"),
-      end = parseDkjsDate("2022.01.30"),
+      start = parseDkjsDate("15.01.2022"),
+      end = parseDkjsDate("30.01.2022"),
       //goals = setOf(Goal.A),
       // next values will not influence mail
       //goals = setOf(Goal(1)),
