@@ -6,12 +6,18 @@ package de.dkjs.survey.time
 
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
 
 /**
  * Canonical DKJS date format used in supplied CSV files and sent emails.
  */
-val DKJS_DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy[ HH:mm:ss]")
+val DKJS_DATE_FORMAT = DateTimeFormatterBuilder()
+  .appendPattern("dd.MM.yyyy[ HH][:mm][:ss]")
+  .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+  .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+  .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+  .toFormatter()
 
 /**
  * Date formatted as dd.MM.yyyy

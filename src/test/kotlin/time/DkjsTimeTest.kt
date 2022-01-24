@@ -26,13 +26,19 @@ class DkjsTimeTest {
   @Test
   fun `should format DKJS date without time component for LocalDateTime instance`() {
     // given
-    val moment = LocalDateTime.of(2022, 1, 20, 1, 1, 1)
+    val moment1 = LocalDateTime.of(2022, 1, 20, 0, 0, 0)
+    val moment2 = LocalDateTime.of(2022, 1, 20, 1, 1, 1)
+    val moment3 = LocalDateTime.of(2022, 1, 20, 23, 59, 59)
 
     // when
-    val date = moment.dkjsDate
+    val date1 = moment1.dkjsDate
+    val date2 = moment1.dkjsDate
+    val date3 = moment1.dkjsDate
 
     // then
-    date shouldBe "20.01.2022"
+    date1 shouldBe "20.01.2022"
+    date2 shouldBe "20.01.2022"
+    date3 shouldBe "20.01.2022"
   }
 
   @Test
