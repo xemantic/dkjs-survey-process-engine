@@ -93,7 +93,7 @@ class ProjectCsvParser @Inject constructor(
         throw CsvParsingException(
           listOf(
             CsvParsingException.CsvRowErrors(
-              e.lineNumber.toInt(), listOf("malformed csv line")
+              listOf("malformed csv line")
             )
           )
         )
@@ -108,7 +108,7 @@ class ProjectCsvParser @Inject constructor(
         // exception and jump to the next line.
         exceptions.add(
           CsvParsingException.CsvRowErrors(
-            rowNumber, listOf("wrong column count")
+            listOf("wrong column count")
           )
         )
         return@mapIndexed invalidProject()
@@ -158,7 +158,7 @@ class ProjectCsvParser @Inject constructor(
         // exception and jump to the next line.
         exceptions.add(
           CsvParsingException.CsvRowErrors(
-            rowNumber, listOf("project already exists")
+            listOf("project already exists")
           )
         )
         return@mapIndexed invalidProject()
@@ -173,7 +173,7 @@ class ProjectCsvParser @Inject constructor(
       if (errorMessages.isNotEmpty()) {
         exceptions.add(
           CsvParsingException.CsvRowErrors(
-            rowNumber, errorMessages
+            errorMessages
           )
         )
       }
@@ -192,7 +192,7 @@ class ProjectCsvParser @Inject constructor(
 
 class CsvParsingException(val rows: List<CsvRowErrors>) :
   Exception("Error while parsing CSV data: ${rows.flatMap { it.messages }.map { "\n$it" }}") {
-  class CsvRowErrors(val csvRow: Int, val messages: List<String>)
+  class CsvRowErrors(val messages: List<String>)
 }
 
 private class RowParser(private val row: Array<String>) {
@@ -201,26 +201,23 @@ private class RowParser(private val row: Array<String>) {
 
   private val _errors = mutableListOf<String>()
 
-  /**
-   * Converts a String into an Int? If the String equals "NA" then
-   * the [default] argument is used as return value
-   */
-  private fun parseInt(num: String, default: Int): Int =
-    if (num == "NA") default else num.toInt()
+  private fun addError(column: Column, e: Exception) =
+    _errors.add("invalid value in '${column.csvName}': ${e.javaClass.simpleName}: ${e.message}")
 
   fun parse(column: Column): String = row[column.ordinal]
 
-  fun parseInt(column: Column): Int = try {
-    parseInt(row[column.ordinal], 0)
+  fun parseInt(column: Column): Int? = try {
+    val value = row[column.ordinal]
+    if (value == "NA") null else value.toInt()
   } catch (e: NumberFormatException) {
-    _errors.add("invalid number in '${column.csvName}': ${e.message}")
-    0
+    addError(column, e)
+    null
   }
 
   fun parseDate(column: Column): LocalDateTime = try {
     parseDkjsDate(row[column.ordinal])
   } catch (e: DateTimeParseException) {
-    _errors.add("invalid date in '${column.csvName}': ${e.message}")
+    addError(column, e)
     LocalDateTime.MIN
   }
 
@@ -230,7 +227,7 @@ private class RowParser(private val row: Array<String>) {
       .map { it.trim().toInt() }
       .toSet()
   } catch (e: NumberFormatException) {
-    _errors.add("invalid goals specification in '${Column.PROJECT_GOALS.csvName}': ${e.message}")
+    addError(Column.PROJECT_GOALS, e)
     emptySet()
   }
 

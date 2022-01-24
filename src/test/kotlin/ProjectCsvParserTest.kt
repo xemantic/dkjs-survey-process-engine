@@ -154,15 +154,15 @@ class ProjectCsvParserTest {
     // then
     e.rows shouldHaveSize 6
     e.rows[0].messages shouldContainExactly listOf("invalid value in 'contactPerson.email': must be a well-formed email address")
-    e.rows[1].messages shouldContainExactly listOf("invalid date in 'project.start': Text '17-01-2022' could not be parsed at index 2")
-    e.rows[2].messages shouldContainExactly listOf("invalid date in 'project.end': Text '01-07-2022' could not be parsed at index 2")
-    e.rows[3].messages shouldContainExactly listOf("invalid number in 'participants.worker': For input string: \"FOO\"")
+    e.rows[1].messages shouldContainExactly listOf("invalid value in 'project.start': DateTimeParseException: Text '17-01-2022' could not be parsed at index 2")
+    e.rows[2].messages shouldContainExactly listOf("invalid value in 'project.end': DateTimeParseException: Text '01-07-2022' could not be parsed at index 2")
+    e.rows[3].messages shouldContainExactly listOf("invalid value in 'participants.worker': NumberFormatException: For input string: \"FOO\"")
     e.rows[4].messages shouldContainExactlyInAnyOrder listOf(
-      "invalid number in 'participants.age1to5': For input string: \"A\"",
-      "invalid number in 'participants.age6to10': For input string: \"B\"",
-      "invalid number in 'participants.age11to15': For input string: \"C\"",
-      "invalid number in 'participants.age16to19': For input string: \"D\"",
-      "invalid number in 'participants.age20to26': For input string: \"E\""
+      "invalid value in 'participants.age1to5': NumberFormatException: For input string: \"A\"",
+      "invalid value in 'participants.age6to10': NumberFormatException: For input string: \"B\"",
+      "invalid value in 'participants.age11to15': NumberFormatException: For input string: \"C\"",
+      "invalid value in 'participants.age16to19': NumberFormatException: For input string: \"D\"",
+      "invalid value in 'participants.age20to26': NumberFormatException: For input string: \"E\""
     )
     e.rows[5].messages shouldContainExactly listOf("wrong column count")
   }
