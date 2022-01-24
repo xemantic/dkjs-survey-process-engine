@@ -15,7 +15,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
-import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.validation.Validation
 
 class ProjectCsvParserTest {
@@ -63,11 +63,11 @@ class ProjectCsvParserTest {
 
     // then
     projects shouldHaveSize 1
-    projects[0].start shouldBe LocalDate.of(
-      startYear.toInt(), startMonth.toInt(), startDay.toInt()
+    projects[0].start shouldBe LocalDateTime.of(
+      startYear.toInt(), startMonth.toInt(), startDay.toInt(), 0, 0, 0
     )
-    projects[0].end shouldBe LocalDate.of(
-      endYear.toInt(), endMonth.toInt(), endDay.toInt()
+    projects[0].end shouldBe LocalDateTime.of(
+      endYear.toInt(), endMonth.toInt(), endDay.toInt(), 0, 0, 0
     )
   }
 
@@ -154,16 +154,16 @@ class ProjectCsvParserTest {
     }
 
     // then
-    e.rows[0].messages shouldContain "invalid e-mail"
-    e.rows[1].messages shouldContain "invalid start date"
-    e.rows[2].messages shouldContain "invalid end date"
-    e.rows[3].messages shouldContain "invalid worker"
+    e.rows[0].messages shouldContain "invalid value in 'contactPerson.email': must be a well-formed email address"
+    e.rows[1].messages shouldContain "invalid date in 'project.start': Text '17-01-2022' could not be parsed at index 2"
+    e.rows[2].messages shouldContain "invalid date in 'project.end': Text '01-07-2022' could not be parsed at index 2"
+    e.rows[3].messages shouldContain "invalid number in 'participants.worker': For input string: \"FOO\""
     e.rows[4].messages shouldContainAll listOf(
-      "invalid age1to5",
-      "invalid age6to10",
-      "invalid age11to15",
-      "invalid age16to19",
-      "invalid age20to26"
+      "invalid number in 'participants.age1to5': For input string: \"A\"",
+      "invalid number in 'participants.age6to10': For input string: \"B\"",
+      "invalid number in 'participants.age11to15': For input string: \"C\"",
+      "invalid number in 'participants.age16to19': For input string: \"D\"",
+      "invalid number in 'participants.age20to26': For input string: \"E\""
     )
     e.rows[5].messages shouldContain "wrong column count"
   }

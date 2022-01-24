@@ -15,7 +15,7 @@ import javax.validation.constraints.*
 data class Project(
 
   @Id
-  @get:Pattern(regexp = "[0-9-]+")
+  @get:Pattern(regexp = "[0-9- ]+")
   val id: String,  // project.number in input data
 
   @get:NotEmpty
