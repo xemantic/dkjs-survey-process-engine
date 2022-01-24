@@ -9,22 +9,47 @@ import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
 import com.opencsv.exceptions.CsvMalformedLineException
 import de.dkjs.survey.model.*
+import de.dkjs.survey.time.parseDkjsDate
 import org.springframework.core.io.InputStreamSource
 import org.springframework.stereotype.Component
 import java.io.InputStreamReader
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.validation.Validator
 
+private enum class Column {
+
+  PROJECT_NUMBER,
+  PROJECT_STATUS,
+  PROJECT_PROVIDER,
+  PROVIDER_NUMBER,
+  PROJECT_PRONOUN,
+  PROJECT_FIRSTNAME,
+  PROJECT_LASTNAME,
+  PROJECT_MAIL,
+  PROJECT_NAME,
+  PARTICIPANTS_AGE1TO5,
+  PARTICIPANTS_AGE6TO10,
+  PARTICIPANTS_AGE11TO15,
+  PARTICIPANTS_AGE16TO19,
+  PARTICIPANTS_AGE20TO26,
+  PARTICIPANTS_WORKER,
+  PROJECT_GOALS,
+  PROJECT_START,
+  PROJECT_END;
+
+  val csvName get() = name.replace('_', '.').lowercase()
+
+}
 
 @Singleton
 @Component
 class ProjectCsvParser @Inject constructor(
-  private val repository: ProjectRepository
+  private val repository: ProjectRepository,
+  private val validator: Validator
 ) {
-  private val csvDateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
   /**
    * [ProjectCsvParser] creates temporary [invalidProject]s
@@ -41,23 +66,12 @@ class ProjectCsvParser @Inject constructor(
     ContactPerson("", "", "", ""),
     setOf(),
     Participants(0, 0, 0, 0, 0, null),
-    LocalDate.MIN,
-    LocalDate.MIN,
+    LocalDateTime.MIN,
+    LocalDateTime.MIN,
     null
   )
 
-  /**
-   * Converts a String into an Int? If the String equals "NA" then
-   * the [default] argument is used as return value
-   */
-  private fun parseInt(num: String, default: Int): Int =
-    if (num == "NA") default else num.toInt()
 
-  /**
-   * Converts a DD.MM.YYYY formatted String into a LocalDate object
-   */
-  private fun parseDate(dayMonthYear: String) =
-    LocalDate.from(csvDateFormat.parse(dayMonthYear))
 
   /**
    * Parses a CSV file creating a list of items, each item containing
@@ -66,7 +80,7 @@ class ProjectCsvParser @Inject constructor(
    */
   fun parse(projectCsv: InputStreamSource): List<Project> {
     val exceptions = mutableListOf<CsvParsingException.CsvRowErrors>()
-    val projectNumbers = mutableListOf<String>()
+    val projectIds = mutableListOf<String>()
 
     val projects = CSVReaderBuilder(
       InputStreamReader(projectCsv.inputStream, "UTF-8")
@@ -79,7 +93,7 @@ class ProjectCsvParser @Inject constructor(
         throw CsvParsingException(
           listOf(
             CsvParsingException.CsvRowErrors(
-              e.lineNumber.toInt(), listOf("malformed csv line")
+              listOf("malformed csv line")
             )
           )
         )
@@ -87,30 +101,14 @@ class ProjectCsvParser @Inject constructor(
     }.filterIndexed { i, _ ->
       // skip header row
       i > 0
-    }.mapIndexed { rowNumber, row ->
-      if (row.size != 18) {
+    }.mapIndexed { rowNumber, rowValues ->
+      if (rowValues.size != Column.values().size) {
         // This exception can not be combined
         // with other parsing issues. Add the
         // exception and jump to the next line.
         exceptions.add(
           CsvParsingException.CsvRowErrors(
-            rowNumber, listOf("wrong column count")
-          )
-        )
-        return@mapIndexed invalidProject()
-      }
-
-      var col = 0
-      val pNumber = row[col++]
-      val pStatus = row[col++]
-
-      if (repository.existsById(pNumber)) {
-        // This exception can not be combined
-        // with other parsing issues. Add the
-        // exception and jump to the next line.
-        exceptions.add(
-          CsvParsingException.CsvRowErrors(
-            rowNumber, listOf("project already exists")
+            listOf("wrong column count")
           )
         )
         return@mapIndexed invalidProject()
@@ -118,123 +116,69 @@ class ProjectCsvParser @Inject constructor(
 
       val errorMessages = mutableListOf<String>()
 
-      // Provider
-      val pProvider = row[col++]
-      val pProviderNumber = row[col++]
-
-      // ContactPerson
-      val pContactPronoun = row[col++]
-      val pContactFirstname = row[col++]
-      val pContactLastname = row[col++]
-      val pContactMail = row[col++]
-
-      // TODO: use proper e-mail validation
-      if (pContactMail.count { it == '@' } != 1) {
-        errorMessages.add("invalid e-mail")
-      }
-
-      val pName = row[col++]
-
-      // Participants
-      val pAge1to5 = try {
-        parseInt(row[col++], 0)
-      } catch (e: NumberFormatException) {
-        errorMessages.add("invalid age1to5")
-        0
-      }
-      val pAge6to10 = try {
-        parseInt(row[col++], 0)
-      } catch (e: NumberFormatException) {
-        errorMessages.add("invalid age6to10")
-        0
-      }
-      val pAge11to15 = try {
-        parseInt(row[col++], 0)
-      } catch (e: NumberFormatException) {
-        errorMessages.add("invalid age11to15")
-        0
-      }
-      val pAge16to19 = try {
-        parseInt(row[col++], 0)
-      } catch (e: NumberFormatException) {
-        errorMessages.add("invalid age16to19")
-        0
-      }
-      val pAge20to26 = try {
-        parseInt(row[col++], 0)
-      } catch (e: NumberFormatException) {
-        errorMessages.add("invalid age20to26")
-        0
-      }
-      val pWorker = try {
-        parseInt(row[col++], 0)
-      } catch (e: NumberFormatException) {
-        errorMessages.add("invalid worker")
-        0
-      }
-
-      val pGoals = row[col++].split(",")
-        .map { it.toInt() }.toSet()
-
-      val pStart = try {
-        parseDate(row[col++])
-      } catch (e: DateTimeParseException) {
-        errorMessages.add("invalid start date")
-        LocalDate.MIN
-      }
-
-      val pEnd = try {
-        parseDate(row[col])
-      } catch (e: DateTimeParseException) {
-        errorMessages.add("invalid end date")
-        LocalDate.MIN
-      }
-
-      val provider = Provider(
-        pProviderNumber,
-        pProvider
-      )
-      val contactPerson = ContactPerson(
-        pContactPronoun,
-        pContactFirstname,
-        pContactLastname,
-        pContactMail
-      )
-      val participants = Participants(
-        pAge1to5,
-        pAge6to10,
-        pAge11to15,
-        pAge16to19,
-        pAge20to26,
-        pWorker
-      )
+      val row = RowParser(rowValues)
 
       val project = Project(
-        id = pNumber,
-        status = pStatus,
-        name = pName,
-        provider = provider,
-        contactPerson = contactPerson,
-        goals = pGoals,
-        participants = participants,
-        start = pStart,
-        end = pEnd,
-        surveyProcess = null
+        id          = row.parse(Column.PROJECT_NUMBER),
+        status      = row.parse(Column.PROJECT_STATUS),
+        name        = row.parse(Column.PROJECT_NAME),
+        provider = Provider(
+          id        = row.parse(Column.PROVIDER_NUMBER),
+          name      = row.parse(Column.PROJECT_PROVIDER)
+        ),
+        contactPerson = ContactPerson(
+          pronoun   = row.parse(Column.PROJECT_PRONOUN),
+          firstName = row.parse(Column.PROJECT_FIRSTNAME),
+          lastName  = row.parse(Column.PROJECT_LASTNAME),
+          email     = row.parse(Column.PROJECT_MAIL)
+        ),
+        goals       = row.parseGoals(),
+        participants = Participants(
+          age1to5   = row.parseInt(Column.PARTICIPANTS_AGE1TO5),
+          age6to10  = row.parseInt(Column.PARTICIPANTS_AGE6TO10),
+          age11to15 = row.parseInt(Column.PARTICIPANTS_AGE11TO15),
+          age16to19 = row.parseInt(Column.PARTICIPANTS_AGE16TO19),
+          age20to26 = row.parseInt(Column.PARTICIPANTS_AGE20TO26),
+          worker    = row.parseInt(Column.PARTICIPANTS_WORKER)
+        ),
+        start       = row.parseDate(Column.PROJECT_START),
+        end         = row.parseDate(Column.PROJECT_END)
       )
 
-      if (projectNumbers.contains(pNumber)) {
+      errorMessages.addAll(row.errors)
+
+      val violations = validator.validate(project)
+      errorMessages.addAll(
+        violations.map { "invalid value in '${it.propertyPath}': ${it.message}" }
+      )
+
+      if (repository.existsById(project.id)) {
+        // This exception can not be combined
+        // with other parsing issues. Add the
+        // exception and jump to the next line.
+        exceptions.add(
+          CsvParsingException.CsvRowErrors(
+            listOf("project already exists")
+          )
+        )
+        return@mapIndexed invalidProject()
+      }
+
+
+
+      if (projectIds.contains(project.id)) {
         errorMessages.add("duplicate project number")
       }
 
       if (errorMessages.isNotEmpty()) {
         exceptions.add(
           CsvParsingException.CsvRowErrors(
-            rowNumber, errorMessages
+            errorMessages
           )
         )
       }
 
-      projectNumbers.add(pNumber)
+      projectIds.add(project.id)
       project
     }
 
@@ -247,6 +191,44 @@ class ProjectCsvParser @Inject constructor(
 }
 
 class CsvParsingException(val rows: List<CsvRowErrors>) :
-  Exception("Error while parsing CSV data") {
-  class CsvRowErrors(val csvRow: Int, val messages: List<String>)
+  Exception("Error while parsing CSV data: ${rows.flatMap { it.messages }.map { "\n$it" }}") {
+  class CsvRowErrors(val messages: List<String>)
+}
+
+private class RowParser(private val row: Array<String>) {
+
+  val errors get() = _errors.toList()
+
+  private val _errors = mutableListOf<String>()
+
+  private fun addError(column: Column, e: Exception) =
+    _errors.add("invalid value in '${column.csvName}': ${e.javaClass.simpleName}: ${e.message}")
+
+  fun parse(column: Column): String = row[column.ordinal]
+
+  fun parseInt(column: Column): Int? = try {
+    val value = row[column.ordinal]
+    if (value == "NA") null else value.toInt()
+  } catch (e: NumberFormatException) {
+    addError(column, e)
+    null
+  }
+
+  fun parseDate(column: Column): LocalDateTime = try {
+    parseDkjsDate(row[column.ordinal])
+  } catch (e: DateTimeParseException) {
+    addError(column, e)
+    LocalDateTime.MIN
+  }
+
+  fun parseGoals(): Set<Int> = try {
+    parse(Column.PROJECT_GOALS)
+      .splitToSequence(',')
+      .map { it.trim().toInt() }
+      .toSet()
+  } catch (e: NumberFormatException) {
+    addError(Column.PROJECT_GOALS, e)
+    emptySet()
+  }
+
 }

@@ -5,6 +5,7 @@
 package de.dkjs.survey.mail
 
 import de.dkjs.survey.model.*
+import de.dkjs.survey.time.parseDkjsDate
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -26,8 +27,8 @@ class MailGeneratorTest {
         lastName = "Mustermann",
         email = "max@musterman.de"
       ),
-      start = parseDate("20220115"),
-      end = parseDate("20220130"),
+      start = parseDkjsDate("15.01.2022"),
+      end = parseDkjsDate("30.01.2022"),
       //goals = setOf(Goal.A),
       // next values will not influence mail
       //goals = setOf(Goal(1)),

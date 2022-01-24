@@ -7,19 +7,19 @@ package de.dkjs.survey
 import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.ProjectRepository
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.*
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
-import java.time.LocalDate
+import java.time.LocalDateTime
+import javax.validation.Validation
 
 class ProjectCsvParserTest {
   private val repository = mockk<ProjectRepository>(relaxed = true)
-  private val parser = ProjectCsvParser(repository)
+  private val validator = Validation.buildDefaultValidatorFactory().validator
+  private val parser = ProjectCsvParser(repository, validator)
   private fun csvToProjects(csv: String): List<Project> {
     val targetStream = ByteArrayInputStream(csv.toByteArray())
     return parser.parse { targetStream }
@@ -61,11 +61,11 @@ class ProjectCsvParserTest {
 
     // then
     projects shouldHaveSize 1
-    projects[0].start shouldBe LocalDate.of(
-      startYear.toInt(), startMonth.toInt(), startDay.toInt()
+    projects[0].start shouldBe LocalDateTime.of(
+      startYear.toInt(), startMonth.toInt(), startDay.toInt(), 0, 0, 0
     )
-    projects[0].end shouldBe LocalDate.of(
-      endYear.toInt(), endMonth.toInt(), endDay.toInt()
+    projects[0].end shouldBe LocalDateTime.of(
+      endYear.toInt(), endMonth.toInt(), endDay.toInt(), 0, 0, 0
     )
   }
 
@@ -82,8 +82,8 @@ class ProjectCsvParserTest {
       csvToProjects(csv)
     }
     // then
-    e.rows.size shouldBe 1
-    e.rows[0].messages shouldContain "malformed csv line"
+    e.rows shouldHaveSize 1
+    e.rows[0].messages shouldContainExactly listOf("malformed csv line")
   }
 
   @Test
@@ -152,18 +152,19 @@ class ProjectCsvParserTest {
     }
 
     // then
-    e.rows[0].messages shouldContain "invalid e-mail"
-    e.rows[1].messages shouldContain "invalid start date"
-    e.rows[2].messages shouldContain "invalid end date"
-    e.rows[3].messages shouldContain "invalid worker"
-    e.rows[4].messages shouldContainAll listOf(
-      "invalid age1to5",
-      "invalid age6to10",
-      "invalid age11to15",
-      "invalid age16to19",
-      "invalid age20to26"
+    e.rows shouldHaveSize 6
+    e.rows[0].messages shouldContainExactly listOf("invalid value in 'contactPerson.email': must be a well-formed email address")
+    e.rows[1].messages shouldContainExactly listOf("invalid value in 'project.start': DateTimeParseException: Text '17-01-2022' could not be parsed at index 2")
+    e.rows[2].messages shouldContainExactly listOf("invalid value in 'project.end': DateTimeParseException: Text '01-07-2022' could not be parsed at index 2")
+    e.rows[3].messages shouldContainExactly listOf("invalid value in 'participants.worker': NumberFormatException: For input string: \"FOO\"")
+    e.rows[4].messages shouldContainExactlyInAnyOrder listOf(
+      "invalid value in 'participants.age1to5': NumberFormatException: For input string: \"A\"",
+      "invalid value in 'participants.age6to10': NumberFormatException: For input string: \"B\"",
+      "invalid value in 'participants.age11to15': NumberFormatException: For input string: \"C\"",
+      "invalid value in 'participants.age16to19': NumberFormatException: For input string: \"D\"",
+      "invalid value in 'participants.age20to26': NumberFormatException: For input string: \"E\""
     )
-    e.rows[5].messages shouldContain "wrong column count"
+    e.rows[5].messages shouldContainExactly listOf("wrong column count")
   }
 
   @Test
@@ -182,6 +183,7 @@ class ProjectCsvParserTest {
     }
 
     // then
+    e.rows shouldHaveSize 1
     e.rows[0].messages shouldContain "project already exists"
   }
 }
