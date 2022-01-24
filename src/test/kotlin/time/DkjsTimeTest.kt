@@ -32,8 +32,8 @@ class DkjsTimeTest {
 
     // when
     val date1 = moment1.dkjsDate
-    val date2 = moment1.dkjsDate
-    val date3 = moment1.dkjsDate
+    val date2 = moment2.dkjsDate
+    val date3 = moment3.dkjsDate
 
     // then
     date1 shouldBe "20.01.2022"
