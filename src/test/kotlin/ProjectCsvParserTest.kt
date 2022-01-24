@@ -7,9 +7,7 @@ package de.dkjs.survey
 import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.ProjectRepository
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.*
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -84,8 +82,8 @@ class ProjectCsvParserTest {
       csvToProjects(csv)
     }
     // then
-    e.rows.size shouldBe 1
-    e.rows[0].messages shouldContain "malformed csv line"
+    e.rows shouldHaveSize 1
+    e.rows[0].messages shouldContainExactly listOf("malformed csv line")
   }
 
   @Test
@@ -154,18 +152,19 @@ class ProjectCsvParserTest {
     }
 
     // then
-    e.rows[0].messages shouldContain "invalid value in 'contactPerson.email': must be a well-formed email address"
-    e.rows[1].messages shouldContain "invalid date in 'project.start': Text '17-01-2022' could not be parsed at index 2"
-    e.rows[2].messages shouldContain "invalid date in 'project.end': Text '01-07-2022' could not be parsed at index 2"
-    e.rows[3].messages shouldContain "invalid number in 'participants.worker': For input string: \"FOO\""
-    e.rows[4].messages shouldContainAll listOf(
+    e.rows shouldHaveSize 6
+    e.rows[0].messages shouldContainExactly listOf("invalid value in 'contactPerson.email': must be a well-formed email address")
+    e.rows[1].messages shouldContainExactly listOf("invalid date in 'project.start': Text '17-01-2022' could not be parsed at index 2")
+    e.rows[2].messages shouldContainExactly listOf("invalid date in 'project.end': Text '01-07-2022' could not be parsed at index 2")
+    e.rows[3].messages shouldContainExactly listOf("invalid number in 'participants.worker': For input string: \"FOO\"")
+    e.rows[4].messages shouldContainExactlyInAnyOrder listOf(
       "invalid number in 'participants.age1to5': For input string: \"A\"",
       "invalid number in 'participants.age6to10': For input string: \"B\"",
       "invalid number in 'participants.age11to15': For input string: \"C\"",
       "invalid number in 'participants.age16to19': For input string: \"D\"",
       "invalid number in 'participants.age20to26': For input string: \"E\""
     )
-    e.rows[5].messages shouldContain "wrong column count"
+    e.rows[5].messages shouldContainExactly listOf("wrong column count")
   }
 
   @Test
@@ -184,6 +183,7 @@ class ProjectCsvParserTest {
     }
 
     // then
+    e.rows shouldHaveSize 1
     e.rows[0].messages shouldContain "project already exists"
   }
 }
