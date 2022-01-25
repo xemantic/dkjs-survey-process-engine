@@ -4,30 +4,31 @@
 
 package de.dkjs.survey.mail
 
+import de.dkjs.survey.documents.DocumentsConfig
 import de.dkjs.survey.model.Project
-import org.springframework.beans.factory.annotation.Value
+import de.dkjs.survey.typeform.TypeformConfig
 import org.springframework.stereotype.Component
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Component
 @Singleton
-class TypeformSurveyLinkGenerator @Inject constructor(
-  @Value("\${typeform.linkBase}") private val typeformLinkBase: String,
+class TypeformSurveyLinkGenerator(
+  @Inject private val config: TypeformConfig
 ) {
 
   fun generate(project: Project) =
-    "$typeformLinkBase?projectNumber=${project.id}&blocks=${project.name}"
+    "${config.linkBase}?projectNumber=${project.id}&blocks=${project.name}"
 
 }
 
 @Component
 @Singleton
-class PdfSurveyLinkGenerator @Inject constructor(
-  @Value("\${pdf.linkBase}") private val pdfLinkBase: String,
+class SurveyDocumentPdfLinkGenerator(
+  @Inject private val config: DocumentsConfig
 ) {
 
   // TODO we need a rule for generating these
-  fun generate(project: Project) = pdfLinkBase
+  fun generate(project: Project) = config.linkBase
 
 }

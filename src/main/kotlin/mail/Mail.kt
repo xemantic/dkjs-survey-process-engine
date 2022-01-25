@@ -4,18 +4,17 @@
 
 package de.dkjs.survey.mail
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.stereotype.Component
 import org.springframework.validation.annotation.Validated
 import java.io.File
 import java.util.*
 import javax.inject.Named
 import javax.inject.Singleton
 import javax.validation.constraints.Email
-import javax.validation.constraints.NotNull
+import javax.validation.constraints.NotEmpty
 
 enum class MailType {
 
@@ -42,31 +41,31 @@ data class MailData(
   val body :String
 )
 
-@Component
-@ConfigurationProperties(prefix = "mail")
+@ConstructorBinding
+@ConfigurationProperties("mail")
 @Validated
-class MailConfig {
+data class MailConfig(
 
-  @NotNull
+  @NotEmpty
   @Email
-  lateinit var from: String
+  val from: String,
 
-  @NotNull
-  lateinit var templateDir: String
+  @NotEmpty
+  val templateDir: String
 
-}
+)
 
 @Configuration
-open class MailTemplateConfig {
+class MailTemplateSetup {
 
   @Singleton
   @Bean
   @Named("templates")
-  open fun templates(
-    @Value("\${mail.templateDir}") templateDir: String
+  fun templates(
+    config: MailConfig
   ) = EnumMap(MailType.values().associate {
     val folder = it.name.lowercase()
-    val dir = File(templateDir, folder)
+    val dir = File(config.templateDir, folder)
     it to MailTemplateData(
       File(dir, "subject.txt").readText(),
       File(dir, "body.txt").readText()

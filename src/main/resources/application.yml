@@ -1,12 +1,14 @@
+mail:
+  from: test@xemantic.com
+  templateDir: src/mail
+
+documents:
+  linkBase: https://dkjs.de
+
 typeform:
   clientId: 1234
   formId: j6aFWMgy
   linkBase: https://typeform
-pdf:
-  linkBase: https://dkjs.de
-mail:
-  from: test@xemantic.com
-  templateDir: src/mail
 
 spring:
   profiles:
@@ -32,5 +34,3 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-
----

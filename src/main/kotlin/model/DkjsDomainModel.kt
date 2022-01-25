@@ -144,3 +144,7 @@ interface ProjectRepository : CrudRepository<Project, String> {
   fun findBySurveyProcessPhaseNot(finished: SurveyProcess.Phase): List<Project>
 
 }
+
+interface ProviderRepository : CrudRepository<Provider, String>
+
+interface SurveyProcessRepository : CrudRepository<SurveyProcess, String>

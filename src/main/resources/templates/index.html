@@ -2,12 +2,15 @@
 
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
 
-<head th:replace="base :: common_header(~{::title})"/>
+<head th:replace="base :: common_header(~{::title})">
     <title>CSV upload</title>
 </head>
 
 <body>
+
     <h1>Upload</h1>
+
+    <a href="api/" class="btn btn-secondary">Database Explorer</a>
 
     <form method="post" th:action="@{/upload}"
           enctype="multipart/form-data" class="row g-3">
