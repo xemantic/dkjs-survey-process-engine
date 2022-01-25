@@ -14,7 +14,6 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import javax.annotation.PreDestroy
@@ -23,8 +22,8 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Configuration
-open class TypeformApiConfiguration @Inject constructor(
-  @Value("\${typeform.clientId}") private val clientId: String
+class TypeformApiSetup(
+  @Inject private val config: TypeformConfig
 ) {
 
   private lateinit var client: HttpClient
@@ -32,7 +31,7 @@ open class TypeformApiConfiguration @Inject constructor(
   @Singleton
   @Bean
   @Named("typeformHttpClient")
-  open fun typeformHttpClient(): HttpClient {
+  fun typeformHttpClient(): HttpClient {
     val authorizationCode = "1234"
 
     val tokenClient = HttpClient(CIO) {
@@ -57,7 +56,7 @@ open class TypeformApiConfiguration @Inject constructor(
               formParameters = Parameters.build {
                 append("grant_type", "authorization_code")
                 append("code", authorizationCode)
-                append("client_id", clientId)
+                append("client_id", config.clientId)
                 //append("redirect_uri", redirectUri)
               }
             )
@@ -72,7 +71,7 @@ open class TypeformApiConfiguration @Inject constructor(
               url = "https://api.typeform.com/oauth/authorize",
               formParameters = Parameters.build {
                 append("grant_type", "refresh_token")
-                append("client_id", clientId)
+                append("client_id", config.clientId)
                 append("refresh_token", tokenInfo.refreshToken!!)
               }
             )
