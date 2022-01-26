@@ -4,8 +4,10 @@
 
 package de.dkjs.survey.mail
 
+import de.dkjs.survey.documents.DocumentsConfig
 import de.dkjs.survey.model.*
 import de.dkjs.survey.time.parseDkjsDate
+import de.dkjs.survey.typeform.TypeformConfig
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -71,8 +73,17 @@ class MailGeneratorTest {
     )
     val mailGenerator = MailGenerator(
       templates,
-      TypeformSurveyLinkGenerator("https://typeform/form"),
-      PdfSurveyLinkGenerator("https://dkjs.de/pdfs")
+      TypeformSurveyLinkGenerator(
+        TypeformConfig(
+          clientId = "42",
+          linkBase = "https://typeform/form"
+        ),
+      ),
+      SurveyDocumentPdfLinkGenerator(
+        DocumentsConfig(
+          linkBase = "https://dkjs.de/pdfs"
+        )
+      )
     )
 
     // when

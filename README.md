@@ -10,3 +10,23 @@ See
 * https://www.baeldung.com/javax-validation
 * https://stackoverflow.com/questions/41753361/java-bean-validation-and-regex-format-and-length-in-two-different-error-messag
 * https://www.dariawan.com/tutorials/java/java-datetimeformatter-tutorial-examples/
+
+## Using Kotlin with spring-boot
+
+https://spring.io/guides/tutorials/spring-boot-kotlin/
+
+Most of the changes described there are already applied to this project. If lazy entity fetching
+is needed, the following needs to be added to the `build.gradle.kts`
+
+```kotlin
+plugins {
+  //...
+  kotlin("plugin.allopen") version "1.4.32"
+}
+
+allOpen {
+  annotation("javax.persistence.Entity")
+  annotation("javax.persistence.Embeddable")
+  annotation("javax.persistence.MappedSuperclass")
+}
+```

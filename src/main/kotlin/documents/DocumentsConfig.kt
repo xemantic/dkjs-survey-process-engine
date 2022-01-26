@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2021 Kazimierz Pogoda / Xemantic
+ * Copyright (c) 2022 Kazimierz Pogoda / Xemantic
  */
 
-package de.dkjs.survey.typeform
+package de.dkjs.survey.documents
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
@@ -10,12 +10,9 @@ import org.springframework.validation.annotation.Validated
 import javax.validation.constraints.NotEmpty
 
 @ConstructorBinding
-@ConfigurationProperties("typeform")
+@ConfigurationProperties("documents")
 @Validated
-data class TypeformConfig(
-
-  @NotEmpty
-  val clientId: String,
+data class DocumentsConfig(
 
   @NotEmpty
   val linkBase: String

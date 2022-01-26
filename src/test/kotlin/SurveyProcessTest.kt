@@ -17,13 +17,18 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.time.LocalDateTime
-import javax.inject.Inject
 
 @DkjsSurveyProcessEngineTest
-class SurveyProcessTest {
+class SurveyProcessTest @Autowired constructor(
+  val logger: Logger,
+  val surveyEmailSender: SurveyEmailSender,
+  val repository: ProjectRepository,
+  val client: WebTestClient
+) {
 
   // test cases: start
 
@@ -57,11 +62,6 @@ class SurveyProcessTest {
   }
 
   // test cases: end
-
-  @Inject private lateinit var logger: Logger
-  @Inject private lateinit var surveyEmailSender: SurveyEmailSender
-  @Inject private lateinit var repository: ProjectRepository
-  @Inject private lateinit var client: WebTestClient
 
   fun uploadingProjectsCsv(csv: String) = client.uploadProjectsCsv(csv)
 

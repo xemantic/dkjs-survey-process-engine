@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 
 @RestController
-open class SurveyProcessController @Inject constructor(
+class SurveyProcessController @Inject constructor(
   private val logger: Logger,
   private val parser: ProjectCsvParser,
   private val engine: DkjsSurveyProcessEngine
