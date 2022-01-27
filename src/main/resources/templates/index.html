@@ -20,29 +20,60 @@
         </div>
         <div class="col-12">
             <label for="file" class="form-label">Choose CSV file</label>
-            <input type="file" name="projectsCsv" class="form-control" id="file">
+            <input type="file" name="projectsCsv" class="form-control"
+                   id="file" required
+                   onChange="document.getElementById('uploadSubmitButton').style.visibility = this.value ? 'visible' : 'hidden'">
         </div>
         <div class="col-12">
-            <button type="submit" class="btn btn-primary">Upload File</button>
+            <button type="submit" id="uploadSubmitButton"
+                    class="btn btn-primary">Upload File</button>
         </div>
     </form>
 
     <section class="project-list" th:if="${session.projects ne null}">
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Id</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="project: ${session.projects}">
-                <th th:text="${project.name}"/>
-                <td th:text="${project.id}"/>
-            </tr>
-            </tbody>
-        </table>
-        <div class="col-12"> <!-- TODO disable on errors -->
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Id</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Provider</th>
+                    <th scope="col">Person</th>
+                    <th scope="col">Goals</th>
+                    <th scope="col">Participants</th>
+                    <th scope="col">Start / End</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="project: ${session.projects}">
+                    <th th:text="${project.name}"/>
+                    <td th:text="${project.id}"/>
+                    <td th:text="${project.status}"/>
+                    <td>
+                        <span th:text="${project.provider.id}"/><br/>
+                        <span th:text="${project.provider.name}"/>
+                    </td>
+                    <td>
+                        <p>
+                            <span th:text="${project.contactPerson.pronoun}"/>
+                            <span th:text="${project.contactPerson.firstName}"/>
+                            <span th:text="${project.contactPerson.lastName}"/>
+                        </p>
+                        <a th:href="'mailto:'+${project.contactPerson.email}"
+                           th:text="${project.contactPerson.email}"></a>
+                    </td>
+                    <td th:text="${project.goals}"/>
+                    <td th:text="${project.participants}"/>
+                    <td>
+                        <p th:text="${project.start}"/>
+                        <p th:text="${project.end}"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-12" th:if="${#lists.isEmpty(errors)}">
             <a href="/submit-projects" class="btn btn-primary">Submit Projects</a>
         </div>
     </section>

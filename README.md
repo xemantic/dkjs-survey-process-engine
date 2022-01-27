@@ -10,6 +10,10 @@ See
 * https://www.baeldung.com/javax-validation
 * https://stackoverflow.com/questions/41753361/java-bean-validation-and-regex-format-and-length-in-two-different-error-messag
 * https://www.dariawan.com/tutorials/java/java-datetimeformatter-tutorial-examples/
+* https://medium.com/@jayphelps/backpressure-explained-the-flow-of-data-through-software-2350b3e77ce7
+* https://developer.typeform.com/get-started/applications/
+* https://ktor.io/docs/auth.html
+* https://github.com/ktorio/ktor-documentation/tree/main/codeSnippets/snippets/client-auth-oauth-google
 
 ## Using Kotlin with spring-boot
 
