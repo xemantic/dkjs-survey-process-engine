@@ -12,20 +12,40 @@
 
     <a href="api/" class="btn btn-secondary">Database Explorer</a>
 
-    <form method="post" th:action="@{/upload}"
+    <form method="post" th:action="@{/upload-projects}"
           enctype="multipart/form-data" class="row g-3">
         <div class="col-12">
-            <p th:text="${message}" th:if="${message ne null}"
+            <p th:text="${errors}" th:if="${errors ne null}"
                class="alert alert-primary"></p>
         </div>
         <div class="col-12">
             <label for="file" class="form-label">Choose CSV file</label>
-            <input type="file" name="file" class="form-control" id="file">
+            <input type="file" name="projectsCsv" class="form-control" id="file">
         </div>
         <div class="col-12">
             <button type="submit" class="btn btn-primary">Upload File</button>
         </div>
     </form>
+
+    <section class="project-list" th:if="${session.projects ne null}">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Id</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="project: ${session.projects}">
+                <th th:text="${project.name}"/>
+                <td th:text="${project.id}"/>
+            </tr>
+            </tbody>
+        </table>
+        <div class="col-12"> <!-- TODO disable on errors -->
+            <a href="/submit-projects" class="btn btn-primary">Submit Projects</a>
+        </div>
+    </section>
 
     <footer th:replace="base :: common_footer()"/>
 </body>

@@ -34,3 +34,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+
+server:
+  servlet:
+    session:
+      persistent: false

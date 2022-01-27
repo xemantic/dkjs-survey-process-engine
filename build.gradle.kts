@@ -57,6 +57,7 @@ dependencies {
 
   runtimeOnly("org.hibernate:hibernate-validator:7.0.1.Final")
   runtimeOnly("org.hsqldb:hsqldb:2.6.1")
+  runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
