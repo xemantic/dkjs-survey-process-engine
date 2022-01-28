@@ -14,9 +14,12 @@
 
     <form method="post" th:action="@{/upload-projects}"
           enctype="multipart/form-data" class="row g-3">
-        <div class="col-12">
-            <p th:text="${errors}" th:if="${errors ne null}"
-               class="alert alert-primary"></p>
+        <div class="col-12"
+             th:if="${errors ne null}"
+             th:each="error: ${errors}">
+            <div th:each="message: ${error.messages}">
+                <p th:text="${message}" class="alert alert-primary"></p>
+            </div>
         </div>
         <div class="col-12">
             <label for="file" class="form-label">Choose CSV file</label>
