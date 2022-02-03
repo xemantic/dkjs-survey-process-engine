@@ -14,7 +14,8 @@ See
 * https://developer.typeform.com/get-started/applications/
 * https://ktor.io/docs/auth.html
 * https://github.com/ktorio/ktor-documentation/tree/main/codeSnippets/snippets/client-auth-oauth-google
-
+* https://www.wimdeblauwe.com/blog/2021/09/14/thymeleaf-iteration-and-fragments/
+ 
 ## Using Kotlin with spring-boot
 
 https://spring.io/guides/tutorials/spring-boot-kotlin/
