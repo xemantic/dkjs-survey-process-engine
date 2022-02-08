@@ -31,7 +31,10 @@ class DefaultSurveyEmailSender @Inject constructor(
     message.setFrom(config.from)
     message.setTo(project.contactPerson.email)
     message.setSubject(mail.subject)
-    message.setText(mail.body)
+    message.setText(mail.bodyText)
+    // TODO: Replace `SimpleMailMessage` with `MimeMessage` as shown in
+    // https://springhow.com/spring-boot-email-thymeleaf/
+    // TODO: use `mail.bodyHTML`
     mailSender.send(message)
   }
 

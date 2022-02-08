@@ -31,14 +31,22 @@ enum class MailType {
 
 }
 
+/**
+ * Raw e-mail templates as read from disk
+ */
 data class MailTemplateData(
   val subject: String,
-  val body :String
+  val bodyText: String,
+  val bodyHTML: String
 )
 
+/**
+ * Processed e-mail templates after replacing tokens
+ */
 data class MailData(
   val subject: String,
-  val body :String
+  val bodyText: String,
+  val bodyHTML: String
 )
 
 @ConstructorBinding
@@ -68,7 +76,8 @@ class MailTemplateSetup {
     val dir = File(config.templateDir, folder)
     it to MailTemplateData(
       File(dir, "subject.txt").readText(),
-      File(dir, "body.txt").readText()
+      File(dir, "body.txt").readText(),
+      File(dir, "body.html").readText()
     )
   })
 

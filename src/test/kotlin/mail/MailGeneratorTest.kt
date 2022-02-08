@@ -54,7 +54,7 @@ class MailGeneratorTest {
     val templates = EnumMap<MailType, MailTemplateData>(MailType::class.java)
     templates[MailType.INFOMAIL_PRE_POST] = MailTemplateData(
       subject = "Information regarding your AUF!leben-project {projectName}",
-      body = """
+      bodyText = """
         Dear {projectContact},
 
         We are contacting you ...
@@ -69,7 +69,7 @@ class MailGeneratorTest {
 
         Best regards,
         DKJS
-      """.trimIndent()
+      """.trimIndent(),
     )
     val mailGenerator = MailGenerator(
       templates,
@@ -91,7 +91,7 @@ class MailGeneratorTest {
 
     // then
     mail.subject shouldBe "Information regarding your AUF!leben-project Foo"
-    mail.body shouldBe """
+    mail.bodyText shouldBe """
         Dear Herr Max Mustermann,
 
         We are contacting you ...

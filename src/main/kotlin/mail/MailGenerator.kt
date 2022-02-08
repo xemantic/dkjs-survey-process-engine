@@ -22,14 +22,19 @@ class MailGenerator @Inject constructor(
     project: Project
   ): MailData {
     val templateData = templates[mailType]!!
+
     val typeformLink = typeformSurveyLinkGenerator.generate(project)
     val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
+
     val subject = replaceTokens(templateData.subject, project)
-    val body = replaceTokens(templateData.body, project, typeformLink, pdfLink)
-    return MailData(subject, body)
+    val bodyText = replaceTokens(templateData.bodyText, project, typeformLink, pdfLink)
+    val bodyHTML = replaceTokens(templateData.bodyHTML, project, typeformLink, pdfLink)
+
+    return MailData(subject, bodyText, bodyHTML)
   }
 
-  // TODO this should be completely adjusted now after model is stable
+  // TODO: this should be completely adjusted now after model is stable
+  // TODO: replace by Thymeleaf
   fun replaceTokens(
     input: String,
     project: Project,
