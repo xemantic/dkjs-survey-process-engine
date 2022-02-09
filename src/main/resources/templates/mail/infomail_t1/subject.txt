@@ -1,1 +1,1 @@
-DKJS infomail_t1
+Informationen zur zweiten Evaluation Ihres AUF!leben-Projekts [( ${project name} )], Projektnr.: [( ${project number} )])

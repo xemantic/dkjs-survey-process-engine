@@ -11,3 +11,5 @@ blablabla [(${linkToTypeformSurvey})].
 blablabla [(${linkToPaperBasedSurvey})].
 
 blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablbl
+
+[( ~{mail/footer} )]

@@ -1,1 +1,1 @@
-DKJS reminder_2_t0
+Fehlende erste Evaluation Ihres AUF!leben-Projekts [( ${project name} )], Projektnr.: [( ${project number} )])

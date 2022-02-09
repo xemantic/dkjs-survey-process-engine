@@ -1,1 +1,1 @@
-DKJS reminder_1_t0
+Erinnerung zur ersten Evaluation Ihres AUF!leben-Projekts [( ${project name} )], Projektnr.: [( ${project number} )])

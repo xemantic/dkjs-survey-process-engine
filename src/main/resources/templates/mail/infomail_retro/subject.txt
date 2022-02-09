@@ -1,1 +1,1 @@
-DKJS infomail_retro
+Informationen zur Evaluation Ihres AUF!leben-Projekts [( ${project name} )], Projektnr.: [( ${project number} )])

@@ -1,1 +1,1 @@
-DKJS infomail_pre_post
+Informationen zur Evaluation Ihres AUF!leben-Projekts [( ${project name} )], Projektnr.: [( ${project number} )])
