@@ -1,13 +1,13 @@
-Bla ${contactPerson},
+Bla [(${contactPerson})],
 
 blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablabla
 
-blablabla ${projectName} (${projectNumber}, ${startDate}-${endDate}). Blablablablablablablablablablabla
+blablabla [(${projectName})] ([(${projectNumber)]}, [(${startDate})]-[(${endDate})]). Blablablablablablablablablablabla
 
 blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablbl
 
-blablabla ${linkToTypeformSurvey}.
+blablabla [(${linkToTypeformSurvey})].
 
-blablabla ${linkToPaperBasedSurvey}.
+blablabla [(${linkToPaperBasedSurvey})].
 
 blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablbl

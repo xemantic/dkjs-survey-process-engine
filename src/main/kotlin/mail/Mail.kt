@@ -16,6 +16,10 @@ import javax.inject.Singleton
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotEmpty
 
+/**
+ * Different types of e-mails that can be sent on different
+ * stages of a project.
+ */
 enum class MailType {
 
   INFOMAIL_RETRO,
@@ -32,7 +36,7 @@ enum class MailType {
 }
 
 /**
- * Raw e-mail templates as read from disk
+ * Raw e-mail template as read from disk
  */
 data class MailTemplateData(
   val subject: String,
@@ -41,13 +45,9 @@ data class MailTemplateData(
 )
 
 /**
- * Processed e-mail templates after replacing tokens
+ * Processed e-mail template after replacing tokens
  */
-data class MailData(
-  val subject: String,
-  val bodyText: String,
-  val bodyHTML: String
-)
+typealias MailData = MailTemplateData
 
 @ConstructorBinding
 @ConfigurationProperties("mail")

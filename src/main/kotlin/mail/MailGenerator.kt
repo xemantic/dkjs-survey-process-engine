@@ -35,7 +35,7 @@ class MailGenerator @Inject constructor(
 
   // TODO: this should be completely adjusted now after model is stable
   // TODO: replace by Thymeleaf
-  fun replaceTokens(
+  private fun replaceTokens(
     input: String,
     project: Project,
     typeformLink: String = "",
