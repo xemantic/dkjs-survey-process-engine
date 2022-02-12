@@ -1,15 +1,63 @@
-Bla [(${contactPerson})],
+[( ~{mail/header} )]
 
-blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablabla
+Sie bieten im Rahmen des vom Bundesministerium für Familie, Senioren, Frauen
+und Jugend geförderten Programms AUF!leben der Deutschen Kinder- und
+Jugendstiftung (DKJS) das Projekt [( ${projectName} )], Projektnr.: [( ${projectNumber} )])
+an. In den vergangenen Tagen hätten Sie dazu eine Befragung zur Evaluation
+Ihres Projektes umsetzen müssen. Allerdings gingen keine entsprechenden Daten
+zu Ihrem Projekt bei uns ein.
 
-blablabla [(${projectName})] ([(${projectNumber)]}, [(${startDate})]-[(${endDate})]). Blablablablablablablablablablabla
+Um die Vergleichbarkeit der Evaluationsdaten zu gewährleisten, ist essehr
+wichtig, dass die Befragung schnellstmöglich nachgeholt wird. Bitte bedenken
+Sie dabei, dass auch noch eine zweite Erhebung mit den gleichen Teilnehmer:
+innen zum Ende der Projektlaufzeit geplant ist.
 
-blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablbl
+Im Anhang finden Sie erneut alle wichtigen Informationen zur Evaluation Ihres
+Projektangebots. Bitte schauen Sie sich die Anhänge gründlich an und lesen Sie
+sich das Infomaterial zur Evaluation gut durch. Im Einzelnen finden Sie
 
-blablabla [(${linkToTypeformSurvey})].
+    * Ein Informationsblatt zur Evaluation.
+    * Eine Ausfüllhilfe für Kinder, die den Fragebogen noch nicht selbst
+      ausfüllen können.
 
-blablabla [(${linkToPaperBasedSurvey})].
+Zudem stellen wir Ihnen in dieser Mail Links zu einer Online- sowie zu einer
+Papierversion des Fragebogens zur Verfügung. Wir empfehlen ausdrücklich die
+Nutzung des Online-Bogens, wenn es möglich ist. Der Online-Fragebogen
+unterstützt auch das Ausfüllen via Mobiltelefon.
 
-blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablbl
+Den Link zum Online-Fragebogen finden Sie hier.
+
+Den Link zum Downloaden einer Papierversion des Fragebogens finden Siehier.
+
+Idealerweise findet die Befragung in Präsenz und mittels Online-Befragung
+statt. Falls keine Präsenzveranstaltung mehr möglich ist, leiten Sie den
+Fragebogenlink an alle Projektteilnehmenden mit der Bitte um zügige
+Beantwortung weiter.
+
+Sehr_wichtig ist zudem der Hinweis, dass der Fragebogen vollständig ausgefüllt
+und per Klick abgeschickt werden muss, da unvollständige Bögen von uns nicht
+genutzt werden können und wir sonst gar keine Daten erhalten. Nötigenfalls kann
+eine Pause gemacht und das Browserfenster geschlossen werden – die bereits
+eingegebenen Daten bleiben bei erneutem Öffnen des Links erhalten, bis man den
+vollständigen Bogen abschickt.
+
+Bei der Umsetzung mit Papierbögen gibt es Folgendes zu beachten:
+
+Damit uns die Daten erreichen, müssen alle Papierbögen von Ihnen eingesammelt
+und in die Online-Fragebogenmaske (siehe Link oben) eingefügt werden. Für jeden
+Papier-Fragebogen muss also der Link einmal geöffnet, alle Fragen entsprechend
+der Angaben auf Papier online eingetragen und der Fragebogen online
+abgeschlossen werden. Wir bitten diese Umstände zu entschuldigen, doch wir
+könnten sonst aufgrund der Menge der Projekte, die evaluiert werden, die
+Befragung auf Papier nicht ermöglichen.
+
+Sollten Sie die Befragung papierbasiert durchgeführt haben und sich die
+Verzögerung daraus ergeben, dass die Daten noch online eingegeben werden
+müssen, geben Sie uns bitte kurz per E-Mail an evaluation.aufleben@dkjs.de
+Bescheid und holen Sie die Eingabe nach.
+
+Bei dringenden Fragen oder Problemen können Sie sich per E-Mail
+anevaluation.aufleben@dkjs.de wenden. Wir nehmen dann schnellstmöglich Kontakt
+zu Ihnen auf.
 
 [( ~{mail/footer} )]
