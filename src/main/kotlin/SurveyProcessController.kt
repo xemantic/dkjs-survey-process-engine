@@ -4,6 +4,7 @@
 
 package de.dkjs.survey
 
+import de.dkjs.survey.mail.EmailSenderService
 import de.dkjs.survey.model.Project
 import org.slf4j.Logger
 import org.springframework.stereotype.Controller
@@ -19,7 +20,8 @@ import javax.servlet.http.HttpSession
 class SurveyProcessController @Inject constructor(
   private val logger: Logger,
   private val parser: ProjectCsvParser,
-  private val engine: DkjsSurveyProcessEngine
+  private val engine: DkjsSurveyProcessEngine,
+  private val emailSenderService: EmailSenderService // TODO Delete (EML_TEST)
 ) {
 
 //  @GetMapping()
@@ -52,6 +54,13 @@ class SurveyProcessController @Inject constructor(
       session.setAttribute("hasErrors", true)
     }
 
+    return "redirect:/"
+  }
+
+  // TODO Delete (EML_TEST)
+  @GetMapping("/sendmail")
+  fun mail(): String {
+    emailSenderService.send()
     return "redirect:/"
   }
 
