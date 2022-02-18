@@ -17,6 +17,7 @@ import org.springframework.context.annotation.*
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer
 import org.springframework.mail.MailSender
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
@@ -37,11 +38,6 @@ class DkjsSurveyProcessApplication {
   @Singleton
   @Bean
   fun taskScheduler(): TaskScheduler = ConcurrentTaskScheduler() //single threaded by default
-
-  @Singleton
-  @Bean
-  @Profile("prod") // it will have another implementation in test
-  fun mailSender(): MailSender = JavaMailSenderImpl()
 
   @Bean
   fun repositoryRestConfigurer(): RepositoryRestConfigurer {

@@ -5,8 +5,8 @@
 package de.dkjs.survey.mail
 
 import de.dkjs.survey.model.Project
-import org.springframework.mail.MailSender
-import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Component
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,20 +22,29 @@ interface SurveyEmailSender {
 class DefaultSurveyEmailSender @Inject constructor(
   private val config: MailConfig,
   private val mailGenerator: MailGenerator,
-  private val mailSender: MailSender,
+  private val mailSender: JavaMailSender
 ) : SurveyEmailSender {
 
   override fun send(template: MailType, project: Project) {
     val mail = mailGenerator.generate(template, project)
-    val message = SimpleMailMessage()
-    message.setFrom(config.from)
-    message.setTo(project.contactPerson.email)
-    message.setSubject(mail.subject)
-    message.setText(mail.bodyText)
-    // TODO: Replace `SimpleMailMessage` with `MimeMessage` as shown in
-    // https://springhow.com/spring-boot-email-thymeleaf/
-    // TODO: use `mail.bodyHTML`
+
+    val message = mailSender.createMimeMessage()
+    val mimeMessage = MimeMessageHelper(
+      message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, "UTF-8"
+    ).also {
+      it.setFrom(config.from)
+      it.setTo(project.contactPerson.email)
+      it.setSubject(mail.subject)
+      it.setText(mail.bodyHTML, true)
+
+      // Inline image
+      // it.setText("my text <img src='cid:myLogo'>", true)
+      // it.addInline("myLogo", ClassPathResource("img/mylogo.gif"))
+
+      // Attachment
+      // it.addAttachment("myDocument.pdf", ClassPathResource("doc/myDocument.pdf"))
+    }
+
     mailSender.send(message)
   }
-
 }

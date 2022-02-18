@@ -29,6 +29,6 @@ class SurveyDocumentPdfLinkGenerator(
 ) {
 
   // TODO we need a rule for generating these
-  fun generate(project: Project) = config.linkBase
+  fun generate(project: Project) = "${config.linkBase}#TODO_PDF_LINK"
 
 }

@@ -36,18 +36,12 @@ enum class MailType {
 }
 
 /**
- * Raw e-mail template as read from disk
+ * e-mail content coming from processed e-mail templates
  */
-data class MailTemplateData(
+data class MailData(
   val subject: String,
-  val bodyText: String,
   val bodyHTML: String
 )
-
-/**
- * Processed e-mail template after replacing tokens
- */
-typealias MailData = MailTemplateData
 
 @ConstructorBinding
 @ConfigurationProperties("mail")
@@ -58,27 +52,4 @@ data class MailConfig(
   @Email
   val from: String,
 
-  @NotEmpty
-  val templateDir: String
-
 )
-
-@Configuration
-class MailTemplateSetup {
-
-  @Singleton
-  @Bean
-  @Named("templates")
-  fun templates(
-    config: MailConfig
-  ) = EnumMap(MailType.values().associate {
-    val folder = it.name.lowercase()
-    val dir = File(config.templateDir, folder)
-    it to MailTemplateData(
-      File(dir, "subject.txt").readText(),
-      File(dir, "body.txt").readText(),
-      File(dir, "body.html").readText()
-    )
-  })
-
-}
