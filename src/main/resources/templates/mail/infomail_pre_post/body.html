@@ -1,40 +1,32 @@
 <!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Email</title>
-</head>
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="mail/emailLayout :: layout(~{::title}, ~{::section})">
+<head><title>email</title></head>
 <body>
-<header th:replace="emailFragments :: email_header()"/>
+<section>
 
 <p>vielen Dank für Ihr Projektangebot „<span th:text="${projectName}">{projectName}</span>“ (<span th:text="${startDate}">{startDate}</span>-<span th:text="${endDate}">{endDate}</span>, Projektnr.: <span th:text="${projectNumber}">{projectNumber}</span>) im Rahmen des vom Bundesministerium für Familie, Senioren, Frauen und Jugend geförderten Programms <i>AUF!leben</i> der Deutschen Kinder- und Jugendstiftung (DKJS).</p>
-<p>Ziel von <i>AUF!leben</i> ist es, bundesweit möglichst viele Kinder und Jugendliche mit passenden Projektangeboten
-zu 
-erreichen, um sie so bei der Bewältigung der Pandemiefolgen zu unterstützen. Dazu ist Ihre Mitarbeit zur Evaluation Ihrer Projekte sehr wichtig, denn nur sie ermöglicht die Grundlage einer kontinuierlichen Verbesserung zukünftiger Maßnahmen. Es geht dabei nicht um die Bewertung einzelner Projektangebote oder gar Teilnehmer:innen, sondern darum einzuschätzen, wie wirksam das Programm von AUF!leben darin ist, Kinder und Jugendliche dabei zu unterstützen, die Förderziele in AUF!leben zu erreichen. Die Teilnahme an der Evaluation ist für die Projektteilnehmer:innen vollkommen anonym.</p>
+<p>Ziel von <i>AUF!leben</i> ist es, bundesweit möglichst viele Kinder und Jugendliche mit passenden Projektangeboten zu erreichen, um sie so bei der Bewältigung der Pandemiefolgen zu unterstützen. Dazu ist Ihre Mitarbeit zur Evaluation Ihrer Projekte sehr wichtig, denn nur sie ermöglicht die Grundlage einer kontinuierlichen Verbesserung zukünftiger Maßnahmen. Es geht dabei nicht um die Bewertung einzelner Projektangebote oder gar Teilnehmer:innen, sondern darum einzuschätzen, wie wirksam das Programm von AUF!leben darin ist, Kinder und Jugendliche dabei zu unterstützen, die Förderziele in AUF!leben zu erreichen. Die Teilnahme an der Evaluation ist für die Projektteilnehmer:innen vollkommen anonym.</p>
 <p>Aufgrund der Länge Ihrer Projektlaufzeit sollen zwei Erhebungen - eine Vorher- und eine Nachher-Befragung - stattfinden, um die Förderwirkung messen zu können. Sie bekommen von uns hiermit zunächst den Fragebogen für die ersten Projekttage. Zum Ende der Projektlaufzeit findet dann die zweite Befragung mit einem gleichartigen Fragebogen statt. Sie bekommen zur zweiten Befragung dann eine gesonderte E-Mail mit einem neuen Fragebogen von uns.</p>
-<p>Wir bitten Sie sicher zu stellen, dass die ausgefüllten Fragebögen der Vorher-Befragung <b>spätestens</b><b>eine Woche nach Projektstart</b> bei uns eingehen.</p>
+<p>Wir bitten Sie sicher zu stellen, dass die ausgefüllten Fragebögen der Vorher-Befragung <b>spätestens eine Woche nach Projektstart</b> bei uns eingehen.</p>
 <p>Im Anhang finden Sie nun alle wichtigen Informationen zur Evaluation Ihres Projektangebots. Bitte schauen Sie sich die Anhänge gründlich an und lesen Sie sich das Infomaterial zur Evaluation gut durch. Im Einzelnen finden Sie</p>
 <ul>
     <li>Ein Informationsblatt zur Evaluation.
     <li>Eine Ausfüllhilfe für Kinder, die den Fragebogen noch nicht selbst ausfüllen können.
 </ul>
 <p>Zudem stellen wir Ihnen in dieser Mail Links zu einer Online- sowie zu einer Papierversion des Fragebogens zur Verfügung. Wir empfehlen ausdrücklich die Nutzung des Online-Bogens, wenn es möglich ist. Der Online-Fragebogen unterstützt auch das Ausfüllen via Mobiltelefon.</p>
-<p>Den Link zum Online-Fragebogen finden Sie <u>hier</u>.</p>
-<p>Den Link zum Downloaden einer Papierversion des Fragebogens finden Sie<u>hier</u>.</p>
+<p>Den Link zum Online-Fragebogen finden Sie <a th:href="${formLink}">hier</a>.</p>
+<p>Den Link zum Downloaden einer Papierversion des Fragebogens finden Sie <a th:href="${pdfLink}">hier</a>.</p>
 <p>Die erste Befragung soll an einem von Ihnen gewählten Zeitpunkt in den ersten Tagen der Projektmaßnahmen, möglichst in Präsenz, stattfinden. Sie können selbst am besten einschätzen, an welchem Tag zum Anfang der Maßnahmen möglichst viele Teilnehmer:innen erreicht werden und sich die Befragung gut umsetzen lässt. Planen Sie bitte genügend Zeit zum Ausfüllen des Bogens ein (je nach Alter der Befragten eine halbe bis dreiviertel Stunde).</p>
 <p>Falls Sie die Befragung aus technischen Gründen nicht in Präsenz umsetzen können, bitten wir Sie bei einer Weitergabe des Links an die Teilnehmenden zu sagen, dass die Fragebögen spätestens eine Woche nach Projektstart online ausgefüllt werden sollten.</p>
 <p><u>Sehr wichtig</u> ist zudem der Hinweis, dass der Fragebogen vollständig ausgefüllt und per Klick abgeschickt werden muss, da unvollständige Bögen von uns nicht genutzt werden können und wir sonst gar keine Daten erhalten. Nötigenfalls kann eine Pause gemacht und das Browserfenster geschlossen werden – die bereits eingegebenen Daten bleiben bei erneutem Öffnen des Links erhalten, bis man den vollständigen Bogen abschickt.</p>
 <p>Bei der Umsetzung mit Papierbögen gibt es Folgendes zu beachten:</p>
 <p>Damit uns die Daten erreichen, müssen alle Papierbögen von Ihnen eingesammelt und in die Online-Fragebogenmaske (siehe Link oben) eingefügt werden. Für <u>jeden</u> Papier-Fragebogen muss also der Link einmal geöffnet, alle Fragen entsprechend der Angaben auf Papier online eingetragen und der Fragebogen online abgeschlossen werden. Wir bitten diese Umstände zu entschuldigen, doch wir könnten sonst aufgrund der Menge der Projekte, die evaluiert werden, die Befragung auf Papier nicht ermöglichen.</p>
-<p>Ein paar Tage vor Projektstart schicken wir Ihnen eine Erinnerung zur Evaluation. Bei Fragen können Sie sich zudem per E-Mail an<a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a> wenden. Wir nehmen dann schnellstmöglich Kontakt zu Ihnen auf.</p>
+<p>Ein paar Tage vor Projektstart schicken wir Ihnen eine Erinnerung zur Evaluation. Bei Fragen können Sie sich zudem per E-Mail an <a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a> wenden. Wir nehmen dann schnellstmöglich Kontakt zu Ihnen auf.</p>
 <p>Abschließend der Hinweis: Falls Ihr sich die Projekt <u>Projektstart- und endzeiten</u> Ihres Projekts geändert haben sollten, nehmen Sie bitte die Evaluation entsprechend so vor, dass alle Teilnehmenden erreicht werden können, <u>auch ohne Erinnerungsmail</u>.</p>
 <p>Wir wünschen Ihnen viel Erfolg und Freude bei der Umsetzung Ihrer Projekte!</p>
 
-<footer th:replace="emailFragments :: email_footer()"/>
-
+</section>
 </body>
 </html>
