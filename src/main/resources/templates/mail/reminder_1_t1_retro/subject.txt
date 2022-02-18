@@ -1,1 +1,1 @@
-Fehlende erste Evaluation Ihres AUF!leben-Projekts [( ${project name} )], Projektnr.: [( ${project number} )])
+Fehlende erste Evaluation Ihres AUF!leben-Projekts [( ${projectName} )], Projektnr.: [( ${projectNumber} )]

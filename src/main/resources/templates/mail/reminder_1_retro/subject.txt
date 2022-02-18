@@ -1,1 +1,1 @@
-Erinnerung zur Evaluation Ihres AUF!leben-Projekts [( ${project name} )], Projektnr.: [( ${project number} )])
+Erinnerung zur Evaluation Ihres AUF!leben-Projekts [( ${projectName} )], Projektnr.: [( ${projectNumber} )]
