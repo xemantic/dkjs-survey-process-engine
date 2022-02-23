@@ -18,7 +18,7 @@ class TypeformSurveyLinkGenerator(
 ) {
 
   fun generate(project: Project) =
-    "${config.linkBase}?projectNumber=${project.id}&blocks=${project.name}"
+    config.surveyURL.format(config.linkBase, project.id, project.name)
 
 }
 
@@ -29,6 +29,6 @@ class SurveyDocumentPdfLinkGenerator(
 ) {
 
   // TODO we need a rule for generating these
-  fun generate(project: Project) = "${config.linkBase}#TODO_PDF_LINK"
-
+  fun generate(project: Project) =
+    config.pdfURL.format(config.linkBase, "TODO")
 }

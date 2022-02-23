@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component
 import org.thymeleaf.context.Context
 import org.thymeleaf.spring5.SpringTemplateEngine
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 @Component
 class MailGenerator @Inject constructor(
   private val typeformSurveyLinkGenerator: TypeformSurveyLinkGenerator,

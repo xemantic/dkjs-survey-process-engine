@@ -16,9 +16,6 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.*
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer
-import org.springframework.mail.MailSender
-import org.springframework.mail.javamail.JavaMailSender
-import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
 import org.springframework.web.servlet.config.annotation.CorsRegistry
