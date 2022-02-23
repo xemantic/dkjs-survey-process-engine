@@ -14,9 +14,11 @@ import io.ktor.util.*
 import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
-
 /**
  * [MailGenerator] integration test.
+ *
+ * Verifies that an e-mail subject and html content is
+ * correctly generated based on a [Project] and a [MailType].
  */
 @DkjsSurveyProcessEngineTest
 class MailGeneratorTest {
