@@ -7,9 +7,9 @@ documents:
   pdfURL: "%s?TODO_PDF=%s"
 
 typeform:
-  clientId: 4Z1CzeQcqricrsDxSbNLQPGyqHYYWgJ2VzVQM3WckUdr
-  clientSecret: 5WTbd9Y7ZNy8ytmQUftDUoLBznz8Crcbnoe6NMfqA63B
-  formId: fBwJApPU
+  clientId: ???
+  clientSecret: ???
+  formId: ???
   linkBase: https://typeform-todo.com
   surveyURL: "%s?projectNumber=%s&blocks=%s"
 
@@ -19,8 +19,8 @@ spring:
   mail:
     host: smtp.mailgun.org
     port: 587
-    username: postmaster@sandbox0e985b1d535749f4ab94920d21c709fe.mailgun.org
-    password: 3ed9c6055b5da2db61568018fb4b6640
+    username: postmaster@sandbox????.mailgun.org
+    password: ????
     properties:
       mail:
         smtp:
