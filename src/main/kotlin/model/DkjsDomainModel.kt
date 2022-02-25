@@ -112,7 +112,7 @@ data class SurveyProcess(
   var phase: Phase,
 
   @OneToMany
-  val notifications: MutableList<Notification>
+  val notifications: MutableList<Notification> = mutableListOf()
 
 ) {
 

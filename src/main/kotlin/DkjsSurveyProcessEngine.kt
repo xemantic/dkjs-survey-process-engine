@@ -23,7 +23,7 @@ import javax.inject.Singleton
 @Component
 class DkjsSurveyProcessEngine @Inject constructor(
   private val logger: Logger,
-  private val repository: ProjectRepository,
+  private val projectRepository: ProjectRepository,
   private val linkGenerator: TypeformSurveyLinkGenerator,
   private val emailService: SurveyEmailSender,
   private val taskScheduler: TaskScheduler,
@@ -33,8 +33,8 @@ class DkjsSurveyProcessEngine @Inject constructor(
   @PostConstruct
   fun start() {
     logger.info("Starting DkjsSurveyProcessEngine")
-    val finishedCount = repository.countBySurveyProcessPhase(SurveyProcess.Phase.FINISHED)
-    val unfinished = repository.findBySurveyProcessPhaseNot(SurveyProcess.Phase.FINISHED)
+    val finishedCount = projectRepository.countBySurveyProcessPhase(SurveyProcess.Phase.FINISHED)
+    val unfinished = projectRepository.findBySurveyProcessPhaseNot(SurveyProcess.Phase.FINISHED)
     val unfinishedCount = unfinished.size
     logger.info("  - finished processes: $finishedCount")
     logger.info("  - unfinished processes: $unfinishedCount")
@@ -44,14 +44,13 @@ class DkjsSurveyProcessEngine @Inject constructor(
     logger.info("DkjsSurveyProcessEngine started")
   }
 
-  fun projectExists(projectNumber: String) = repository.existsById(projectNumber)
+  fun projectExists(projectNumber: String) = projectRepository.existsById(projectNumber)
 
   fun handleNew(project: Project) {
     logger.info("Starting process for project: ${project.id}")
-    logger.info("TODO")
     // TODO: create a surveyProcess if it is null
-    //project.surveyProcess.phase = SurveyProcess.Phase.PERSISTED
-    //handle(repository.save(project))
+    project.surveyProcess = SurveyProcess(project.id, SurveyProcess.Phase.PERSISTED)
+    handle(projectRepository.save(project))
   }
 
   private fun handle(project: Project) {
@@ -81,7 +80,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
         send(MailType.REMINDER_1_RETRO)
         // TODO: create a surveyProcess if it is null
         // project.surveyProcess.phase = SurveyProcess.Phase.FINISHED
-        repository.save(project)
+        projectRepository.save(project)
       }
 
     } else {
@@ -139,7 +138,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 //      id = 0,
 //      mailType = mailType
 //    ))
-    repository.save(project)
+    projectRepository.save(project)
   }
 
   private fun scheduleAt(project: Project, date: LocalDateTime, call: () -> Unit) {
