@@ -11,7 +11,7 @@ import de.dkjs.survey.model.SurveyProcess
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import de.dkjs.survey.test.uploadProjectsCsv
 import de.dkjs.survey.test.sleepForMaximalProcessDuration
-import de.dkjs.survey.time.dkjsDate
+import de.dkjs.survey.time.dkjsDateTime
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.verifyOrder
@@ -26,23 +26,23 @@ import java.time.LocalDateTime
 class SurveyProcessTest @Autowired constructor(
   val logger: Logger,
   val surveyEmailSender: SurveyEmailSender,
-  val repository: ProjectRepository,
+  val projectRepository: ProjectRepository,
   val client: WebTestClient
 ) {
 
   // test cases: start
 
   @Test
-  fun `current date greater than project start date`() {
+  fun `test case 1 - project data gets into the system before the project starts`() {
     // given
     val now = LocalDateTime.now()
-    val start = now.minusDays(1)
-    val end = start.plusDays(30)
+    val start = now.plusSeconds(1)
+    val end = start.plusSeconds(1)
 
     // when
     uploadingProjectsCsv("""
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDate}";"${end.dkjsDate}"
+      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
     """)
 
     // then
@@ -50,14 +50,12 @@ class SurveyProcessTest @Autowired constructor(
 
     sleepForMaximalProcessDuration()
 
-    val process = repository.findByIdOrNull("4021000014 -1")
-    process shouldNotBe null
-    process!!.surveyProcess shouldNotBe null
-    process.surveyProcess!!.phase shouldBe SurveyProcess.Phase.FINISHED
+    val project = projectRepository.findByIdOrNull("4021000014 -1")
+    project shouldNotBe null
+    project!!.surveyProcess shouldNotBe null
+    project.surveyProcess!!.phase shouldBe SurveyProcess.Phase.FINISHED
     verifyOrder {
-      surveyEmailSender.send(MailType.INFOMAIL_PRE_POST, any())
       surveyEmailSender.send(MailType.INFOMAIL_RETRO, any())
-      surveyEmailSender.send(MailType.REMINDER_1_T0, any())
     }
   }
 
