@@ -4,18 +4,33 @@
 
 package de.dkjs.survey.mail
 
-import de.dkjs.survey.documents.DocumentsConfig
 import de.dkjs.survey.model.*
+import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
+import de.dkjs.survey.time.dkjsDate
 import de.dkjs.survey.time.parseDkjsDate
-import de.dkjs.survey.typeform.TypeformConfig
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.ktor.util.*
 import org.junit.jupiter.api.Test
-import java.util.*
+import javax.inject.Inject
 
 /**
- * [MailGenerator] unit test.
+ * [MailGenerator] integration test.
+ *
+ * Verifies that an e-mail subject and html content is
+ * correctly generated based on a [Project] and a [MailType].
  */
+@DkjsSurveyProcessEngineTest
 class MailGeneratorTest {
+
+  @Inject
+  private lateinit var mailGenerator: MailGenerator
+
+  @Inject
+  private lateinit var typeformSurveyLinkGenerator: TypeformSurveyLinkGenerator
+
+  @Inject
+  private lateinit var surveyDocumentPdfLinkGenerator: SurveyDocumentPdfLinkGenerator
 
   @Test
   fun `should generate mail from project data and template`() {
@@ -51,63 +66,23 @@ class MailGeneratorTest {
         0
       )
     )
-    val templates = EnumMap<MailType, MailTemplateData>(MailType::class.java)
-    templates[MailType.INFOMAIL_PRE_POST] = MailTemplateData(
-      subject = "Information regarding your AUF!leben-project {projectName}",
-      body = """
-        Dear {projectContact},
-
-        We are contacting you ...
-
-        Regarding project {projectName} (project number: {projectNumber}, {startDate} - {endDate}).
-
-        Please fill the form:
-
-        online: {typeformLink}
-
-        as PDF: {pdfLink}
-
-        Best regards,
-        DKJS
-      """.trimIndent()
-    )
-    val mailGenerator = MailGenerator(
-      templates,
-      TypeformSurveyLinkGenerator(
-        TypeformConfig(
-          clientId = "42",
-          linkBase = "https://typeform/form"
-        ),
-      ),
-      SurveyDocumentPdfLinkGenerator(
-        DocumentsConfig(
-          linkBase = "https://dkjs.de/pdfs"
-        )
-      )
-    )
 
     // when
     val mail = mailGenerator.generate(MailType.INFOMAIL_PRE_POST, project)
 
+    val typeformLink = typeformSurveyLinkGenerator.generate(project)
+    val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
+
     // then
-    mail.subject shouldBe "Information regarding your AUF!leben-project Foo"
-    mail.body shouldBe """
-        Dear Herr Max Mustermann,
-
-        We are contacting you ...
-
-        Regarding project Foo (project number: 42, 15.01.2022 - 30.01.2022).
-
-        Please fill the form:
-
-        online: https://typeform/form?projectNumber=42&blocks=Foo
-
-        as PDF: https://dkjs.de/pdfs
-
-        Best regards,
-        DKJS
-    """.trimIndent()
-
+    mail.subject shouldBe "Informationen zur Evaluation Ihres " +
+            "AUF!leben-Projekts ${project.name}, " +
+            "Projektnr.: ${project.id}"
+    mail.bodyHTML shouldContain "evaluation.aufleben@dkjs.de"
+    mail.bodyHTML shouldContain project.name
+    mail.bodyHTML shouldContain project.id
+    mail.bodyHTML shouldContain project.start.dkjsDate
+    mail.bodyHTML shouldContain project.end.dkjsDate
+    mail.bodyHTML shouldContain typeformLink.escapeHTML()
+    mail.bodyHTML shouldContain pdfLink.escapeHTML()
   }
-
 }

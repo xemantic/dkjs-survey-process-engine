@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout (title, content)">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        p, li { line-height: 140%; }
+    </style>
+    <title th:replace="${title}">Layout Title</title>
+</head>
+
+<body>
+<table border="0" cellspacing="0" width="100%">
+    <tr>
+        <td></td>
+        <td width="960">
+
+            <header>
+                <p>Sehr geehrte Damen und Herren,</p>
+            </header>
+
+            <div th:replace="${content}">
+                <p>Layout content</p>
+            </div>
+
+            <footer>
+                <p>Beste Grüße</p>
+                <p>Ihr AUF!leben-Evaluationsteam</p>
+
+                <h3 style="display: inline-block; padding-top: 10px; border-top: 2px solid #222; margin-top: 30px;">
+                    Team
+                    Evaluation AUF!leben</h3>
+                <p>
+                    <b>Deutsche Kinder- und Jugendstiftung GmbH</b><br>
+                    Geschäftsstelle Berlin<br>
+                    Tempelhofer Ufer 11<br>
+                    10963 Berlin<br>
+                    E-Mail: <a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a>
+                </p>
+            </footer>
+        </td>
+        <td></td>
+    </tr>
+</table>
+</body>
+</html>

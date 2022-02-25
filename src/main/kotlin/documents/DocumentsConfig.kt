@@ -15,6 +15,9 @@ import javax.validation.constraints.NotEmpty
 data class DocumentsConfig(
 
   @NotEmpty
-  val linkBase: String
+  val linkBase: String,
+
+  @NotEmpty
+  val pdfURL: String
 
 )

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="mail/emailLayout :: layout(~{::title}, ~{::section})">
+<head><title>email</title></head>
+<body>
+<section>
+
+<p>vielen Dank für Ihr Projektangebot „<span th:text="${projectName}">{projectName}</span>“ (<span th:text="${startDate}">{startDate}</span>-<span th:text="${endDate}">{endDate}</span>, Projektnr.: <span th:text="${projectNumber}">{projectNumber}</span>) im Rahmen des vom Bundesministerium für Familie, Senioren, Frauen und Jugend geförderten Programms <i>AUF!leben</i> der Deutschen Kinder- und Jugendstiftung (DKJS).</p>
+<p>Ziel von <i>AUF!leben</i> ist es, bundesweit möglichst viele Kinder und Jugendliche mit passenden Projektangeboten zu erreichen, um sie so bei der Bewältigung der Pandemiefolgen zu unterstützen. Dazu ist Ihre Mitarbeit zur Evaluation Ihrer Projekte sehr wichtig, denn nur sie ermöglicht die Grundlage einer kontinuierlichen Verbesserung zukünftiger Maßnahmen. Es geht dabei nicht um die Bewertung einzelner Projektangebote oder gar Teilnehmer:innen, sondern darum einzuschätzen, wie wirksam das Programm von AUF!leben darin ist, Kinder und Jugendliche dabei zu unterstützen, die Förderziele in AUF!leben zu erreichen. Die Teilnahme an der Evaluation ist für die Projektteilnehmer:innen vollkommen anonym.</p>
+<p>Im Anhang finden Sie alle wichtigen Informationen zur Evaluation Ihres Projektangebots. Bitte schauen Sie sich die Anhänge gründlich an und lesen Sie sich das Infomaterial zur Evaluation gut durch. Im Einzelnen finden Sie</p>
+<ul>
+    <li>Ein Informationsblatt zur Evaluation.
+    <li>Eine Ausfüllhilfe für Kinder, die den Fragebogen noch nicht selbst ausfüllen können.
+</ul>
+<p>Zudem stellen wir Ihnen in dieser Mail Links zu einer Online- sowie zu einer Papierversion des Fragebogens zur Verfügung. Wir empfehlen ausdrücklich die Nutzung des Online-Bogens, wenn es möglich ist. Der Online-Fragebogen unterstützt auch das Ausfüllen via Mobiltelefon.</p>
+<p>Den Link zum Online-Fragebogen finden Sie <a th:href="${formLink}">hier</a>.</p>
+<p>Den Link zum Downloaden einer Papierversion des Fragebogens finden Sie <a th:href="${pdfLink}">hier</a>.</p>
+<p>Die Befragung soll an einem von Ihnen gewählten Zeitpunkt in den letzten Tagen der Projektmaßnahmen, möglichst in Präsenz, stattfinden. Sie können selbst am besten einschätzen, an welchem Tag zum Ende der Maßnahmen möglichst viele Teilnehmer:innen erreicht werden und sich die Befragung gut umsetzen lässt. Planen Sie bitte genügend Zeit zum Ausfüllen des Bogens ein (je nach Alter der Befragten eine halbe bis dreiviertel Stunde).</p>
+<p>Falls Sie die Befragung aus technischen Gründen nicht in Präsenz umsetzen können, bitten wir Sie bei einer Weitergabe des Links an die Teilnehmenden zu sagen, dass die Fragebögen spätestens eine Woche nach Projektende online ausgefüllt werden sollten, damit die Projekterfahrung nicht zu weit zurückliegt.</p>
+<p><u>Sehr wichtig</u> ist zudem der Hinweis, dass der Fragebogen vollständig ausgefüllt und per Klick abgeschickt werden muss, da unvollständige Bögen von uns nicht genutzt werden können und wir sonst gar keine Daten erhalten. Nötigenfalls kann eine Pause gemacht und das Browserfenster geschlossen werden – die bereits eingegebenen Daten bleiben bei erneutem Öffnen des Links erhalten, bis man den vollständigen Bogen abschickt.</p>
+<p>Bei der Umsetzung mit Papierbögen gibt es Folgendes zu beachten:</p>
+<p>Damit uns die Daten erreichen, müssen alle Papierbögen von Ihnen eingesammelt und in die Online-Fragebogenmaske (siehe Link oben) eingefügt werden. Für <u>jeden</u> Papier-Fragebogen muss also der Link einmal geöffnet, alle Fragen entsprechend der Angaben auf Papier online eingetragen und der Fragebogen online abgeschlossen werden. Wir bitten diese Umstände zu entschuldigen, doch wir könnten sonst aufgrund der Menge der Projekte, die evaluiert werden, die Befragung auf Papier nicht ermöglichen.</p>
+<p>Ein paar Tage vor Projektende schicken wir Ihnen eine Erinnerung zur Evaluation. Bei Fragen können Sie sich zudem per E-Mail an <a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a> wenden. Wir nehmen dann schnellstmöglich Kontakt zu Ihnen auf.</p>
+<p>Abschließend der Hinweis: Falls Ihr Projekt faktisch vor Schulferien endet, Ihr im Antrag angegebener Projektzeitraum jedoch bis zum Ende der Ferien läuft, nehmen Sie bitte die Evaluation entsprechend so vor, dass alle Teilnehmenden erreicht werden können, <u>auch ohne Erinnerungsmail</u>. Das gilt auch für etwaige <u>Änderungen der Projektstart- und endzeiten</u>.</p>
+<p>Wir wünschen Ihnen viel Erfolg und Freude bei der Umsetzung Ihrer Projekte!</p>
+
+</section>
+</body>
+</html>

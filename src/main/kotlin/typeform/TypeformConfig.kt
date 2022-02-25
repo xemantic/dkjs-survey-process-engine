@@ -18,6 +18,8 @@ data class TypeformConfig(
   val clientId: String,
 
   @NotEmpty
-  val linkBase: String
+  val linkBase: String,
 
+  @NotEmpty
+  val surveyURL: String,
 )

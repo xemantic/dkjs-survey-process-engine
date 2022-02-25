@@ -7,8 +7,8 @@ package de.dkjs.survey.mail
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.springframework.mail.MailSender
-import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
 import javax.inject.Inject
 
 //@DkjsSurveyProcessEngineTest
@@ -17,44 +17,38 @@ import javax.inject.Inject
 //  private var mailSender: MailSender,
 //) {
 
+/**
+ * Tests sending a non-template based simple HTML e-mail
+ */
 @DkjsSurveyProcessEngineTest
 class SurveyEmailSenderTest {
 
   @Inject
-  private lateinit var surveyEmailSender: SurveyEmailSender
+  private lateinit var config: MailConfig
 
   @Inject
-  private lateinit var mailSender: MailSender
+  private lateinit var mailSender: JavaMailSender
 
   @Test
   fun `should send email through configured provider`() {
     // given
 
-//    val project = Project(
-//      projectName = "Foo",
-//      projectNumber = "42",
-//      projectContact = "Herr Max Mustermann",
-//      startDate = parseDate("20220115"),
-//      endDate = parseDate("20220130"),
-//      //goals = setOf(Goal.A),
-//      email = "max@musterman.de",
-//      // next values will not influence mail
-//      //goals = setOf(Goal(1)),
-//      goals = setOf(1),
-//      participantCount = 42,
-//      surveyProcess = SurveyProcess(
-//        phase = SurveyProcess.Phase.PERSISTED,
-//        notifications = mutableListOf()
-//      )
-//    )
+    val message = mailSender.createMimeMessage()
+
+    val mimeMessage = MimeMessageHelper(
+      message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, "UTF-8"
+    ).apply {
+      setFrom(config.from)
+      setTo(config.from)
+      setSubject("test subject")
+      setText("""<html><body>test content</body></html>""", true)
+    }
 
     // when
-    //surveyEmailSender.send(MailType.INFOMAIL_PRE_POST, project)
 
     // then no error should be thrown
     verify {
-      mailSender.send(SimpleMailMessage())
-
+      mailSender.send(message)
     }
     //confirmVerified(mailSender)
   }
