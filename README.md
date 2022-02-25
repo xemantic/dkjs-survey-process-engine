@@ -10,7 +10,12 @@ See
 * https://www.baeldung.com/javax-validation
 * https://stackoverflow.com/questions/41753361/java-bean-validation-and-regex-format-and-length-in-two-different-error-messag
 * https://www.dariawan.com/tutorials/java/java-datetimeformatter-tutorial-examples/
-
+* https://medium.com/@jayphelps/backpressure-explained-the-flow-of-data-through-software-2350b3e77ce7
+* https://developer.typeform.com/get-started/applications/
+* https://ktor.io/docs/auth.html
+* https://github.com/ktorio/ktor-documentation/tree/main/codeSnippets/snippets/client-auth-oauth-google
+* https://www.wimdeblauwe.com/blog/2021/09/14/thymeleaf-iteration-and-fragments/
+ 
 ## Using Kotlin with spring-boot
 
 https://spring.io/guides/tutorials/spring-boot-kotlin/
