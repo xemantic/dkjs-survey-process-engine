@@ -16,6 +16,10 @@ import javax.inject.Singleton
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotEmpty
 
+/**
+ * Different types of e-mails that can be sent on different
+ * stages of a project.
+ */
 enum class MailType {
 
   INFOMAIL_PRE_POST,
@@ -30,14 +34,12 @@ enum class MailType {
 
 }
 
-data class MailTemplateData(
-  val subject: String,
-  val body :String
-)
-
+/**
+ * e-mail content coming from processed e-mail templates
+ */
 data class MailData(
   val subject: String,
-  val body :String
+  val bodyHTML: String
 )
 
 @ConstructorBinding
@@ -49,26 +51,4 @@ data class MailConfig(
   @Email
   val from: String,
 
-  @NotEmpty
-  val templateDir: String
-
 )
-
-@Configuration
-class MailTemplateSetup {
-
-  @Singleton
-  @Bean
-  @Named("templates")
-  fun templates(
-    config: MailConfig
-  ) = EnumMap(MailType.values().associate {
-    val folder = it.name.lowercase()
-    val dir = File(config.templateDir, folder)
-    it to MailTemplateData(
-      File(dir, "subject.txt").readText(),
-      File(dir, "body.txt").readText()
-    )
-  })
-
-}

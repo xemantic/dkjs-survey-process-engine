@@ -1,28 +1,35 @@
 mail:
   from: test@xemantic.com
-  templateDir: src/mail
+  templateDir: src/main/resources/templates/
 
 documents:
   linkBase: https://dkjs.de
+  pdfURL: "%s?TODO_PDF=%s"
 
 typeform:
-  clientId: 1234
-  formId: j6aFWMgy
-  linkBase: https://typeform
+  clientId: ???
+  clientSecret: ???
+  formId: ???
+  linkBase: https://typeform-todo.com
+  surveyURL: "%s?projectNumber=%s&blocks=%s"
 
 spring:
   profiles:
     active: prod
-  #  profiles:
-  #  config:port: 2525
-#    properties:
-#      mail:
-#        debug: false
-#        smtp:
-#          debug: false
-#          auth: true
-#          starttls: true
-#    protocol: smtp
+  mail:
+    host: smtp.mailgun.org
+    port: 587
+    username: postmaster@sandbox????.mailgun.org
+    password: ????
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          starttls:
+            enable: true
 #    test-connection: false
 #    activate:
 #      on-profile: test

@@ -25,8 +25,6 @@ class SurveyProcessController @Inject constructor(
 //  @GetMapping()
 //  fun index() = "index"
 
-  // the controller does nothing at the moment, should support CSV file upload and parsing
-
   @PostMapping("/upload-projects")
   fun uploadProjects(
     @RequestPart("projectsCsv") projectCsv: MultipartFile,
@@ -41,15 +39,24 @@ class SurveyProcessController @Inject constructor(
         "message",
         "Please select a file to upload."
       )
-    }
-
-    try {
-      val projects = parser.parse(projectCsv)
-      session.setAttribute("projects", projects)
-    } catch (e: CsvParsingException) {
-      logger.error("Error parsing CSV file: ${projectCsv.name}", e)
-      attributes.addFlashAttribute("errors", e.rows)
-      session.setAttribute("hasErrors", true)
+    } else {
+      if (projectCsv.originalFilename!!.endsWith(".csv")) {
+        try {
+          val projects = parser.parse(projectCsv)
+          session.setAttribute("projects", projects)
+        } catch (e: CsvParsingException) {
+          logger.error("Error parsing CSV file: ${projectCsv.name}", e)
+          attributes.addFlashAttribute("fileName", projectCsv.originalFilename)
+          attributes.addFlashAttribute("errorRows", e.rows)
+          session.setAttribute("hasErrors", true)
+        }
+      } else {
+        attributes.addFlashAttribute("fileName", projectCsv.originalFilename)
+        attributes.addFlashAttribute(
+          "message",
+          "Only CSV files can be uploaded."
+        )
+      }
     }
 
     return "redirect:/"

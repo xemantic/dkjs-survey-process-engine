@@ -8,6 +8,7 @@ package de.dkjs.survey
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
 import com.opencsv.exceptions.CsvMalformedLineException
+import com.opencsv.processor.RowProcessor
 import de.dkjs.survey.model.*
 import de.dkjs.survey.time.parseDkjsDate
 import org.springframework.core.io.InputStreamSource
@@ -71,46 +72,54 @@ class ProjectCsvParser @Inject constructor(
     null
   )
 
-
-
   /**
    * Parses a CSV file creating a list of items, each item containing
    * a [Project] and null `message` on success, or
    * a null [Project] and a `message` describing why it couldn't be created.
    */
   fun parse(projectCsv: InputStreamSource): List<Project> {
-    val exceptions = mutableListOf<CsvParsingException.CsvRowErrors>()
+    val exceptions = mutableListOf<CsvParsingException.RowResult>()
     val projectIds = mutableListOf<String>()
+    val headerRowsToSkip = 1
 
-    val projects = CSVReaderBuilder(
+    val csvParser = CSVParserBuilder()
+      .withSeparator(';')
+      .withIgnoreLeadingWhiteSpace(true)
+      .build()
+
+    val csvData = CSVReaderBuilder(
       InputStreamReader(projectCsv.inputStream, "UTF-8")
-    ).withCSVParser(
-      CSVParserBuilder().withSeparator(';').build()
-    ).build().use { csvReader ->
+    ).withSkipLines(headerRowsToSkip)
+      .withCSVParser(csvParser).build().use { csvReader ->
       try {
         csvReader.readAll()
       } catch (e: CsvMalformedLineException) {
-        throw CsvParsingException(
-          listOf(
-            CsvParsingException.CsvRowErrors(
-              listOf("malformed csv line")
-            )
-          )
-        )
+        // Error 1: Malformed CSV. No Project nor CSV columns to show.
+        // End of parsing.
+        throw CsvParsingException("Malformed CSV on line ${e.lineNumber}, ${e.message}")
       }
-    }.filterIndexed { i, _ ->
-      // skip header row
-      i > 0
-    }.mapIndexed { rowNumber, rowValues ->
+    }.filter { rowValues -> rowValues.size > 1 || rowValues.first().isNotBlank() }
+
+    if (csvData.isEmpty()) {
+      // Error 2: File too short. No Project nor CSV columns to show.
+      // End of parsing.
+      throw CsvParsingException(
+        "The CSV file should contain at least 2 " +
+                "rows: a header row plus some data rows. Only 1 row found."
+      )
+    }
+
+    val projects = csvData.mapIndexed { rowNumber, rowValues ->
       if (rowValues.size != Column.values().size) {
-        // This exception can not be combined
-        // with other parsing issues. Add the
-        // exception and jump to the next line.
+        // Error 3: Wrong column count. No Project, show CSV columns instead.
+        val columns = rowValues.joinToString(", ", "[", "]")
         exceptions.add(
-          CsvParsingException.CsvRowErrors(
-            listOf("wrong column count")
+          CsvParsingException.RowResult(
+            null, listOf("Wrong column count in line $rowNumber: $columns")
           )
         )
+        // This exception can't be combined with other errors.
+        // Exception added, jump to the next row.
         return@mapIndexed invalidProject()
       }
 
@@ -119,63 +128,61 @@ class ProjectCsvParser @Inject constructor(
       val row = RowParser(rowValues)
 
       val project = Project(
-        id          = row.parse(Column.PROJECT_NUMBER),
-        status      = row.parse(Column.PROJECT_STATUS),
-        name        = row.parse(Column.PROJECT_NAME),
+        id = row.parseString(Column.PROJECT_NUMBER),
+        status = row.parseString(Column.PROJECT_STATUS),
+        name = row.parseString(Column.PROJECT_NAME),
         provider = Provider(
-          id        = row.parse(Column.PROVIDER_NUMBER),
-          name      = row.parse(Column.PROJECT_PROVIDER)
+          id = row.parseString(Column.PROVIDER_NUMBER),
+          name = row.parseString(Column.PROJECT_PROVIDER)
         ),
         contactPerson = ContactPerson(
-          pronoun   = row.parse(Column.PROJECT_PRONOUN),
-          firstName = row.parse(Column.PROJECT_FIRSTNAME),
-          lastName  = row.parse(Column.PROJECT_LASTNAME),
-          email     = row.parse(Column.PROJECT_MAIL)
+          pronoun = row.parseString(Column.PROJECT_PRONOUN),
+          firstName = row.parseString(Column.PROJECT_FIRSTNAME),
+          lastName = row.parseString(Column.PROJECT_LASTNAME),
+          email = row.parseString(Column.PROJECT_MAIL)
         ),
-        goals       = row.parseGoals(),
+        goals = row.parseGoals(),
         participants = Participants(
-          age1to5   = row.parseInt(Column.PARTICIPANTS_AGE1TO5),
-          age6to10  = row.parseInt(Column.PARTICIPANTS_AGE6TO10),
+          age1to5 = row.parseInt(Column.PARTICIPANTS_AGE1TO5),
+          age6to10 = row.parseInt(Column.PARTICIPANTS_AGE6TO10),
           age11to15 = row.parseInt(Column.PARTICIPANTS_AGE11TO15),
           age16to19 = row.parseInt(Column.PARTICIPANTS_AGE16TO19),
           age20to26 = row.parseInt(Column.PARTICIPANTS_AGE20TO26),
-          worker    = row.parseInt(Column.PARTICIPANTS_WORKER)
+          worker = row.parseInt(Column.PARTICIPANTS_WORKER)
         ),
-        start       = row.parseDate(Column.PROJECT_START),
-        end         = row.parseDate(Column.PROJECT_END)
+        start = row.parseDate(Column.PROJECT_START),
+        end = row.parseDate(Column.PROJECT_END)
       )
 
       errorMessages.addAll(row.errors)
 
       val violations = validator.validate(project)
       errorMessages.addAll(
-        violations.map { "invalid value in '${it.propertyPath}': ${it.message}" }
+        violations.map { "Invalid value in '${it.propertyPath}': ${it.message}" }
       )
 
       if (repository.existsById(project.id)) {
-        // This exception can not be combined
-        // with other parsing issues. Add the
-        // exception and jump to the next line.
+        // Error 4: Project exists in DB. Show project.
         exceptions.add(
-          CsvParsingException.CsvRowErrors(
-            listOf("project already exists")
+          CsvParsingException.RowResult(
+            project, listOf("Project already exists in database")
           )
         )
+        // This exception can't be combined with other errors.
+        // Exception added, jump to the next row.
         return@mapIndexed invalidProject()
       }
 
 
 
       if (projectIds.contains(project.id)) {
-        errorMessages.add("duplicate project number")
+        errorMessages.add("Two rows use the same project number: ${project
+          .id} (Only the first one is shown above)")
       }
 
       if (errorMessages.isNotEmpty()) {
-        exceptions.add(
-          CsvParsingException.CsvRowErrors(
-            errorMessages
-          )
-        )
+        // Error 5: Common parse error. Show details.
+        exceptions.add(CsvParsingException.RowResult(project, errorMessages))
       }
 
       projectIds.add(project.id)
@@ -190,22 +197,38 @@ class ProjectCsvParser @Inject constructor(
   }
 }
 
-class CsvParsingException(val rows: List<CsvRowErrors>) :
-  Exception("Error while parsing CSV data: ${rows.flatMap { it.messages }.map { "\n$it" }}") {
-  class CsvRowErrors(val messages: List<String>)
+
+/**
+ * An Exception that contains a List of rows, each row containing a list of
+ * [String] error messages
+ */
+class CsvParsingException(val rows: List<RowResult>) :
+  Exception(
+    "Error while parsing CSV data: ${
+      rows.flatMap { it.messages }.map { "\n$it" }
+    }"
+  ) {
+  constructor(message: String) : this(listOf(RowResult(null, listOf(message))))
+
+  class RowResult(var project: Project?, val messages: List<String>)
 }
 
+/**
+ * Data container constructed from `Array<String>`.
+ * Data can be queried by column index using various methods that convert
+ * strings to other types like `Int`, `LocalDateTime`, or `Set<Int>`.
+ * Conversion errors are collected in a list when calling such methods and
+ * can be queried after parsing is completed.
+ */
 private class RowParser(private val row: Array<String>) {
+  /**
+   * Parse column as `String`
+   */
+  fun parseString(column: Column): String = row[column.ordinal]
 
-  val errors get() = _errors.toList()
-
-  private val _errors = mutableListOf<String>()
-
-  private fun addError(column: Column, e: Exception) =
-    _errors.add("invalid value in '${column.csvName}': ${e.javaClass.simpleName}: ${e.message}")
-
-  fun parse(column: Column): String = row[column.ordinal]
-
+  /**
+   * Parse column as `Int`
+   */
   fun parseInt(column: Column): Int? = try {
     val value = row[column.ordinal]
     if (value == "NA") null else value.toInt()
@@ -214,6 +237,9 @@ private class RowParser(private val row: Array<String>) {
     null
   }
 
+  /**
+   * Parse column as `LocalDateTime`
+   */
   fun parseDate(column: Column): LocalDateTime = try {
     parseDkjsDate(row[column.ordinal])
   } catch (e: DateTimeParseException) {
@@ -221,8 +247,11 @@ private class RowParser(private val row: Array<String>) {
     LocalDateTime.MIN
   }
 
+  /**
+   * Parse column as `Set<Int>` from a comma separated `String`
+   */
   fun parseGoals(): Set<Int> = try {
-    parse(Column.PROJECT_GOALS)
+    parseString(Column.PROJECT_GOALS)
       .splitToSequence(',')
       .map { it.trim().toInt() }
       .toSet()
@@ -231,4 +260,20 @@ private class RowParser(private val row: Array<String>) {
     emptySet()
   }
 
+  /**
+   * Internal list where errors are appended to on failed parsing
+   */
+  private val _errors = mutableListOf<String>()
+
+  /**
+   * Append an error to the list
+   */
+  private fun addError(column: Column, e: Exception) =
+    _errors.add("Invalid value in '${column.csvName}': " +
+            "${e.javaClass.simpleName}: ${e.message}")
+
+  /**
+   * Public error list to query once all parsing is done
+   */
+  val errors get() = _errors.toList()
 }
