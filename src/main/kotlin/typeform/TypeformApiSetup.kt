@@ -84,6 +84,7 @@ class TypeformApiSetup(@Inject private val config: TypeformConfig) {
   @Named("typeformHttpClient")
   fun typeformHttpClient(): HttpClient = client
 
+  @Suppress("unused")
   @PreDestroy
   fun destroy() {
     client.close()

@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 import org.springframework.stereotype.Component
 import javax.inject.Singleton
 
-@Serializable()
+@Serializable
 data class ResponsePage(
 
   @SerialName("total_items")
