@@ -10,13 +10,12 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.mail.MailSender
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestOverridesConfiguration::class)
-@ActiveProfiles("test", inheritProfiles = false)
+@ActiveProfiles(profiles = ["test", "test-settings"], inheritProfiles = false)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 annotation class DkjsSurveyProcessEngineTest
 

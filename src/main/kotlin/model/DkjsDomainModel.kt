@@ -12,7 +12,7 @@ import javax.validation.Valid
 import javax.validation.constraints.*
 
 @Entity
-data class Project(
+class Project(
 
   @Id
   @get:Pattern(regexp = "[0-9- ]+")
@@ -50,7 +50,7 @@ data class Project(
 )
 
 @Entity
-data class Provider(
+class Provider(
 
   @Id
   @get:NotEmpty
@@ -63,7 +63,7 @@ data class Provider(
 
 // all the properties are nullable because they might be specified as "NA" and then null carries an information
 @Embeddable
-data class Participants(
+class Participants(
 
   @get:Min(0)
   val age1to5: Int?,
@@ -86,7 +86,7 @@ data class Participants(
 )
 
 @Embeddable
-data class ContactPerson(
+class ContactPerson(
 
   @get:NotEmpty
   var pronoun: String,
@@ -104,7 +104,7 @@ data class ContactPerson(
 )
 
 @Entity
-data class SurveyProcess(
+class SurveyProcess(
 
   @Id
   val id: String, // should be always the same as project id
@@ -125,7 +125,7 @@ data class SurveyProcess(
 }
 
 @Entity
-data class Notification(
+class Notification(
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE)

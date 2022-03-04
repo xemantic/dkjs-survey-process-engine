@@ -4,86 +4,85 @@
 
 package de.dkjs.survey.typeform
 
-import de.dkjs.survey.oauth.TokenInfo
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.auth.*
 import io.ktor.client.features.auth.providers.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
-import io.ktor.client.request.forms.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.validation.annotation.Validated
 import javax.annotation.PreDestroy
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import javax.validation.constraints.NotEmpty
 
-@Configuration
-class TypeformApiSetup(
-  @Inject private val config: TypeformConfig
+@ConstructorBinding
+@ConfigurationProperties("typeform")
+@Validated
+data class TypeformConfig(
+
+  @NotEmpty
+  val clientId: String,
+
+  @NotEmpty
+  val linkBase: String,
+
+  @NotEmpty
+  val surveyURL: String,
+
+  val forms: Forms
+
 ) {
 
-  private lateinit var client: HttpClient
+  data class Forms(
 
-  @Singleton
-  @Bean
-  @Named("typeformHttpClient")
-  fun typeformHttpClient(): HttpClient {
-    val authorizationCode = "1234"
+    @NotEmpty
+    val pre: String,
 
-    val tokenClient = HttpClient(CIO) {
-      install(JsonFeature) {
-        serializer = KotlinxSerializer()
-      }
+    @NotEmpty
+    val post: String,
+
+    @NotEmpty
+    val gPre: String,
+
+    @NotEmpty
+    val gPost: String
+
+  )
+
+}
+
+@Configuration
+class TypeformApiSetup(@Inject private val config: TypeformConfig) {
+
+  private val client: HttpClient = HttpClient(CIO) {
+    install(JsonFeature) {
+      serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+      })
     }
-
-    return HttpClient(CIO) {
-      expectSuccess = false
-      install(JsonFeature) {
-        serializer = KotlinxSerializer()
-      }
-      install(Auth) {
-        lateinit var tokenInfo: TokenInfo
-        var refreshTokenInfo: TokenInfo
-
-        bearer {
-          loadTokens {
-            tokenInfo = tokenClient.submitForm(
-              url = "https://api.typeform.com/oauth/authorize",
-              formParameters = Parameters.build {
-                append("grant_type", "authorization_code")
-                append("code", authorizationCode)
-                append("client_id", config.clientId)
-                //append("redirect_uri", redirectUri)
-              }
-            )
-            BearerTokens(
-              accessToken = tokenInfo.accessToken,
-              refreshToken = tokenInfo.refreshToken!!
-            )
-          }
-
-          refreshTokens { unauthorizedResponse: HttpResponse ->
-            refreshTokenInfo = tokenClient.submitForm(
-              url = "https://api.typeform.com/oauth/authorize",
-              formParameters = Parameters.build {
-                append("grant_type", "refresh_token")
-                append("client_id", config.clientId)
-                append("refresh_token", tokenInfo.refreshToken!!)
-              }
-            )
-            BearerTokens(
-              accessToken = refreshTokenInfo.accessToken,
-              refreshToken = tokenInfo.refreshToken!!
-            )
-          }
+    install(Auth) {
+      bearer {
+        loadTokens {
+          BearerTokens(
+            accessToken = config.clientId,
+            refreshToken = ""
+          )
         }
       }
     }
   }
+
+  @Singleton
+  @Bean
+  @Named("typeformHttpClient")
+  fun typeformHttpClient(): HttpClient = client
 
   @PreDestroy
   fun destroy() {

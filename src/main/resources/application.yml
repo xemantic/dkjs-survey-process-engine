@@ -7,11 +7,13 @@ documents:
   pdfURL: "%s?TODO_PDF=%s"
 
 typeform:
-  clientId: ???
-  clientSecret: ???
-  formId: ???
   linkBase: https://typeform-todo.com
   surveyURL: "%s?projectNumber=%s&blocks=%s"
+  forms:
+    pre: O5yJuV9b
+    post: waBTYjMv
+    gPre: XYMgbimk
+    gPost: W1x2Lslz
 
 spring:
   profiles:
