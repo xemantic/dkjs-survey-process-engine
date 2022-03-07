@@ -6,8 +6,8 @@ package de.dkjs.survey
 
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.mail.MailType
-import de.dkjs.survey.mail.TypeformSurveyLinkGenerator
 import de.dkjs.survey.model.*
+import de.dkjs.survey.typeform.link.TypeformSurveyLinkGenerator
 import de.dkjs.survey.typeform.response.TypeformResponseChecker
 import org.slf4j.Logger
 import org.springframework.scheduling.TaskScheduler
@@ -58,7 +58,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
     logger.debug("Handling project: ${project.id}")
 
-    fun send(mailType: MailType) = send(project, mailType)
+    fun send(mailType: MailType, scenarioType: ScenarioType) = send(mailType, project, scenarioType)
     fun scheduleAt(date: LocalDateTime, call: () -> Unit) = scheduleAt(project, date, call)
     fun hasNoAnswers() = typeformChecker.countSurveys("foo", project.id) == 0 // TODO we need form selecting logic here
 
@@ -68,6 +68,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
     // TODO is it really a good condition to trigger short scenario?
     val shortScenario = projectDurationDays <= 13
 
+    val scenarioType = if (shortScenario) ScenarioType.PRE else ScenarioType.POST
     if (shortScenario) {
 
       logger.debug("Duration longer than 2 weeks = short short scenario for project: ${project.id}")
@@ -78,7 +79,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 //      }
 
       scheduleAt(project.end.minusWeeks(2)) {
-        send(MailType.REMINDER_1_RETRO)
+        send(MailType.REMINDER_1_RETRO, scenarioType)
         // TODO: create a surveyProcess if it is null
         // project.surveyProcess.phase = SurveyProcess.Phase.FINISHED
         repository.save(project)
@@ -101,29 +102,29 @@ class DkjsSurveyProcessEngine @Inject constructor(
       if (now.isAfter(project.start.plusWeeks(1))) {
 
         if (projectDurationDays < 14) {
-          send(MailType.REMINDER_1_RETRO)
+          send(MailType.REMINDER_1_RETRO, scenarioType)
         } else {
-          send(MailType.REMINDER_1_T0)
+          send(MailType.REMINDER_1_T0, scenarioType)
         }
 
         scheduleAt(project.start) { //TODO Julia - start date or end date?
           if (hasNoAnswers()) {
-            send(MailType.REMINDER_2_T0)
+            send(MailType.REMINDER_2_T0, scenarioType)
           }
         }
 
-        send(MailType.REMINDER_1_T0)
+        send(MailType.REMINDER_1_T0, scenarioType)
 
       }
 
       scheduleAt(project.end.minusWeeks(1)) {
-        send(MailType.INFOMAIL_T1)
+        send(MailType.INFOMAIL_T1, scenarioType)
       }
 
       scheduleAt(project.end) {
-        send(MailType.REMINDER_1_T1)
+        send(MailType.REMINDER_1_T1, scenarioType)
         if (hasNoAnswers()) {
-          send(MailType.REMINDER_2_RETRO)
+          send(MailType.REMINDER_2_RETRO, scenarioType)
         }
         // TODO when is it finalized?
       }
@@ -131,9 +132,13 @@ class DkjsSurveyProcessEngine @Inject constructor(
     }
   }
 
-  private fun send(project: Project, mailType: MailType) {
-    logger.debug("Sending ${mailType.name} mail to project: ${project.id}")
-    emailService.send(mailType, project)
+  private fun send(
+    mailType: MailType,
+    project: Project,
+    scenarioType: ScenarioType
+  ) {
+    logger.debug("Sending ${mailType.name} mail to project: ${project.id} in scenario ${scenarioType.name}")
+    emailService.send(mailType, project, scenarioType)
     // TODO: init project.surveyProcess
 //    project.surveyProcess.notifications.add(Notification(
 //      id = 0,

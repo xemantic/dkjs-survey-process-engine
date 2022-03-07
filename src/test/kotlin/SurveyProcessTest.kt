@@ -7,6 +7,7 @@ package de.dkjs.survey
 import de.dkjs.survey.mail.MailType
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.model.ProjectRepository
+import de.dkjs.survey.model.ScenarioType
 import de.dkjs.survey.model.SurveyProcess
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import de.dkjs.survey.test.uploadProjectsCsv
@@ -55,9 +56,9 @@ class SurveyProcessTest @Autowired constructor(
     process!!.surveyProcess shouldNotBe null
     process.surveyProcess!!.phase shouldBe SurveyProcess.Phase.FINISHED
     verifyOrder {
-      surveyEmailSender.send(MailType.INFOMAIL_PRE_POST, any())
-      surveyEmailSender.send(MailType.INFOMAIL_RETRO, any())
-      surveyEmailSender.send(MailType.REMINDER_1_T0, any())
+      surveyEmailSender.send(MailType.INFOMAIL_PRE_POST, any(), ScenarioType.PRE)
+      surveyEmailSender.send(MailType.INFOMAIL_RETRO, any(), ScenarioType.PRE)
+      surveyEmailSender.send(MailType.REMINDER_1_T0, any(), ScenarioType.PRE)
     }
   }
 

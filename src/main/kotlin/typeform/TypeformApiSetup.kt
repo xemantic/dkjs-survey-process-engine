@@ -4,6 +4,7 @@
 
 package de.dkjs.survey.typeform
 
+import de.dkjs.survey.model.ScenarioType
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.auth.*
@@ -32,9 +33,6 @@ data class TypeformConfig(
   @NotEmpty
   val linkBase: String,
 
-  @NotEmpty
-  val surveyURL: String,
-
   val forms: Forms
 
 ) {
@@ -48,12 +46,21 @@ data class TypeformConfig(
     val post: String,
 
     @NotEmpty
-    val gPre: String,
+    val goalGPre: String,
 
     @NotEmpty
-    val gPost: String
+    val goalGPost: String
 
-  )
+  ) {
+
+    fun getFormId(type: ScenarioType): String = when (type) {
+      ScenarioType.PRE -> pre
+      ScenarioType.POST -> post
+      ScenarioType.GOAL_G_PRE -> goalGPre
+      ScenarioType.GOAL_G_POST -> goalGPost
+    }
+
+  }
 
 }
 

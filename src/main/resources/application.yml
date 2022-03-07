@@ -12,8 +12,8 @@ typeform:
   forms:
     pre: O5yJuV9b
     post: waBTYjMv
-    gPre: XYMgbimk
-    gPost: W1x2Lslz
+    goalGPre: XYMgbimk
+    goalGPost: W1x2Lslz
 
 spring:
   profiles:
