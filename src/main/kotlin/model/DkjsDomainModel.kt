@@ -11,6 +11,13 @@ import javax.persistence.*
 import javax.validation.Valid
 import javax.validation.constraints.*
 
+enum class ScenarioType {
+  PRE,
+  POST,
+  GOAL_G_PRE,
+  GOAL_G_POST
+}
+
 @Entity
 class Project(
 
