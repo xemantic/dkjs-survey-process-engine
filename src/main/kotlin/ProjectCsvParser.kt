@@ -8,10 +8,10 @@ package de.dkjs.survey
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
 import com.opencsv.exceptions.CsvMalformedLineException
-import com.opencsv.processor.RowProcessor
 import de.dkjs.survey.model.*
 import de.dkjs.survey.time.parseDkjsDate
 import org.springframework.core.io.InputStreamSource
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.io.InputStreamReader
 import java.time.LocalDateTime
@@ -48,7 +48,8 @@ private enum class Column {
 @Singleton
 @Component
 class ProjectCsvParser @Inject constructor(
-  private val repository: ProjectRepository,
+  private val projectRepository: ProjectRepository,
+  private val providerRepository: ProviderRepository,
   private val validator: Validator
 ) {
 
@@ -127,6 +128,17 @@ class ProjectCsvParser @Inject constructor(
 
       val row = RowParser(rowValues)
 
+      val providerId = row.parseString(Column.PROVIDER_NUMBER)
+      val providerName = row.parseString(Column.PROJECT_PROVIDER)
+      val provider: Provider = providerRepository.findByIdOrNull(providerId) ?: Provider(
+        id = providerId,
+        name = providerName
+      )
+
+      if (provider.name != providerName) {
+        errorMessages.add("Cannot change provider name from '${provider.name}' to '$providerName' for provider number: $providerId")
+      }
+
       val project = Project(
         id = row.parseString(Column.PROJECT_NUMBER),
         status = row.parseString(Column.PROJECT_STATUS),
@@ -161,7 +173,7 @@ class ProjectCsvParser @Inject constructor(
         violations.map { "Invalid value in '${it.propertyPath}': ${it.message}" }
       )
 
-      if (repository.existsById(project.id)) {
+      if (projectRepository.existsById(project.id)) {
         // Error 4: Project exists in DB. Show project.
         exceptions.add(
           CsvParsingException.RowResult(
