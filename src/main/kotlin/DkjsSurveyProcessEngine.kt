@@ -60,7 +60,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
     fun send(mailType: MailType, scenarioType: ScenarioType) = send(mailType, project, scenarioType)
     fun scheduleAt(date: LocalDateTime, call: () -> Unit) = scheduleAt(project, date, call)
-    fun hasNoAnswers() = typeformChecker.countSurveys("foo", project.id) == 0 // TODO we need form selecting logic here
+    fun hasNoAnswers() = typeformChecker.countSurveys(project.id, ScenarioType.PRE) == 0 // TODO we need form selecting logic here
 
     val now = LocalDateTime.now()
 
