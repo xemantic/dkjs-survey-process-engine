@@ -4,10 +4,12 @@
 
 package de.dkjs.survey.mail
 
+import de.dkjs.survey.documents.SurveyDocumentPdfLinkGenerator
 import de.dkjs.survey.model.*
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import de.dkjs.survey.time.dkjsDate
 import de.dkjs.survey.time.parseDkjsDate
+import de.dkjs.survey.typeform.link.TypeformSurveyLinkGenerator
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.util.*
@@ -68,9 +70,14 @@ class MailGeneratorTest {
     )
 
     // when
-    val mail = mailGenerator.generate(MailType.INFOMAIL_PRE_POST, project)
+    val mail = mailGenerator.generate(
+      MailType.INFOMAIL_PRE_POST, project, ScenarioType.PRE
+    )
 
-    val typeformLink = typeformSurveyLinkGenerator.generate(project)
+    // TODO which SenarioType should be chosen?
+    val typeformLink = typeformSurveyLinkGenerator.generate(
+      project.id, project.goals, ScenarioType.PRE
+    )
     val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
 
     // then

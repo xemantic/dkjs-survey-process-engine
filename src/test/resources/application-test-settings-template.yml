@@ -1,0 +1,4 @@
+# copy this file under name application-test-settings.yml
+
+typeform:
+  clientId:

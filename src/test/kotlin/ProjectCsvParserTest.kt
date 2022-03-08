@@ -6,6 +6,7 @@ package de.dkjs.survey
 
 import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.ProjectRepository
+import de.dkjs.survey.test.shouldReport
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -216,4 +217,41 @@ class ProjectCsvParserTest {
       "Project already exists in database"
     )
   }
+
+  @Test
+  fun `should not parse project without goal 01`() {
+    // given
+    val goals = "02,03"
+    val csv = """
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Foo";0;0;250;50;0;NA;"$goals";"22.11.2021";"31.08.2022"
+    """.trimIndent()
+
+    shouldThrow<CsvParsingException> {
+
+      // when
+      csvToProjects(csv)
+
+      // then
+    } shouldReport "goal 01 is mandatory"
+  }
+
+  @Test
+  fun `should not parse project with more than 2 extra goals`() {
+    // given
+    val goals = "01,02,03,04"
+    val csv = """
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Foo";0;0;250;50;0;NA;"$goals";"22.11.2021";"31.08.2022"
+    """.trimIndent()
+
+    shouldThrow<CsvParsingException> {
+
+      // when
+      csvToProjects(csv)
+
+      // then
+    } shouldReport "More than 2 extra goals defined"
+  }
+
 }

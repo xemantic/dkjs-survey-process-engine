@@ -7,32 +7,17 @@ documents:
   pdfURL: "%s?TODO_PDF=%s"
 
 typeform:
-  clientId: ???
-  clientSecret: ???
-  formId: ???
   linkBase: https://typeform-todo.com
   surveyURL: "%s?projectNumber=%s&blocks=%s"
+  forms:
+    pre: O5yJuV9b
+    post: waBTYjMv
+    goalGPre: XYMgbimk
+    goalGPost: W1x2Lslz
 
 spring:
   profiles:
-    active: prod
-  mail:
-    host: smtp.mailgun.org
-    port: 587
-    username: postmaster@sandbox????.mailgun.org
-    password: ????
-    properties:
-      mail:
-        smtp:
-          auth: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
-          starttls:
-            enable: true
-#    test-connection: false
-#    activate:
-#      on-profile: test
+    active: prod, settings
   datasource:
     driver-class-name: org.hsqldb.jdbc.JDBCDriver
     url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1

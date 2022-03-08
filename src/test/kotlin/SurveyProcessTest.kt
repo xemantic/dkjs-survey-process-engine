@@ -7,6 +7,7 @@ package de.dkjs.survey
 import de.dkjs.survey.mail.MailType
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.model.ProjectRepository
+import de.dkjs.survey.model.ScenarioType
 import de.dkjs.survey.model.SurveyProcess
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import de.dkjs.survey.test.uploadProjectsCsv
