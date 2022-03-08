@@ -70,7 +70,6 @@ class TypeformApiSetup(@Inject private val config: TypeformConfig) {
   private val client: HttpClient = HttpClient(CIO) {
     install(JsonFeature) {
       serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
-        isLenient = true
         ignoreUnknownKeys = true
       })
     }
