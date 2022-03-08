@@ -4,8 +4,11 @@
 
 package de.dkjs.survey.mail
 
+import de.dkjs.survey.documents.SurveyDocumentPdfLinkGenerator
 import de.dkjs.survey.model.Project
+import de.dkjs.survey.model.ScenarioType
 import de.dkjs.survey.time.dkjsDate
+import de.dkjs.survey.typeform.link.TypeformSurveyLinkGenerator
 import org.springframework.stereotype.Component
 import org.thymeleaf.context.Context
 import org.thymeleaf.spring5.SpringTemplateEngine
@@ -22,9 +25,10 @@ class MailGenerator @Inject constructor(
 
   fun generate(
     mailType: MailType,
-    project: Project
+    project: Project,
+    scenarioType: ScenarioType
   ): MailData {
-    val formLink = typeformSurveyLinkGenerator.generate(project)
+    val formLink = typeformSurveyLinkGenerator.generate(project.id, project.goals, scenarioType)
     val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
 
     val ctx = Context().apply {
