@@ -56,7 +56,7 @@ class SurveyProcessTest @Autowired constructor(
     project!!.surveyProcess shouldNotBe null
     project.surveyProcess!!.phase shouldBe SurveyProcess.Phase.FINISHED
     verifyOrder {
-      surveyEmailSender.send(MailType.INFOMAIL_RETRO, any())
+      surveyEmailSender.send(MailType.INFOMAIL_RETRO, any(), ScenarioType.PRE)
     }
   }
 
