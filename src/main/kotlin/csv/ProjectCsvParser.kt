@@ -3,7 +3,7 @@
  * Copyright (c) 2022 Abe Pazos / Xemantic
  */
 
-package de.dkjs.survey
+package de.dkjs.survey.csv
 
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
@@ -80,7 +80,7 @@ class ProjectCsvParser @Inject constructor(
    */
   fun parse(projectCsv: InputStreamSource): List<Project> {
     val exceptions = mutableListOf<CsvParsingException.RowResult>()
-    val projectIds = mutableListOf<String>()
+    val projectIdToRowMap = mutableMapOf<String, Int>()
     val headerRowsToSkip = 1
 
     val csvParser = CSVParserBuilder()
@@ -97,7 +97,7 @@ class ProjectCsvParser @Inject constructor(
       } catch (e: CsvMalformedLineException) {
         // Error 1: Malformed CSV. No Project nor CSV columns to show.
         // End of parsing.
-        throw CsvParsingException("Malformed CSV on line ${e.lineNumber}, ${e.message}")
+        throw CsvParsingException(rows = listOf(CsvParsingException.RowResult(null, e.lineNumber.toInt(), listOf(e.message!!))))
       }
     }.filter { rowValues -> rowValues.size > 1 || rowValues.first().isNotBlank() }
 
@@ -116,7 +116,7 @@ class ProjectCsvParser @Inject constructor(
         val columns = rowValues.joinToString(", ", "[", "]")
         exceptions.add(
           CsvParsingException.RowResult(
-            null, listOf("Wrong column count in line $rowNumber: $columns")
+            null, rowNumber, listOf("Wrong column count in line $rowNumber: $columns")
           )
         )
         // This exception can't be combined with other errors.
@@ -177,7 +177,7 @@ class ProjectCsvParser @Inject constructor(
         // Error 4: Project exists in DB. Show project.
         exceptions.add(
           CsvParsingException.RowResult(
-            project, listOf("Project already exists in database")
+            project, rowNumber, listOf("Project already exists in database")
           )
         )
         // This exception can't be combined with other errors.
@@ -185,44 +185,43 @@ class ProjectCsvParser @Inject constructor(
         return@mapIndexed invalidProject()
       }
 
-
-
-      if (projectIds.contains(project.id)) {
-        errorMessages.add("Two rows use the same project number: ${project
-          .id} (Only the first one is shown above)")
+      val previousRowNumber = projectIdToRowMap[project.id]
+      if (previousRowNumber == null) {
+        projectIdToRowMap[project.id] = rowNumber
+      } else {
+        errorMessages.add("'project.number' already declared in row: $previousRowNumber")
       }
 
       if (errorMessages.isNotEmpty()) {
         // Error 5: Common parse error. Show details.
-        exceptions.add(CsvParsingException.RowResult(project, errorMessages))
+        exceptions.add(CsvParsingException.RowResult(project, rowNumber, errorMessages))
       }
 
-      projectIds.add(project.id)
       project
     }
 
     if (exceptions.isNotEmpty()) {
-      throw CsvParsingException(exceptions)
+      throw CsvParsingException(rows = exceptions)
     }
 
     return projects
   }
 }
 
-
 /**
  * An Exception that contains a List of rows, each row containing a list of
  * [String] error messages
  */
-class CsvParsingException(val rows: List<RowResult>) :
-  Exception(
-    "Error while parsing CSV data: ${
-      rows.flatMap { it.messages }.map { "\n$it" }
-    }"
-  ) {
-  constructor(message: String) : this(listOf(RowResult(null, listOf(message))))
+class CsvParsingException(message: String? = null, val rows: List<RowResult> = emptyList()) : Exception(
+  message ?: "Invalid data in rows: ${rows.map { it.row + 1 }.joinToString(", ")}"
+) {
 
-  class RowResult(var project: Project?, val messages: List<String>)
+  class RowResult(
+    val project: Project?,
+    val row: Int,
+    val messages: List<String>
+  )
+
 }
 
 /**
