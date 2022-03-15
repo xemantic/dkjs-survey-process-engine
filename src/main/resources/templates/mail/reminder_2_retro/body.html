@@ -2,26 +2,66 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
       th:replace="mail/emailLayout :: layout(~{::title}, ~{::section})">
-<head><title>email</title></head>
+<head><title>REMAINDER_2_RETRO</title><meta charset="utf-8"></head>
 <body>
 <section>
 
-<p>Sie bieten im Rahmen des vom Bundesministerium für Familie, Senioren, Frauen und Jugend geförderten Programms <i>AUF!leben</i> der Deutschen Kinder- und Jugendstiftung (DKJS) das Projekt <span th:text="${projectName}">{projectName}</span>, Projektnr.: <span th:text="${projectNumber}">{projectNumber}</span>) an. In den vergangenen Tagen hätten Sie dazu eine Befragung zur Evaluation Ihres Projektes umsetzen müssen. Allerdings gingen keine entsprechenden Daten zu Ihrem Projekt bei uns ein.</p>
-<p>Um die Vergleichbarkeit der Evaluationsdaten zu gewährleisten, ist es<b>sehr wichtig</b>, dass die Befragung <b>schnellstmöglich</b> nachgeholt wird.</p>
-<p>Im Anhang finden Sie erneut alle wichtigen Informationen zur Evaluation Ihres Projektangebots. Bitte schauen Sie sich die Anhänge gründlich an und lesen Sie sich das Infomaterial zur Evaluation gut durch. Im Einzelnen finden Sie</p>
-<ul>
-    <li>Ein Informationsblatt zur Evaluation.
-    <li>Eine Ausfüllhilfe für Kinder, die den Fragebogen noch nicht selbst ausfüllen können.
-</ul>
-<p>Zudem stellen wir Ihnen in dieser Mail Links zu einer Online- sowie zu einer Papierversion des Fragebogens zur Verfügung. Wir empfehlen ausdrücklich die Nutzung des Online-Bogens, wenn es möglich ist. Der Online-Fragebogen unterstützt auch das Ausfüllen via Mobiltelefon.</p>
-<p>Den Link zum Online-Fragebogen finden Sie <a th:href="${formLink}">hier</a>.</p>
-<p>Den Link zum Downloaden einer Papierversion des Fragebogens finden Sie <a th:href="${pdfLink}">hier</a>.</p>
-<p>Idealerweise findet die Befragung in Präsenz und mittels Online-Befragung statt. Falls keine Präsenzveranstaltung mehr möglich ist, leiten Sie den Fragebogenlink an alle Projektteilnehmenden mit der Bitte um <b>zügige</b> Beantwortung weiter.</p>
-<p><u>Sehr wichtig</u> ist zudem der Hinweis, dass der Fragebogen vollständig ausgefüllt und per Klick abgeschickt werden muss, da unvollständige Bögen von uns nicht genutzt werden können und wir sonst gar keine Daten erhalten. Nötigenfalls kann eine Pause gemacht und das Browserfenster geschlossen werden – die bereits eingegebenen Daten bleiben bei erneutem Öffnen des Links erhalten, bis man den vollständigen Bogen abschickt.</p>
-<p>Bei der Umsetzung mit Papierbögen gibt es Folgendes zu beachten:</p>
-<p>Damit uns die Daten erreichen, müssen alle Papierbögen von Ihnen eingesammelt und in die Online-Fragebogenmaske (siehe Link oben) eingefügt werden. Für <u>jeden</u> Papier-Fragebogen muss also der Link einmal geöffnet, alle Fragen entsprechend der Angaben auf Papier online eingetragen und der Fragebogen online abgeschlossen werden. Wir bitten diese Umstände zu entschuldigen, doch wir könnten sonst aufgrund der Menge der Projekte, die evaluiert werden, die Befragung auf Papier nicht ermöglichen.</p>
-<p>Sollten Sie die Befragung papierbasiert durchgeführt haben und sich die Verzögerung daraus ergeben, dass die Daten noch online eingegeben werden müssen, geben Sie uns bitte kurz per E-Mail an <u><a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a></u> Bescheid und holen Sie die Eingabe nach.</p>
-<p>Bei Fragen oder Problemen können Sie sich per E-Mail an <u><a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a></u> wenden. Wir nehmen dann schnellstmöglich Kontakt zu Ihnen auf.</p>
+    <p>Sehr geehrte Damen und Herren,
+    <p>Sie bieten im Rahmen des vom Bundesministerium für Familie,
+        Senioren, Frauen und Jugend geförderten Programms <i>AUF!leben</i>
+        der Deutschen Kinder- und Jugendstiftung (DKJS) das Projekt
+        <span th:text="${projectName}">{projectName}</span>, Projektnr.: <span th:text="${projectNumber}">{projectNumber}</span>) an. In den vergangenen
+        Tagen hätten Sie dazu eine Befragung zur Evaluation Ihres Projektes
+        umsetzen müssen. Allerdings gingen keine entsprechenden Daten zu
+        Ihrem Projekt bei uns ein.
+    <p>Um die Vergleichbarkeit der Evaluationsdaten zu gewährleisten,
+        ist es <b>sehr wichtig</b> , dass die Befragung
+        <b>schnellstmöglich</b> nachgeholt wird.
+    <p>Im Anhang finden Sie erneut alle wichtigen Informationen zur
+        Evaluation Ihres Projektangebots. Bitte schauen Sie sich die
+        Anhänge gründlich an und lesen Sie sich das Infomaterial zur
+        Evaluation gut durch. Im Einzelnen finden Sie
+    <ul>
+        <li>Ein Informationsblatt zur Evaluation.
+        <li>Eine Ausfüllhilfe für Kinder, die den Fragebogen noch nicht
+            selbst ausfüllen können.</ul>
+    <p>Zudem stellen wir Ihnen in dieser Mail Links zu einer Online-
+        sowie zu einer Papierversion des Fragebogens zur Verfügung. Wir
+        empfehlen ausdrücklich die Nutzung des Online-Bogens, wenn es
+        möglich ist. Der Online-Fragebogen unterstützt auch das Ausfüllen
+        via Mobiltelefon.
+    <p>Den Link zum Online-Fragebogen finden Sie <a th:href="${formLink}">hier</a> .
+    <p>Den Link zum Downloaden einer Papierversion des Fragebogens
+        finden Sie <a th:href="${pdfLink}">hier</a> .
+    <p>Idealerweise findet die Befragung in Präsenz und mittels
+        Online-Befragung statt. Falls keine Präsenzveranstaltung mehr
+        möglich ist, leiten Sie den Fragebogenlink an alle
+        Projektteilnehmenden mit der Bitte um <b>zügige</b> Beantwortung
+        weiter.
+    <p><u>Sehr wichtig</u> ist zudem der Hinweis, dass der Fragebogen
+        vollständig ausgefüllt und per Klick abgeschickt werden muss, da
+        unvollständige Bögen von uns nicht genutzt werden können und wir
+        sonst gar keine Daten erhalten. Nötigenfalls kann eine Pause
+        gemacht und das Browserfenster geschlossen werden – die bereits
+        eingegebenen Daten bleiben bei erneutem Öffnen des Links erhalten,
+        bis man den vollständigen Bogen abschickt.
+    <p>Bei der Umsetzung mit Papierbögen gibt es Folgendes zu beachten:
+    <p>Damit uns die Daten erreichen, müssen alle Papierbögen von Ihnen
+        eingesammelt und in die Online-Fragebogenmaske (siehe Link oben)
+        eingefügt werden. Für <u>jeden</u> Papier-Fragebogen muss also der
+        Link einmal geöffnet, alle Fragen entsprechend der Angaben auf
+        Papier online eingetragen und der Fragebogen online abgeschlossen
+        werden. Wir bitten diese Umstände zu entschuldigen, doch wir
+        könnten sonst aufgrund der Menge der Projekte, die evaluiert
+        werden, die Befragung auf Papier nicht ermöglichen.
+    <p>Sollten Sie die Befragung papierbasiert durchgeführt haben und
+        sich die Verzögerung daraus ergeben, dass die Daten noch online
+        eingegeben werden müssen, geben Sie uns bitte kurz per E-Mail an
+        <u><a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a></u>
+        Bescheid und holen Sie die Eingabe nach.
+    <p>Bei Fragen oder Problemen können Sie sich per E-Mail an
+        <u><a href="mailto:evaluation.aufleben@dkjs.de">evaluation.aufleben@dkjs.de</a></u>
+        wenden. Wir nehmen dann schnellstmöglich Kontakt zu Ihnen auf.
 
 </section>
 </body>
