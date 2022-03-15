@@ -35,3 +35,55 @@ allOpen {
   annotation("javax.persistence.MappedSuperclass")
 }
 ```
+
+## Deployment
+
+### One-time provisioning
+This section is useful if this application needs to be deployed to a new machine.
+
+In order to enable the `djks-survey` application to run on the development server,
+the following steps were executed once:
+1. User `survey` was created and added to the group `www`(?)
+2. systemd service file was created in `/etc/systemd/system/dkjs-survey.service` with the following content:
+    ```
+    [Unit]
+    Description=DKJS survey process engine
+    After=network.target
+    
+    [Service]
+    User=survey
+    ExecStart=/var/dkjs/dkjs-survey.jar
+    
+    [Install]
+    WantedBy=multi-user.target
+   ```
+3. The service was enabled and started
+   ```
+   systemctl enable dkjs-survey.service
+   systemctl start dkjs-survey.service
+   ```
+
+### On-demand deployment
+This section is useful if a newer version of the application needs to be deployed to a machine that was previously provisioned.
+
+1. Build an uberjar containing the application and its dependencies:
+    ```
+   ./gradlew build
+   ```
+2. Copy the resulting JAR file to the development server:
+    ```
+   scp dkjs-survey.jar survey@DEV_SERVER:/home/survey/dkjs-survey.jar
+   ```
+   where `DEV_SERVER` is the hostname/IP address of the destination server
+3. Log in to the destination server as user `survey`
+   ```
+   ssh survey@DEV_SERVER
+   ```
+4. Swap the uber file in a location expected by systemd
+   ```
+   cp --remove-destination /home/survey/dkjs-survey.jar /var/dkjs/dkjs-survey.jar
+   ```
+5. Finally, restart the service
+   ```
+   systemctl restart dkjs-survey.service
+   ```
