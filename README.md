@@ -35,23 +35,6 @@ allOpen {
   annotation("javax.persistence.MappedSuperclass")
 }
 ```
-## Development
-
-### Set up configuration files
-In order to run the application, you need to manually modify the following files:
-- `src/main/resources/application.yml` needs `typeform.clientId` key-value pair
-- `src/main/resources/application-settings.yml` needs to be created with the contents of `src/main/resources/application-settings-template.yml`
-
-### Connect to the application running on a remote server
-Before the dev server is set-up to expose the application in a secure way,
-it's still possible to connect to the application that runs there - through SSH port forwarding:
-```
-ssh -L 8080:localhost:8080 survey@DEV_SERVER
-```
-This will start a regular SSH session, and also forward port 8080 to your machine.
-Now it's possible to open `localhost:8080` in the browser and display the app that runs on `DEV_SERVER`.
-
-
 ## Deployment
 
 ### One-time provisioning
@@ -140,3 +123,20 @@ in the following path: `build/libs/dkjs-survey-process-engine-1.0-SNAPSHOT.jar`.
    ```
    systemctl restart dkjs-survey.service
    ```
+
+## Development
+
+### Set up configuration files
+In order to run the application, you need to manually modify the following files:
+- `src/main/resources/application.yml` needs `typeform.clientId` key-value pair
+- `src/main/resources/application-settings.yml` needs to be created with the contents of `src/main/resources/application-settings-template.yml`
+
+### Connect to the application running on a remote server
+Before the dev server is set-up to expose the application in a secure way,
+it's still possible to connect to the application that runs there - through SSH port forwarding:
+```
+ssh -L 8080:localhost:8080 survey@DEV_SERVER
+```
+This will start a regular SSH session, and also forward port 8080 to your machine.
+Now it's possible to open `localhost:8080` in the browser and display the app that runs on `DEV_SERVER`.
+
