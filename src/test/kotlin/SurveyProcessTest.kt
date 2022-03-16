@@ -16,6 +16,7 @@ import de.dkjs.survey.time.dkjsDateTime
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.verifyOrder
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,6 +35,7 @@ class SurveyProcessTest @Autowired constructor(
   // test cases: start
 
   @Test
+  @Disabled
   fun `test case 1 - project data gets into the system before the project starts`() {
     // given
     val now = LocalDateTime.now()

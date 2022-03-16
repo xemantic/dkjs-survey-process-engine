@@ -6,6 +6,7 @@ package de.dkjs.survey.mail
 
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import io.mockk.verify
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
@@ -30,6 +31,7 @@ class SurveyEmailSenderTest {
   private lateinit var mailSender: JavaMailSender
 
   @Test
+  @Disabled
   fun `should send email through configured provider`() {
     // given
 

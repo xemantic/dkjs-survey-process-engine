@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestOverridesConfiguration::class)
-@ActiveProfiles(profiles = ["test", "test-settings"], inheritProfiles = false)
+@ActiveProfiles(profiles = ["test"], inheritProfiles = false)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 annotation class DkjsSurveyProcessEngineTest
 

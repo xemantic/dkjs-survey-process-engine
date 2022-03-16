@@ -1,4 +1,8 @@
-# copy this file under name application-test-settings.yml
+# copy this file under name application.yml (in .gitignore to prevent from committing secrets)
+# fill it up with the secrets
+
+typeform:
+  clientId:
 
 # note, using it with Gmail this way requires enabling access to less-safe apps
 spring:

@@ -12,7 +12,11 @@ TODO proper systemd restart solution
 
 ## Configuration
 
+Copy [application-template.yml](application-template.yml) as `application.yml` and set up the
+options accordingly.
 
+:information_source: The `application.yml` file is added to `.gitignore` to prevent secrets
+from being committed to the git repository.
 
 ## Using Kotlin with spring-boot
 
