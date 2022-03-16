@@ -2,7 +2,7 @@
 # fill it up with the secrets
 
 typeform:
-  clientId: tfp_HGJfrU9qMRQrH5hjE2q3JXQ7m7FLtgDhkERwXeZWB413_3suGgmkU36CCr9
+  clientId:
 
 # note, using it with Gmail this way requires enabling access to less-safe apps
 spring:
