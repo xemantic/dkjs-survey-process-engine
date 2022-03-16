@@ -44,13 +44,13 @@ class ProjectCsvParserTest {
       name shouldBe "Project Foo"
       status shouldBe "50 - bewilligt"
       goals shouldBe setOf(1, 3, 5)
-      with(contactPerson) {
+      with (contactPerson) {
         pronoun shouldBe "Frau"
         firstName shouldBe "Maxi"
         lastName shouldBe "Musterfräulein"
         email shouldBe "p1urtümlich@example.com"
       }
-      with(participants) {
+      with (participants) {
         age1to5 shouldBe 1
         age6to10 shouldBe 6
         age11to15 shouldBe 11
@@ -58,7 +58,7 @@ class ProjectCsvParserTest {
         age20to26 shouldBe 20
         worker shouldBe 3
       }
-      with(provider) {
+      with (provider) {
         id shouldBe "123456"
         name shouldBe "serious; business ÖA GmbH"
       }
@@ -107,7 +107,7 @@ class ProjectCsvParserTest {
 
     // then
     projects shouldHaveSize 1
-    with(projects[0].participants) {
+    with (projects[0].participants) {
       age1to5 shouldBe null
       age6to10 shouldBe null
       age11to15 shouldBe null
