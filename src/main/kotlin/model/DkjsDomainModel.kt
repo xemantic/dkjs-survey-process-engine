@@ -44,6 +44,7 @@ class Project(
 
   @ElementCollection
   @get:NotEmpty
+  @get:Size(min = 1, max = 3)
   @get:ValidGoalIds
   val goals: Set<Int>,
 
@@ -167,7 +168,7 @@ interface SurveyProcessRepository : CrudRepository<SurveyProcess, String>
 @Target(AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class ValidGoalIds(
-  val message: String = "Goals must be within the range 1..7",
+  val message: String = "must be a set of integer numbers within 1..7 range and 1 must be always present",
   val groups: Array<KClass<*>> = [],
   val payload: Array<KClass<out Payload>> = []
 )
@@ -181,7 +182,7 @@ class GoalIdsValidator : ConstraintValidator<ValidGoalIds, Set<Int>> {
   override fun isValid(
     goals: Set<Int>,
     cxt: ConstraintValidatorContext
-  ): Boolean = goals.all {
+  ): Boolean = goals.contains(1) and goals.all {
     allowedGoalRange.contains(it)
   }
 

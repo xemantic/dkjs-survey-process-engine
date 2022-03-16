@@ -229,8 +229,8 @@ class ProjectCsvParserTest {
     )
     errors.shouldReportRow(2,
       "'project.mail': must be a well-formed email address",
-      "'project.goals': must be a list of integer numbers within 1..7 range " +
-          "and 1 must always present",
+      "'project.goals': must be a set of integer numbers within 1..7 range " +
+          "and 1 must be always present",
       "'project.start': is not a valid date in format 'dd.mm.yyyy', was: \"$invalidStart\"",
       "'project.end': is not a valid date in format 'dd.mm.yyyy', was: \"$invalidEnd\"",
     )
@@ -238,8 +238,8 @@ class ProjectCsvParserTest {
       "'project.goals': size must be between 1 and 3"
     )
     errors.shouldReportRow(4,
-      "'project.goals': must be a list of integer numbers within 1..7 range " +
-          "and 1 must always present",
+      "'project.goals': must be a set of integer numbers within 1..7 range " +
+          "and 1 must be always present",
     )
   }
 
@@ -249,12 +249,12 @@ class ProjectCsvParserTest {
     databaseIsEmpty()
     val csv = """
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "4021000014 -2";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"Give ducks more rights1";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
+      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022"
+      "4021000014 -2";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"Give ducks more rights2";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
+      "4022000090 -1";"50 - bewilligt";"Über stringent society e.V.";345678;"Herr";"Max ";"Mustermann";"p3möglich@example.com";"FooC";0;0;20;0;0;NA;"03,01,04";"09.03.2022";"09.03.2022"
+      "4022000090 -1";"50 - bewilligt";"Über stringent society e.V.";345678;"Herr";"Max ";"Mustermann";"p3möglich@example.com";"FooC";0;0;20;0;0;NA;"03,01,04";"09.03.2022";"09.03.2022"
       "4021000014 -2";"50 - bewilligt";"serious; business  ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"Give ducks more rights1";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
-      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022"      
-      "4021000014 -2";"50 - bewilligt";"serious; business  ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"Give ducks more rights2";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
-      "4022000090 -1";"50 - bewilligt";"Über stringent society e.V.";345678;"Herr";"Max ";"Mustermann";"p3möglich@example.com";"FooC";0;0;20;0;0;NA;"03,01,04";"09.03.2022";"09.03.2022"
-      "4022000090 -1";"50 - bewilligt";"Über stringent society e.V.";345678;"Herr";"Max ";"Mustermann";"p3möglich@example.com";"FooC";0;0;20;0;0;NA;"03,01,04";"09.03.2022";"09.03.2022"
-      "4021000014 -2";"50 - bewilligt";"serious; business  ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"Give ducks more rights1";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"                  
     """
 
     val errors = shouldThrow<CsvParsingException> {
@@ -264,14 +264,14 @@ class ProjectCsvParserTest {
 
     //then
     errors shouldHaveMessage "Invalid data in rows: 3, 5, 6"
-    errors.rows shouldHaveSize 3
-    errors.shouldReportRow(3, "'project.number' already declared in row: 1")
-    errors.shouldReportRow(5, "'project.number' already declared in row: 4")
-    errors.shouldReportRow(6, "'project.number' already declared in row: 1")
+    errors.rows shouldHaveSize 6
+    errors.shouldReportRow(3, "'project.number': already declared in row: 1")
+    errors.shouldReportRow(5, "'project.number': already declared in row: 4")
+    errors.shouldReportRow(6, "'project.number': already declared in row: 1")
   }
 
   @Test
-  fun `should allow repeated provider which does not exist in database yet`() {
+  fun `should allow repeated provider which does not exist in the database yet`() {
     // given
     databaseIsEmpty()
     val csv = """
@@ -290,7 +290,7 @@ class ProjectCsvParserTest {
   }
 
   @Test
-  fun `should report error if provider, which does not exist in database, is declared twice with different name`() {
+  fun `should report error if provider, which does not exist in the database, is declared twice with different name`() {
     // given
     databaseIsEmpty()
     val csv = """
@@ -306,18 +306,23 @@ class ProjectCsvParserTest {
 
     //then
     errors shouldHaveMessage "Invalid data in rows: 2"
-    errors.rows shouldHaveSize 1
-    errors.shouldReportRow(2, "project provider with id `123456` already declared in row 1 under name: 'serious; business ÖA GmbH'")
+    errors.rows shouldHaveSize 2
+    errors.shouldReportRow(2, "'provider.number': already declared in row: 1 (under name \"serious; business ÖA GmbH\")")
   }
 
   @Test
-  fun `should allow provider which already exists in database under the same name`() {
+  fun `should allow provider which already exists in the database under the same name`() {
     // given
-    every { providerRepository.findByIdOrNull("123456") } returns Provider("123456", "serious; business ÖA GmbH")
-    every { projectRepository.existsById("4021000014 -1") } returns false
+    val projectId = "4021000014 -1"
+    val provider = Provider(
+      "123456",
+      "serious; business ÖA GmbH"
+    )
+    every { providerRepository.findByIdOrNull(provider.id) } returns provider
+    every { projectRepository.existsById(projectId) } returns false
     val csv = """
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"FooA";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022"
+      "$projectId";"50 - bewilligt";"${provider.name}";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"FooA";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022"
     """
 
     // when
@@ -325,17 +330,23 @@ class ProjectCsvParserTest {
 
     // then
     projects shouldHaveSize 1
-    projects[0].id shouldBe "123456"
+    projects[0].id shouldBe projectId
   }
 
   @Test
-  fun `should report error if provider already exists in database under different name`() {
+  fun `should report error if provider already exists in the database under different name`() {
     // given
-    every { providerRepository.findByIdOrNull("123456") } returns Provider("123456", "serious; business ÖA GmbH")
-    every { projectRepository.existsById("4021000014 -1") } returns false
+    val projectId = "4021000014 -1"
+    val provider = Provider(
+      "123456",
+      "serious; business ÖA GmbH"
+    )
+    val differentProviderName = "serious typo; business ÖA GmbH"
+    every { providerRepository.findByIdOrNull(provider.id) } returns provider
+    every { projectRepository.existsById(projectId) } returns false
     val csv = """
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "4021000014 -1";"50 - bewilligt";"serious typo; business ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"FooB";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
+      "$projectId";"50 - bewilligt";"$differentProviderName";${provider.id};"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"FooB";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
     """
 
     val errors = shouldThrow<CsvParsingException> {
@@ -346,13 +357,18 @@ class ProjectCsvParserTest {
     //then
     errors shouldHaveMessage "Invalid data in rows: 1"
     errors.rows shouldHaveSize 1
-    errors.shouldReportRow(1, "project provider with id `123456` already exists in database under name: 'serious; business ÖA GmbH'")
+    errors.shouldReportRow(1, "'project.provider': provider with id '123456' already exists in the database under name: \"serious; business ÖA GmbH\"")
   }
 
   @Test
-  fun `should report error if project already exists in database`() {
+  fun `should report error if project already exists in the database`() {
     // given
     val id = "4021000014 -1"
+    val provider = Provider(
+      "123456",
+      "serious; business ÖA GmbH"
+    )
+    every { providerRepository.findByIdOrNull(provider.id) } returns provider
     every { projectRepository.existsById(id) } returns true
     val csv = """
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
@@ -367,7 +383,7 @@ class ProjectCsvParserTest {
     // then
     errors shouldHaveMessage "Invalid data in rows: 1"
     errors.rows shouldHaveSize 1
-    errors.shouldReportRow(1, "project already exists")
+    errors.shouldReportRow(1, "'project.number': project with id '4021000014 -1' already exists in the database")
   }
 
   // -- test utilities
