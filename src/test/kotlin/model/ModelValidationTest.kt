@@ -4,7 +4,7 @@
 
 package de.dkjs.survey.model
 
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -47,25 +47,29 @@ class ModelValidationTest {
     val violations = validator.validate(project)
 
     // then
-    violations shouldHaveSize 16
-    violations.map { "${it.propertyPath} - ${it.message}" }
-      .shouldContainExactlyInAnyOrder(
-        "id - must match \"[0-9-]+\"",
-        "status - must not be empty",
-        "name - must not be empty",
-        "provider.id - must not be empty",
-        "provider.name - must not be empty",
-        "contactPerson.pronoun - must not be empty",
+    violations shouldHaveSize 18
+    violations
+      .map { "${it.propertyPath} - ${it.message}" }
+      .sorted()
+      .shouldContainExactly(
+        "contactPerson.email - must not be empty",
         "contactPerson.firstName - must not be empty",
         "contactPerson.lastName - must not be empty",
-        "contactPerson.email - must not be empty",
+        "contactPerson.pronoun - must not be empty",
+        "goals - must be a set of integer numbers within 1..7 range and 1 must be always present",
         "goals - must not be empty",
-        "participants.age1to5 - must be greater than or equal to 0",
-        "participants.age6to10 - must be greater than or equal to 0",
+        "goals - size must be between 1 and 3",
+        "id - must not be empty",
+        "name - must not be empty",
         "participants.age11to15 - must be greater than or equal to 0",
         "participants.age16to19 - must be greater than or equal to 0",
+        "participants.age1to5 - must be greater than or equal to 0",
         "participants.age20to26 - must be greater than or equal to 0",
-        "participants.worker - must be greater than or equal to 0"
+        "participants.age6to10 - must be greater than or equal to 0",
+        "participants.worker - must be greater than or equal to 0",
+        "provider.id - must not be empty",
+        "provider.name - must not be empty",
+        "status - must not be empty"
       )
   }
 
