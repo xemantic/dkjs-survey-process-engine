@@ -130,7 +130,7 @@ class ProjectCsvParser @Inject constructor(
 
     private val projectIdToRowMap: MutableMap<String, Int> = mutableMapOf()
 
-    private val providerIdToRowAndNameMap: MutableMap<String, Pair<Int, Provider>> = mutableMapOf()
+    private val providerIdToRowAndProviderMap: MutableMap<String, Pair<Int, Provider>> = mutableMapOf()
 
     fun check(project: Project, rowNumber: Int): Collection<String> {
 
@@ -143,9 +143,9 @@ class ProjectCsvParser @Inject constructor(
         errors.add("'${Column.PROJECT_NUMBER.csvName}': already declared in row: $projectAlreadyDefined")
       }
 
-      val providerAlreadyDefined = providerIdToRowAndNameMap[project.provider.id]
+      val providerAlreadyDefined = providerIdToRowAndProviderMap[project.provider.id]
       if (providerAlreadyDefined == null) {
-        providerIdToRowAndNameMap[project.provider.id] = Pair(rowNumber, project.provider)
+        providerIdToRowAndProviderMap[project.provider.id] = Pair(rowNumber, project.provider)
       } else {
         if (project.provider.name != providerAlreadyDefined.second.name) {
           errors.add("'${Column.PROVIDER_NUMBER.csvName}': already declared in row: " +
