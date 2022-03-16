@@ -21,10 +21,27 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Validator
 
+/**
+ * The result of parsing single row from the CSV file describing projects
+ */
 class RowResult(
-  val csvRow: Array<String>,
+
+  /**
+   * The raw row output from the CSV parser.
+   * Needed by the UI correlating parsing errors.
+   */
+  val csvRow: List<String>,
+
+  /**
+   * Succesfully parsed project or `null` if CSV cannot be parsed.
+   */
   val project: Project?,
+
+  /**
+   * The list of errors associated with this row.
+   */
   val errors: List<String>
+
 )
 
 /**
@@ -35,6 +52,13 @@ class CsvParsingException(message: String? = null, val rows: List<RowResult> = e
   message ?: "Invalid data in rows: ${rows.reportRowsWithErrors()}"
 )
 
+/**
+ * All the columns expected in the CSV file in their natural order.
+ *
+ * @param path The bean property path of this column after mapping
+ *              to the [Project] model, needed for remapping JSR-303 validations
+ *              back to CSV columns.
+ */
 private enum class Column(val path: String) {
 
   PROJECT_NUMBER("id"),
@@ -56,6 +80,9 @@ private enum class Column(val path: String) {
   PROJECT_START("start"),
   PROJECT_END("end");
 
+  /**
+   * The name of the column as it appears in CSV file header.
+   */
   val csvName get() = name.replace('_', '.').lowercase()
 
   companion object {
@@ -64,6 +91,12 @@ private enum class Column(val path: String) {
       .map { Pair(it.path, it) }
       .toMap()
 
+    /**
+     * Returns the [Column] instance based on given [Project] bean property path.
+     *
+     * @param path The bean property path of this column.
+     * @throws IllegalArgumentException if the given `path` does not exist.
+     */
     fun fromPath(path: String): Column =
       pathToColumnMap[path]
         ?: throw IllegalArgumentException(
@@ -93,7 +126,7 @@ class ProjectCsvParser @Inject constructor(
       reader.sequenceRows().mapIndexed { rowIndex, rowResult ->
         val rowNumber = rowIndex + 1
         rowResult.fold(
-          onFailure = { RowResult(emptyArray(), project = null, listOf(it.message!!)) },
+          onFailure = { RowResult(emptyList(), project = null, listOf(it.message!!)) },
           onSuccess = {
             val errors = mutableListOf<String>()
             val rowParser = RowParser(rowResult.getOrNull()!!)
@@ -101,7 +134,7 @@ class ProjectCsvParser @Inject constructor(
             errors.addAll(rowParser.errors)
             errors.addAll(validate(project))
             errors.addAll(batchContext.check(project, rowNumber))
-            RowResult(it, project, errors.toList())
+            RowResult(it.toList(), project, errors.toList()) // ensure immutability
           }
         )
       }.toList()
@@ -126,6 +159,10 @@ class ProjectCsvParser @Inject constructor(
       "'$column': ${it.message}"
     }
 
+  /**
+   * Provides additional validity checks depending on the context of currently
+   * processed CSV file. For example duplicates.
+   */
   private inner class RowBatchContext {
 
     private val projectIdToRowMap: MutableMap<String, Int> = mutableMapOf()
