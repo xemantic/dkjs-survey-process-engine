@@ -6,8 +6,10 @@
 
 # Usage:
 # 1. Open the .doc file send by DKJS with Libre Office
-# 2. Save it as Mailtexte.AUF.leben.html
-# 3. Run this script to clean it up
+# 2. Search and replace the 4 variables, making them camelCase
+# eg. {project name} -> {projectName}
+# 3. Save it as Mailtexte.AUF.leben.html
+# 4. Run this script to clean it up
 
 cp Mailtexte.AUF.leben.html tmp.html
 
@@ -33,8 +35,11 @@ sed -i \
 tidy -omit -o Mailtexte.AUF.leben.clean.html tmp.html
 
 echo "Next:"
-echo "- Open Mailtexte.AUF.leben.clean.html in Idea"
-echo "- Clean possible errors manually"
+echo "- Open Mailtexte.AUF.leben.clean.html in Idea."
+echo "- Clean possible errors manually."
+echo "- Delete footers, add spacing around subject."
+echo "- Replace (\{.+?\}) with [( \$$1 )] in titles."
+echo "- Replace (\{.+?\}) with <span th:text="\$$1">$1</span> in bodies."
+echo "- Replace <u>hier</u> with <a th:href="${pdfLink}">hier</a> or "
+echo "  <a th:href="${formLink}">hier</a>"
 echo "- Chop and paste into corresponding body.html files"
-echo "Notice SECTION_NAME, subject, header, body, and footer"
-

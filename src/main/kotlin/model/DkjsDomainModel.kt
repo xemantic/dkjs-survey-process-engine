@@ -8,8 +8,10 @@ import de.dkjs.survey.mail.MailType
 import org.springframework.data.repository.CrudRepository
 import java.time.LocalDateTime
 import javax.persistence.*
-import javax.validation.Valid
+import javax.validation.*
 import javax.validation.constraints.*
+import kotlin.reflect.KClass
+
 
 enum class ScenarioType {
   PRE,
@@ -22,7 +24,8 @@ enum class ScenarioType {
 class Project(
 
   @Id
-  @get:Pattern(regexp = "[0-9- ]+")
+//  @get:Pattern(regexp = "[0-9- ]+")
+  @get:NotEmpty
   val id: String,  // project.number in input data
 
   @get:NotEmpty
@@ -41,14 +44,18 @@ class Project(
 
   @ElementCollection
   @get:NotEmpty
+  @get:Size(min = 1, max = 3)
+  @get:ValidGoalIds
   val goals: Set<Int>,
 
   @Embedded
   @get:Valid
   val participants: Participants,
 
+  @get:NotNull
   val start: LocalDateTime,
 
+  @get:NotNull
   val end: LocalDateTime,
 
   @OneToOne
@@ -119,7 +126,7 @@ class SurveyProcess(
   var phase: Phase,
 
   @OneToMany
-  val notifications: MutableList<Notification>
+  val notifications: MutableList<Notification> = mutableListOf()
 
 ) {
 
@@ -155,3 +162,28 @@ interface ProjectRepository : CrudRepository<Project, String> {
 interface ProviderRepository : CrudRepository<Provider, String>
 
 interface SurveyProcessRepository : CrudRepository<SurveyProcess, String>
+
+@MustBeDocumented
+@Constraint(validatedBy = [GoalIdsValidator::class])
+@Target(AnnotationTarget.PROPERTY_GETTER)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ValidGoalIds(
+  val message: String = "must be a set of integer numbers within 1..7 range and 1 must be always present",
+  val groups: Array<KClass<*>> = [],
+  val payload: Array<KClass<out Payload>> = []
+)
+
+class GoalIdsValidator : ConstraintValidator<ValidGoalIds, Set<Int>> {
+
+  private val allowedGoalRange = 1..7
+
+  override fun initialize(contactNumber: ValidGoalIds) {}
+
+  override fun isValid(
+    goals: Set<Int>,
+    cxt: ConstraintValidatorContext
+  ): Boolean = goals.contains(1) and goals.all {
+    allowedGoalRange.contains(it)
+  }
+
+}
