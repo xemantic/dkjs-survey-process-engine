@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import java.util.concurrent.TimeUnit
 import de.dkjs.survey.util.debug
 import io.kotest.assertions.assertSoftly
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -41,21 +41,27 @@ fun sleepForMaximalProcessDuration(logger: Logger, seconds: Int) {
 fun startOfDay(year: Int, month: Int, day: Int): LocalDateTime =
   LocalDate.of(year, month, day).atStartOfDay()
 
-fun CsvParsingException.shouldReportRow(row: Int, vararg messages: String) {
+fun CsvParsingException.shouldReportRow(row: Int, vararg errors: String) {
   require(row > 0) { "row numeration must start with 1" }
-  require(messages.isNotEmpty()) { "messages cannot be empty" }
-  if (messages.size == 1) {
-    rows[row - 1].messages[0] shouldBe messages[0]
+  require(errors.isNotEmpty()) { "messages cannot be empty" }
+  if (errors.size == 1) {
+    rows[row - 1].errors[0] shouldBe errors[0]
   } else {
     assertSoftly {
       rows shouldHaveAtLeastSize row
-      rows[row - 1].messages shouldContainExactlyInAnyOrder messages.toList()
+      rows[row - 1].errors.sorted() shouldContainExactly errors.sorted().toList()
     }
   }
 }
 
-infix fun CsvParsingException.shouldReportFirstRow(message: String) = assertSoftly {
+fun CsvParsingException.shouldNotReportRow(row: Int) {
+  require(row > 0) { "row numeration must start with 1" }
+  rows shouldHaveAtLeastSize row
+  rows[row - 1].errors shouldHaveSize 0
+}
+
+infix fun CsvParsingException.shouldReportFirstRow(error: String) = assertSoftly {
   rows shouldHaveSize 1
-  rows[0].messages shouldHaveSize 1
-  rows[0].messages[0] shouldBe message
+  rows[0].errors shouldHaveSize 1
+  rows[0].errors[0] shouldBe error
 }
