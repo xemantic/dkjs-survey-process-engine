@@ -43,8 +43,17 @@ This section is useful if this application needs to be deployed to a new machine
 
 In order to enable the `djks-survey` application to run on the development server,
 the following steps were executed once:
-1. User `survey` was created and added to the group `www`(?)
-2. systemd service file was created in `/etc/systemd/system/dkjs-survey.service` with the following content:
+1. User `survey` was created (the application will be run by this user)
+   ```
+   useradd survey
+   ```
+2. Target directory for the application was created, and ownership was assigned to the user `survey`
+   ```
+   cd /var
+   mkdir dkjs
+   chown survey:survey dkjs
+   ```
+3. systemd service file was created in `/etc/systemd/system/dkjs-survey.service` with the following content:
     ```
     [Unit]
     Description=DKJS survey process engine
@@ -57,7 +66,7 @@ the following steps were executed once:
     [Install]
     WantedBy=multi-user.target
    ```
-3. The service was enabled and started
+4. The service was enabled and started
    ```
    systemctl enable dkjs-survey.service
    systemctl start dkjs-survey.service
