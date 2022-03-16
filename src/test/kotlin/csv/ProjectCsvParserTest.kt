@@ -156,7 +156,7 @@ class ProjectCsvParserTest {
     // given
     databaseIsEmpty()
     val csv = """
-      "this file ends with a dangling double quote character";"x";"x"
+      "this file contains multiple CSV formatting errors";"x";"x"
       "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021"
       "4021000014 -2";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Project Foo";1;6;11;16;20;3;"01,05,03";"22.11.2021";"31.08.2022"
       "4021000014 -3";"50 - bewilligt";"invalid column count";456789;"Herr";"Mäxi";"Mäxi";"p5tetrapack@example.com";"project5"            
