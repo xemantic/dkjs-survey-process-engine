@@ -8,7 +8,7 @@ import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.ProjectRepository
 import de.dkjs.survey.model.Provider
 import de.dkjs.survey.model.ProviderRepository
-import de.dkjs.survey.test.shouldReportFirstRow
+import de.dkjs.survey.test.shouldNotReportRow
 import de.dkjs.survey.test.shouldReportRow
 import de.dkjs.survey.test.startOfDay
 import io.kotest.assertions.throwables.shouldThrow
@@ -118,23 +118,37 @@ class ProjectCsvParserTest {
   }
 
   @Test
-  fun `should report project goal values outside 1-7 range`() {
+  fun `should not parse empty file`() {
     // given
     databaseIsEmpty()
-    val csv = """
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Project Foo";1;6;11;16;20;3;"01,08,42";"22.11.2021";"31.08.2022"
-    """
+    val csv = ""
 
-    val error = shouldThrow<CsvParsingException> {
+    val errors = shouldThrow<CsvParsingException> {
       // when
       parser.parse(csv)
     }
 
     // then
-    error shouldHaveMessage "Invalid data in rows: 1"
-    error.rows shouldHaveSize 1
-    error shouldReportFirstRow "'project.goals' must be expressed as integer numbers within 1..7 range, invalid values: 8, 42"
+    errors shouldHaveMessage "The CSV file should contain at least one header row and one data row"
+    errors.rows shouldHaveSize 0
+  }
+
+  @Test
+  fun `should not parse file containing only header`() {
+    // given
+    databaseIsEmpty()
+    val csv = """
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+    """
+
+    val errors = shouldThrow<CsvParsingException> {
+      // when
+      parser.parse(csv)
+    }
+
+    // then
+    errors shouldHaveMessage "The CSV file should contain at least one header row and one data row"
+    errors.rows shouldHaveSize 0
   }
 
   @Test
@@ -143,27 +157,31 @@ class ProjectCsvParserTest {
     databaseIsEmpty()
     val csv = """
       "this file ends with a dangling double quote character";"x";"x"
-      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.08.2022""
+      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021"
       "4021000014 -2";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Project Foo";1;6;11;16;20;3;"01,05,03";"22.11.2021";"31.08.2022"
       "4021000014 -3";"50 - bewilligt";"invalid column count";456789;"Herr";"Mäxi";"Mäxi";"p5tetrapack@example.com";"project5"            
-      "4021000014 -4";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.09.2022""      
+      "4021000014 -4";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"expectedProjectName";0;0;250;50;0;NA;"01,05,03";"22.11.2021";"31.09.2022""
     """
 
-    val error = shouldThrow<CsvParsingException> {
+    val errors = shouldThrow<CsvParsingException> {
       // when
       parser.parse(csv)
     }
 
     // then
-    error shouldHaveMessage "Malformed CSV in rows: 1, 3, 4"
-    error.rows shouldHaveSize 3
-    error.shouldReportRow(1, "Malformed CSV on row 1: Unterminated quoted field at end of CSV line. Beginning of lost text: [31.08.2022\"\n]")
-    error.shouldReportRow(3, "Malformed CSV on row 3: Wrong number of columns, expected 20 but was 5")
-    error.shouldReportRow(4, "Malformed CSV on row 4: Unterminated quoted field at end of CSV line. Beginning of lost text: [31.09.2022\"\n]")
+    // the last line is corrupted resulting in extra rows added by confused parser
+    errors shouldHaveMessage "Invalid data in rows: 1, 3, 4, 5, 6"
+    errors.rows shouldHaveSize 6
+    errors.shouldReportRow(1, "Wrong CSV column count, expected 18, but was 17")
+    errors.shouldNotReportRow(2)
+    errors.shouldReportRow(3, "Wrong CSV column count, expected 18, but was 9")
+    errors.shouldReportRow(4, "Unterminated quoted field at end of CSV line. Beginning of lost text: [31.09.2022\"\n]")
+    errors.shouldReportRow(5, "Wrong CSV column count, expected 18, but was 17")
+    errors.shouldReportRow(6, "Unterminated quoted field at end of CSV line. Beginning of lost text: [31.09.2022\"\n]")
   }
 
   @Test
-  fun `should report error if CSV file contains invalid data`() {
+  fun `should report errors if CSV file contains invalid data`() {
     // given
     databaseIsEmpty()
     val invalidEmail = "p1urtümlich@example@.com"
@@ -172,49 +190,61 @@ class ProjectCsvParserTest {
     val invalidParticipantCount = "FOO"
     val invalidWorkerCount = "BAR"
     val invalidGoalsNotNumbers = "01,foo,bar"
-    val invalidGoalsNotIn1To7Range = "01,08,42"
+    val invalidGoalsNotIn1To7Range = "01,-02,42"
+    val invalidGoalsTooMany = "01,02,03,04"
+    val invalidGoals01Missing = "02,03"
     val csv = """
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
       "";"";"";;"";"";"";"";"";-1;0;1000000;0;$invalidParticipantCount;$invalidWorkerCount;"$invalidGoalsNotNumbers";"";""
       "4022000132 -1";"50 - bewilligt";"foo";234567;"Frau";"Maxi";"Musterfrau";"$invalidEmail";"project2";794;0;0;0;0;NA;"$invalidGoalsNotIn1To7Range";"$invalidStart";"$invalidEnd"
+      "4022000131 -1";"50 - bewilligt";"very: important & club e.V.";234567;"Frau";"Maxi";"Musterfrau";"p2gärung@example.net";"FooB";794;0;0;0;0;NA;"$invalidGoalsTooMany";"17.01.2022";"01.07.2022"
+      "4022000131 -2";"50 - bewilligt";"very: important & club e.V.";234567;"Frau";"Maxi";"Musterfrau";"p2gärung@example.net";"FooB";794;0;0;0;0;NA;"$invalidGoals01Missing";"17.01.2022";"01.07.2022"
     """
 
-    val error = shouldThrow<CsvParsingException> {
+    val errors = shouldThrow<CsvParsingException> {
       // when
       parser.parse(csv)
     }
 
     // then
-    error shouldHaveMessage "Invalid data in rows: 1, 2"
-    error.rows shouldHaveSize 2
-    error.shouldReportRow(1,
-      "'project.number': cannot be empty",
-      "'project.status': cannot be empty",
-      "'project.provider': cannot be empty",
-      "'provider.number': cannot be empty",
-      "'project.pronoun' cannot be empty",
-      "'project.firstname': cannot be empty",
-      "'project.lastname': cannot be empty",
-      "'project.mail': cannot be empty",
-      "'project.name': cannot be empty",
-      "'participants.age1to5': must be greater than 0",
-      "'participants.age20to26': must be a number, was: FOO",
-      "'participants.worker': must be a number, was: BAR",
-      "'project.goals' must be a list of integer numbers within 1..7 range, cannot parse: 'foo', 'bar'",
-      "'project.goals': must be greater than 0",
-      "'project.start': cannot be empty",
-      "'project.end': cannot be empty",
+    errors shouldHaveMessage "Invalid data in rows: 1, 2, 3, 4"
+    errors.rows shouldHaveSize 4
+    errors.shouldReportRow(1,
+      "'project.number': must not be empty",
+      "'project.name': must not be empty",
+      "'project.status': must not be empty",
+      "'project.provider': must not be empty",
+      "'provider.number': must not be empty",
+      "'project.pronoun': must not be empty",
+      "'project.firstname': must not be empty",
+      "'project.lastname': must not be empty",
+      "'project.mail': must not be empty",
+      "'participants.age1to5': must be greater than or equal to 0",
+      "'participants.age20to26': is not a number, was: \"FOO\"",
+      "'participants.worker': is not a number, was: \"BAR\"",
+      "'project.goals': must must consist of numbers in the range 1..7, was: \"foo\"",
+      "'project.goals': must must consist of numbers in the range 1..7, was: \"bar\"",
+      "'project.start': is not a valid date in format 'dd.mm.yyyy', was: \"\"",
+      "'project.end': is not a valid date in format 'dd.mm.yyyy', was: \"\""
     )
-    error.shouldReportRow(2,
-      "'project.mail': invalid email format",
-      "'project.goals' must be a list of integer numbers within 1..7 range, invalid values: 08, 42",
-      "'project.start': expected date format: dd.mm.yyyy, was: $invalidStart",
-      "'project.end': expected date format: dd.mm.yyyy, was: $invalidEnd",
+    errors.shouldReportRow(2,
+      "'project.mail': must be a well-formed email address",
+      "'project.goals': must be a list of integer numbers within 1..7 range " +
+          "and 1 must always present",
+      "'project.start': is not a valid date in format 'dd.mm.yyyy', was: \"$invalidStart\"",
+      "'project.end': is not a valid date in format 'dd.mm.yyyy', was: \"$invalidEnd\"",
+    )
+    errors.shouldReportRow(3,
+      "'project.goals': size must be between 1 and 3"
+    )
+    errors.shouldReportRow(4,
+      "'project.goals': must be a list of integer numbers within 1..7 range " +
+          "and 1 must always present",
     )
   }
 
   @Test
-  fun `should report error if project with the same number is specified multiple times`() {
+  fun `should report errors if project with the same number is specified multiple times`() {
     // given
     databaseIsEmpty()
     val csv = """
@@ -227,17 +257,17 @@ class ProjectCsvParserTest {
       "4021000014 -2";"50 - bewilligt";"serious; business  ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"Give ducks more rights1";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"                  
     """
 
-    val error = shouldThrow<CsvParsingException> {
+    val errors = shouldThrow<CsvParsingException> {
       // when
       parser.parse(csv)
     }
 
     //then
-    error shouldHaveMessage "Invalid data in rows: 3, 5, 6"
-    error.rows shouldHaveSize 3
-    error.shouldReportRow(3, "'project.number' already declared in row: 1")
-    error.shouldReportRow(5, "'project.number' already declared in row: 4")
-    error.shouldReportRow(6, "'project.number' already declared in row: 1")
+    errors shouldHaveMessage "Invalid data in rows: 3, 5, 6"
+    errors.rows shouldHaveSize 3
+    errors.shouldReportRow(3, "'project.number' already declared in row: 1")
+    errors.shouldReportRow(5, "'project.number' already declared in row: 4")
+    errors.shouldReportRow(6, "'project.number' already declared in row: 1")
   }
 
   @Test
@@ -269,15 +299,15 @@ class ProjectCsvParserTest {
       "4021000014 -2";"50 - bewilligt";"serious typo; business ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"FooB";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
     """
 
-    val error = shouldThrow<CsvParsingException> {
+    val errors = shouldThrow<CsvParsingException> {
       // when
       parser.parse(csv)
     }
 
     //then
-    error shouldHaveMessage "Invalid data in rows: 2"
-    error.rows shouldHaveSize 1
-    error.shouldReportRow(2, "project provider with id `123456` already declared in row 1 under name: 'serious; business ÖA GmbH'")
+    errors shouldHaveMessage "Invalid data in rows: 2"
+    errors.rows shouldHaveSize 1
+    errors.shouldReportRow(2, "project provider with id `123456` already declared in row 1 under name: 'serious; business ÖA GmbH'")
   }
 
   @Test
@@ -308,15 +338,15 @@ class ProjectCsvParserTest {
       "4021000014 -1";"50 - bewilligt";"serious typo; business ÖA GmbH";123456;"Herr";"Mäxi";"Müstermän";"p4süß@example.org";"FooB";3;4;457;0;0;NA;"04,03,01";"03.01.2022";"31.08.2022"
     """
 
-    val error = shouldThrow<CsvParsingException> {
+    val errors = shouldThrow<CsvParsingException> {
       // when
       parser.parse(csv)
     }
 
     //then
-    error shouldHaveMessage "Invalid data in rows: 1"
-    error.rows shouldHaveSize 1
-    error.shouldReportRow(1, "project provider with id `123456` already exists in database under name: 'serious; business ÖA GmbH'")
+    errors shouldHaveMessage "Invalid data in rows: 1"
+    errors.rows shouldHaveSize 1
+    errors.shouldReportRow(1, "project provider with id `123456` already exists in database under name: 'serious; business ÖA GmbH'")
   }
 
   @Test
@@ -330,58 +360,14 @@ class ProjectCsvParserTest {
     """
 
     // when
-    val error = shouldThrow<CsvParsingException> {
+    val errors = shouldThrow<CsvParsingException> {
       parser.parse(csv)
     }
 
     // then
-    error shouldHaveMessage "Invalid data in rows: 1"
-    error.rows shouldHaveSize 1
-    error.shouldReportRow(1, "project already exists")
-  }
-
-  @Test
-  fun `should not parse project without goal 01`() {
-    // given
-    databaseIsEmpty()
-    val goals = "02,03"
-    val csv = """
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Foo";0;0;250;50;0;NA;"$goals";"22.11.2021";"31.08.2022"
-    """
-
-    val error = shouldThrow<CsvParsingException> {
-
-      // when
-      parser.parse(csv)
-    }
-
-    // then
-    error shouldHaveMessage "Error parsing CSV file, faulty rows: 1"
-    error.rows shouldHaveSize 1
-    error.shouldReportRow(1, "Goal '01' is missing")
-  }
-
-  @Test
-  fun `should not parse project with more than 2 extra goals`() {
-    // given
-    databaseIsEmpty()
-    val goals = "01,02,03,04"
-    val csv = """
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "4021000014 -1";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Foo";0;0;250;50;0;NA;"$goals";"22.11.2021";"31.08.2022"
-    """
-
-    val error = shouldThrow<CsvParsingException> {
-
-      // when
-      parser.parse(csv)
-    }
-
-    // then
-    error shouldHaveMessage "Invalid data in rows: 1"
-    error.rows shouldHaveSize 1
-    error.shouldReportRow(1, "Only goal '01' plus 2 additional goals are allowed")
+    errors shouldHaveMessage "Invalid data in rows: 1"
+    errors.rows shouldHaveSize 1
+    errors.shouldReportRow(1, "project already exists")
   }
 
   // -- test utilities

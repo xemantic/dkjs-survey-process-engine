@@ -59,9 +59,3 @@ fun CsvParsingException.shouldNotReportRow(row: Int) {
   rows shouldHaveAtLeastSize row
   rows[row - 1].errors shouldHaveSize 0
 }
-
-infix fun CsvParsingException.shouldReportFirstRow(error: String) = assertSoftly {
-  rows shouldHaveSize 1
-  rows[0].errors shouldHaveSize 1
-  rows[0].errors[0] shouldBe error
-}
