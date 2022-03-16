@@ -1,2 +1,3 @@
+# this file is used with secrets sets by continuous integration environment, like GitHub actions
 typeform:
   clientId: ${TYPEFORM_CLIENT_ID}
