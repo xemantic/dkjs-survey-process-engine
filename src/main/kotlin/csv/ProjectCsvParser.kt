@@ -33,16 +33,33 @@ class RowResult(
   val csvRow: List<String>,
 
   /**
-   * Succesfully parsed project or `null` if CSV cannot be parsed.
+   * Successfully parsed project or `null` if CSV cannot be parsed.
    */
   val project: Project?,
 
   /**
    * The list of errors associated with this row.
    */
-  val errors: List<String>
+  val errors: List<Error>
 
-)
+) {
+
+  interface Error {
+    val message: String
+  }
+
+  data class RowError(
+    override val message: String
+  ) : Error
+
+  data class ColumnError(
+    override val message: String,
+    val column: Column,
+  ) : Error
+
+}
+
+
 
 /**
  * An Exception that contains a List of rows, each row containing a list of
@@ -59,7 +76,10 @@ class CsvParsingException(message: String? = null, val rows: List<RowResult> = e
  *              to the [Project] model, needed for remapping JSR-303 validations
  *              back to CSV columns.
  */
-private enum class Column(val path: String) {
+enum class Column(
+  val path: String,
+  val type: Type = Type.TEXT
+) {
 
   PROJECT_NUMBER("id"),
   PROJECT_STATUS("status"),
@@ -70,20 +90,30 @@ private enum class Column(val path: String) {
   PROJECT_LASTNAME("contactPerson.lastName"),
   PROJECT_MAIL("contactPerson.email"),
   PROJECT_NAME("name"),
-  PARTICIPANTS_AGE1TO5("participants.age1to5"),
-  PARTICIPANTS_AGE6TO10("participants.age6to10"),
-  PARTICIPANTS_AGE11TO15("participants.age11to15"),
-  PARTICIPANTS_AGE16TO19("participants.age16to19"),
-  PARTICIPANTS_AGE20TO26("participants.age20to26"),
-  PARTICIPANTS_WORKER("participants.worker"),
+  PARTICIPANTS_AGE1TO5("participants.age1to5", Type.NUMERIC),
+  PARTICIPANTS_AGE6TO10("participants.age6to10", Type.NUMERIC),
+  PARTICIPANTS_AGE11TO15("participants.age11to15", Type.NUMERIC),
+  PARTICIPANTS_AGE16TO19("participants.age16to19", Type.NUMERIC),
+  PARTICIPANTS_AGE20TO26("participants.age20to26", Type.NUMERIC),
+  PARTICIPANTS_WORKER("participants.worker", Type.NUMERIC),
   PROJECT_GOALS("goals"),
   PROJECT_START("start"),
   PROJECT_END("end");
+
+  enum class Type {
+    TEXT,
+    NUMERIC
+  }
 
   /**
    * The name of the column as it appears in CSV file header.
    */
   val csvName get() = name.replace('_', '.').lowercase()
+
+  /**
+   * Indicates if the column is numeric.
+   */
+  val isNumeric: Boolean get() = (type == Type.NUMERIC)
 
   companion object {
 
@@ -126,9 +156,13 @@ class ProjectCsvParser @Inject constructor(
       reader.sequenceRows().mapIndexed { rowIndex, rowResult ->
         val rowNumber = rowIndex + 1
         rowResult.fold(
-          onFailure = { RowResult(emptyList(), project = null, listOf(it.message!!)) },
+          onFailure = { RowResult(
+            emptyList(),
+            project = null,
+            listOf(RowResult.RowError(it.message!!)))
+          },
           onSuccess = {
-            val errors = mutableListOf<String>()
+            val errors = mutableListOf<RowResult.Error>()
             val rowParser = RowParser(rowResult.getOrNull()!!)
             val project = rowParser.parseProject()
             errors.addAll(rowParser.errors)
@@ -153,10 +187,12 @@ class ProjectCsvParser @Inject constructor(
     return results.map { it.project!! }
   }
 
-  private fun validate(project: Project): Collection<String> =
+  private fun validate(project: Project): Collection<RowResult.ColumnError> =
     validator.validate(project).map {
-      val column = Column.fromPath(it.propertyPath.toString()).csvName
-      "'$column': ${it.message}"
+      RowResult.ColumnError(
+        it.message,
+        Column.fromPath(it.propertyPath.toString())
+      )
     }
 
   /**
@@ -169,15 +205,20 @@ class ProjectCsvParser @Inject constructor(
 
     private val providerIdToRowAndProviderMap: MutableMap<String, Pair<Int, Provider>> = mutableMapOf()
 
-    fun check(project: Project, rowNumber: Int): Collection<String> {
+    fun check(project: Project, rowNumber: Int): Collection<RowResult.ColumnError> {
 
-      val errors = mutableListOf<String>()
+      val errors = mutableListOf<RowResult.ColumnError>()
 
       val projectAlreadyDefined = projectIdToRowMap[project.id]
       if (projectAlreadyDefined == null) {
         projectIdToRowMap[project.id] = rowNumber
       } else {
-        errors.add("'${Column.PROJECT_NUMBER.csvName}': already declared in row: $projectAlreadyDefined")
+        errors.add(
+          RowResult.ColumnError(
+            "already declared in row: $projectAlreadyDefined",
+            Column.PROJECT_NUMBER
+          )
+        )
       }
 
       val providerAlreadyDefined = providerIdToRowAndProviderMap[project.provider.id]
@@ -185,9 +226,14 @@ class ProjectCsvParser @Inject constructor(
         providerIdToRowAndProviderMap[project.provider.id] = Pair(rowNumber, project.provider)
       } else {
         if (project.provider.name != providerAlreadyDefined.second.name) {
-          errors.add("'${Column.PROVIDER_NUMBER.csvName}': already declared in row: " +
-              "${providerAlreadyDefined.first} (under name " +
-              "\"${providerAlreadyDefined.second.name}\")")
+          errors.add(
+            RowResult.ColumnError(
+              "already declared in row: "  +
+                  "${providerAlreadyDefined.first} (under name " +
+                  "\"${providerAlreadyDefined.second.name}\")",
+              Column.PROVIDER_NUMBER
+            )
+          )
         }
         // this piece of code might be needed to assure that the same provider is inserted in the batch for all the projects
 //        else {
@@ -198,16 +244,21 @@ class ProjectCsvParser @Inject constructor(
       providerRepository.findByIdOrNull(project.provider.id)?.let { existing ->
         if (project.provider.name != existing.name) {
           errors.add(
-            "'${Column.PROJECT_PROVIDER.csvName}': provider with id '${project.provider.id}' " +
-                "already exists in the database under name: \"${existing.name}\""
+            RowResult.ColumnError(
+              "provider with id '${project.provider.id}' " +
+                  "already exists in the database under name: \"${existing.name}\"",
+              Column.PROJECT_PROVIDER
+            )
           )
         }
       }
 
       if (projectRepository.existsById(project.id)) {
         errors.add(
-          "'${Column.PROJECT_NUMBER.csvName}': project with id " +
-              "'${project.id}' already exists in the database"
+          RowResult.ColumnError(
+            "project with id '${project.id}' already exists in the database",
+            Column.PROJECT_NUMBER
+          )
         )
       }
 
@@ -302,7 +353,12 @@ private class RowParser(private val row: Array<String>) {
       try {
         it.toInt()
       } catch (e: NumberFormatException) {
-        _errors.add("'${column.csvName}': is not a number, was: \"$it\"")
+        _errors.add(
+          RowResult.ColumnError(
+            "is not a number, was: \"$it\"",
+            column
+          )
+        )
         null
       }
     }
@@ -315,7 +371,12 @@ private class RowParser(private val row: Array<String>) {
     try {
       parseDkjsDate(it)
     } catch (e: DateTimeParseException) {
-      _errors.add("'${column.csvName}': is not a valid date in format 'dd.mm.yyyy', was: \"$it\"")
+      _errors.add(
+        RowResult.ColumnError(
+          "is not a valid date in format 'dd.mm.yyyy', was: \"$it\"",
+          column
+        )
+      )
       LocalDateTime.MIN
     }
   }
@@ -330,8 +391,10 @@ private class RowParser(private val row: Array<String>) {
         value.toInt()
       } catch (e: NumberFormatException) {
         _errors.add(
-          "'${Column.PROJECT_GOALS.csvName}': must must consist of numbers " +
-              "in the range 1..7, was: \"$value\""
+          RowResult.ColumnError(
+            "must must consist of numbers in the range 1..7, was: \"$value\"",
+            Column.PROJECT_GOALS
+          )
         )
         // despite errors we are transforming goals to the sequence of
         // valid goal numbers, to avoid JSR-303 validation errors
@@ -343,11 +406,11 @@ private class RowParser(private val row: Array<String>) {
   /**
    * Internal list where errors are appended to on failed parsing
    */
-  private val _errors = mutableListOf<String>()
+  private val _errors = mutableListOf<RowResult.ColumnError>()
 
   /**
    * Public error list to query once all parsing is done
    */
-  val errors get() = _errors.toList()
+  val errors: List<RowResult.ColumnError> get() = _errors.toList()
 
 }
