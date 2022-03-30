@@ -151,6 +151,13 @@ class Notification(
 
 )
 
+fun goalsToLetters(goals: Set<Int>): String =
+  goals
+    .filter { it != 1 }
+    .sorted()
+    .map { (it + 64).toChar() }
+    .joinToString(", ")
+
 interface ProjectRepository : CrudRepository<Project, String> {
 
   fun countBySurveyProcessPhase(finished: SurveyProcess.Phase): Int
