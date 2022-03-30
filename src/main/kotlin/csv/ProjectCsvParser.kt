@@ -117,9 +117,7 @@ enum class Column(
 
   companion object {
 
-    private val pathToColumnMap: Map<String, Column> = values()
-      .map { Pair(it.path, it) }
-      .toMap()
+    private val pathToColumnMap: Map<String, Column> = values().associateBy { it.path }
 
     /**
      * Returns the [Column] instance based on given [Project] bean property path.
