@@ -10,25 +10,14 @@ options accordingly.
 :information_source: The `application.yml` file is added to `.gitignore` to prevent secrets
 from being committed to the git repository.
 
-### Using Kotlin with spring-boot
+### Run locally
+This project is set up with `gradle`, some of the useful commands include:
+- `./gradlew build` to build the application
+- `./gradlew test` to execute tests
+- `./gradlew build -x test` to run the task `build` and exclude the task `test`
+- `./gradlew bootRun` to run the main application class
 
-https://spring.io/guides/tutorials/spring-boot-kotlin/
-
-Most of the changes described there are already applied to this project. If lazy entity fetching
-is needed, the following needs to be added to the `build.gradle.kts`
-
-```kotlin
-plugins {
-  //...
-  kotlin("plugin.allopen") version "1.4.32"
-}
-
-allOpen {
-  annotation("javax.persistence.Entity")
-  annotation("javax.persistence.Embeddable")
-  annotation("javax.persistence.MappedSuperclass")
-}
-```
+If the `bootRun` task succeeds, the application is served on `localhost:8080`.
 
 ### Connect to the application running on a remote server
 Before the dev server is set-up to expose the application in a secure way,
@@ -137,6 +126,27 @@ in the following path: `build/libs/dkjs-survey-process-engine-1.0-SNAPSHOT.jar`.
 
 Some context and learning materials useful in development of this application:
 
+### Using Kotlin with spring-boot
+
+https://spring.io/guides/tutorials/spring-boot-kotlin/
+
+Most of the changes described there are already applied to this project. If lazy entity fetching
+is needed, the following needs to be added to the `build.gradle.kts`
+
+```kotlin
+plugins {
+  //...
+  kotlin("plugin.allopen") version "1.4.32"
+}
+
+allOpen {
+  annotation("javax.persistence.Entity")
+  annotation("javax.persistence.Embeddable")
+  annotation("javax.persistence.MappedSuperclass")
+}
+```
+
+### Various resources
  * https://zetcode.com/springboot/undertow/
  * https://getbootstrap.com/docs/5.1/forms/validation/
  * https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html
@@ -150,3 +160,4 @@ Some context and learning materials useful in development of this application:
  * https://ktor.io/docs/auth.html
  * https://github.com/ktorio/ktor-documentation/tree/main/codeSnippets/snippets/client-auth-oauth-google
  * https://www.wimdeblauwe.com/blog/2021/09/14/thymeleaf-iteration-and-fragments/
+
