@@ -17,8 +17,8 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
         auth
             .inMemoryAuthentication()
-            .withUser("user")
-            .password(encoder.encode("password"))
+            .withUser("dkjs")
+            .password("{bcrypt}\$2a\$12\$5QZi66oy2yNpjhRsGwvO5uldyP/z90nYJbQrxj2d4sNpoJVa93XOq")
             .roles("USER")
     }
 }
