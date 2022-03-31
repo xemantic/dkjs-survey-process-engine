@@ -4,13 +4,13 @@
 
 package de.dkjs.survey.csv
 
+import de.dkjs.survey.csv.Column.*
+import de.dkjs.survey.csv.RowResult.RowError
 import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.ProjectRepository
 import de.dkjs.survey.model.Provider
 import de.dkjs.survey.model.ProviderRepository
-import de.dkjs.survey.test.shouldNotReportRow
-import de.dkjs.survey.test.shouldReportRow
-import de.dkjs.survey.test.startOfDay
+import de.dkjs.survey.test.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.*
 import io.kotest.matchers.shouldBe
@@ -172,12 +172,12 @@ class ProjectCsvParserTest {
     // the last line is corrupted resulting in extra rows added by confused parser
     errors shouldHaveMessage "Invalid data in rows: 1, 3, 4, 5, 6"
     errors.rows shouldHaveSize 6
-    errors.shouldReportRow(1, "Wrong CSV column count, expected 18, but was 17")
+    errors.shouldReportRow(1, RowError("Wrong CSV column count, expected 18, but was 17"))
     errors.shouldNotReportRow(2)
-    errors.shouldReportRow(3, "Wrong CSV column count, expected 18, but was 9")
-    errors.shouldReportRow(4, "Unterminated quoted field at end of CSV line. Beginning of lost text: [31.09.2022\"\n]")
-    errors.shouldReportRow(5, "Wrong CSV column count, expected 18, but was 17")
-    errors.shouldReportRow(6, "Unterminated quoted field at end of CSV line. Beginning of lost text: [31.09.2022\"\n]")
+    errors.shouldReportRow(3, RowError("Wrong CSV column count, expected 18, but was 9"))
+    errors.shouldReportRow(4, RowError("Unterminated quoted field at end of CSV line. Beginning of lost text: [31.09.2022\"\n]"))
+    errors.shouldReportRow(5, RowError("Wrong CSV column count, expected 18, but was 17"))
+    errors.shouldReportRow(6, RowError("Unterminated quoted field at end of CSV line. Beginning of lost text: [31.09.2022\"\n]"))
   }
 
   @Test
@@ -210,36 +210,34 @@ class ProjectCsvParserTest {
     errors shouldHaveMessage "Invalid data in rows: 1, 2, 3, 4"
     errors.rows shouldHaveSize 4
     errors.shouldReportRow(1,
-      "'project.number': must not be empty",
-      "'project.name': must not be empty",
-      "'project.status': must not be empty",
-      "'project.provider': must not be empty",
-      "'provider.number': must not be empty",
-      "'project.pronoun': must not be empty",
-      "'project.firstname': must not be empty",
-      "'project.lastname': must not be empty",
-      "'project.mail': must not be empty",
-      "'participants.age1to5': must be greater than or equal to 0",
-      "'participants.age20to26': is not a number, was: \"FOO\"",
-      "'participants.worker': is not a number, was: \"BAR\"",
-      "'project.goals': must must consist of numbers in the range 1..7, was: \"foo\"",
-      "'project.goals': must must consist of numbers in the range 1..7, was: \"bar\"",
-      "'project.start': is not a valid date in format 'dd.mm.yyyy', was: \"\"",
-      "'project.end': is not a valid date in format 'dd.mm.yyyy', was: \"\""
+      PROJECT_NUMBER that "must not be empty",
+      PROJECT_NAME that "must not be empty",
+      PROJECT_STATUS that "must not be empty",
+      PROJECT_PROVIDER that "must not be empty",
+      PROVIDER_NUMBER that "must not be empty",
+      PROJECT_PRONOUN that "must not be empty",
+      PROJECT_FIRSTNAME that "must not be empty",
+      PROJECT_LASTNAME that "must not be empty",
+      PROJECT_MAIL that "must not be empty",
+      PARTICIPANTS_AGE1TO5 that "must be greater than or equal to 0",
+      PARTICIPANTS_AGE20TO26 that "is not a number, was: \"FOO\"",
+      PARTICIPANTS_WORKER that "is not a number, was: \"BAR\"",
+      PROJECT_GOALS that "must must consist of numbers in the range 1..7, was: \"foo\"",
+      PROJECT_GOALS that "must must consist of numbers in the range 1..7, was: \"bar\"",
+      PROJECT_START that "is not a valid date in format 'dd.mm.yyyy', was: \"\"",
+      PROJECT_END that "is not a valid date in format 'dd.mm.yyyy', was: \"\""
     )
     errors.shouldReportRow(2,
-      "'project.mail': must be a well-formed email address",
-      "'project.goals': must be a set of integer numbers within 1..7 range " +
-          "and 1 must be always present",
-      "'project.start': is not a valid date in format 'dd.mm.yyyy', was: \"$invalidStart\"",
-      "'project.end': is not a valid date in format 'dd.mm.yyyy', was: \"$invalidEnd\"",
+      PROJECT_MAIL that "must be a well-formed email address",
+      PROJECT_GOALS that "must be a set of integer numbers within 1..7 range and 1 must be always present",
+      PROJECT_START that "is not a valid date in format 'dd.mm.yyyy', was: \"$invalidStart\"",
+      PROJECT_END that "is not a valid date in format 'dd.mm.yyyy', was: \"$invalidEnd\""
     )
     errors.shouldReportRow(3,
-      "'project.goals': size must be between 1 and 3"
+      PROJECT_GOALS that "size must be between 1 and 3"
     )
     errors.shouldReportRow(4,
-      "'project.goals': must be a set of integer numbers within 1..7 range " +
-          "and 1 must be always present",
+      PROJECT_GOALS that "must be a set of integer numbers within 1..7 range and 1 must be always present"
     )
   }
 
@@ -265,9 +263,9 @@ class ProjectCsvParserTest {
     //then
     errors shouldHaveMessage "Invalid data in rows: 3, 5, 6"
     errors.rows shouldHaveSize 6
-    errors.shouldReportRow(3, "'project.number': already declared in row: 1")
-    errors.shouldReportRow(5, "'project.number': already declared in row: 4")
-    errors.shouldReportRow(6, "'project.number': already declared in row: 1")
+    errors.shouldReportRow(3, PROJECT_NUMBER that "already declared in row: 1")
+    errors.shouldReportRow(5, PROJECT_NUMBER that "already declared in row: 4")
+    errors.shouldReportRow(6, PROJECT_NUMBER that "already declared in row: 1")
   }
 
   @Test
@@ -307,7 +305,7 @@ class ProjectCsvParserTest {
     //then
     errors shouldHaveMessage "Invalid data in rows: 2"
     errors.rows shouldHaveSize 2
-    errors.shouldReportRow(2, "'provider.number': already declared in row: 1 (under name \"serious; business ÖA GmbH\")")
+    errors.shouldReportRow(2, PROVIDER_NUMBER that "already declared in row: 1 (under name \"serious; business ÖA GmbH\")")
   }
 
   @Test
@@ -357,7 +355,7 @@ class ProjectCsvParserTest {
     //then
     errors shouldHaveMessage "Invalid data in rows: 1"
     errors.rows shouldHaveSize 1
-    errors.shouldReportRow(1, "'project.provider': provider with id '123456' already exists in the database under name: \"serious; business ÖA GmbH\"")
+    errors.shouldReportRow(1, PROJECT_PROVIDER that "provider with id '123456' already exists in the database under name: \"serious; business ÖA GmbH\"")
   }
 
   @Test
@@ -383,7 +381,7 @@ class ProjectCsvParserTest {
     // then
     errors shouldHaveMessage "Invalid data in rows: 1"
     errors.rows shouldHaveSize 1
-    errors.shouldReportRow(1, "'project.number': project with id '4021000014 -1' already exists in the database")
+    errors.shouldReportRow(1, PROJECT_NUMBER that "project with id '4021000014 -1' already exists in the database")
   }
 
   // -- test utilities

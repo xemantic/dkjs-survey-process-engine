@@ -1,0 +1,5 @@
+"project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+"";"";"";;"";"";"";"";"";-1;0;1000000;0;FOO;BAR;"01,foo,bar";"";""
+"4022000132 -1";"50 - bewilligt";"foo";234567;"Frau";"Maxi";"Musterfrau";"p1urtümlich@example@.com";"project2";794;0;0;0;0;NA;"01,-02,42";"17-01-2022";"01-07-2022"
+"4022000131 -1";"50 - bewilligt";"very: important & club e.V.";234567;"Frau";"Maxi";"Musterfrau";"p2gärung@example.net";"FooB";794;0;0;0;0;NA;"01,02,03,04";"17.01.2022";"01.07.2022"
+"4022000131 -2";"50 - bewilligt";"very: important & club e.V.";234567;"Frau";"Maxi";"Musterfrau";"p2gärung@example.net";"FooB";794;0;0;0;0;NA;"02,03";"17.01.2022";"01.07.2022"

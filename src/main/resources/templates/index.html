@@ -2,71 +2,567 @@
 
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
 
-<head th:replace="base :: common_header(~{::title})">
-    <title>CSV upload</title>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DKJS Survey Process Engine</title>
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,400;0,700;1,400;1,700&display=swap">
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <style>
+
+    :root {
+      --mdc-typography-font-family: 'Ubuntu', sans-serif;
+      --mdc-theme-primary: #009db5;
+      --mdc-theme-secondary: #f8b006;
+    }
+
+    html {
+      font-family: 'Ubuntu', sans-serif;
+      margin: 0;
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      height: 100%;
+    }
+
+    main {
+      padding: 1rem;
+    }
+
+    .mdc-drawer .mdc-list-item {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .mdc-drawer .mdc-list-item .mdc-list-item__graphic {
+      margin-right: 1rem;
+    }
+
+    .mdc-data-table {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    #file-selector form {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      margin-top: 1rem;
+    }
+
+    #file-selector form #file-input {
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      position: absolute;
+      z-index: -1;
+    }
+
+    #file-selector form #project-file-display {
+      width: 100%;
+      text-align: center;
+      line-height: 6rem !important;
+      border: .2rem;
+      border-style: dashed;
+      border-color: var(--mdc-theme-secondary);
+      min-height: 2rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    iframe {
+      width: 100%;
+      height: 95%;
+      border: 0;
+    }
+
+    th[colspan]:not([colspan="1"]) {
+      text-align: center;
+    }
+
+    .dkjs-error-column {
+      font-size: .618rem;
+      color: red;
+    }
+
+    .dkjs-message {
+      text-align: center;
+    }
+
+    .dkjs-error {
+      color: red;
+    }
+
+    .dkjs-error-row {
+      background-color: #ffdede;
+    }
+
+    #dkjs-projects-table tr {
+      height: 2rem;
+    }
+
+    .dkjs-projects-actions {
+      text-align: center;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+  <script>
+
+    function main() {
+
+      const topAppBarElement = element(".mdc-top-app-bar");
+      const topAppBar = new mdc.topAppBar.MDCTopAppBar(topAppBarElement);
+      const mainElement = element("main");
+
+      const drawer = mdc.drawer.MDCDrawer.attachTo(element(".mdc-drawer"));
+
+      whenClicked("#dkjs-nav-handle", () => {
+        drawer.open = true;
+      });
+
+      whenClicked(".mdc-drawer .mdc-list", () => {
+        drawer.open = false;
+      });
+
+      document.body.addEventListener("MDCDrawer:closed", () => {
+        mainElement.querySelector("input, button").focus();
+      });
+
+      const actionUpload = element("#action-upload");
+      enableRipple(element("#action-select-file"));
+      enableRipple(actionUpload);
+
+      const navItemActivatedClass = "mdc-list-item--activated";
+
+      var isOnMain = true;
+      const showDatabaseExplorer = () => {
+        if (!isOnMain) {
+          return;
+        }
+        mainElement.style.display = "none";
+        const explorerFrame = document.createElement("iframe");
+        explorerFrame.src = "api/";
+        explorerFrame.className = "mdc-top-app-bar--fixed-adjust";
+        document.body.appendChild(explorerFrame);
+        element("#nav-action-upload").classList.remove(navItemActivatedClass);
+        element("#nav-action-explore").classList.add(navItemActivatedClass);
+        isOnMain = false;
+      }
+
+      const showMain = () => {
+        if (isOnMain) {
+          return;
+        }
+        element("iframe").remove();
+        mainElement.style.display = "block";
+        element("#nav-action-explore").classList.remove(navItemActivatedClass);
+        element("#nav-action-upload").classList.add(navItemActivatedClass);
+        isOnMain = true;
+      }
+
+      whenClicked("#toolbar-action-upload", showMain);
+      whenClicked("#toolbar-action-explore", showDatabaseExplorer);
+      whenClicked("#nav-action-upload", showMain);
+      whenClicked("#nav-action-explore", showDatabaseExplorer);
+
+      const fileInput = element("#file-input");
+      const projectFileDisplay = element("#project-file-display");
+      const projectFileDisplayRipple = enableRipple(projectFileDisplay);
+
+      when(fileInput, "change", (event) => {
+        const file = event.target.files[0].name;
+        projectFileDisplay.innerText = file;
+        actionUpload.disabled = false;
+      });
+
+      when(projectFileDisplay, "dragenter", (e) => {
+        projectFileDisplayRipple.activate();
+        e.preventDefault();
+      });
+
+      when(projectFileDisplay, "dragover", (e) => {
+        e.preventDefault();
+      });
+
+      when(projectFileDisplay, "dragleave", (e) => {
+        projectFileDisplayRipple.deactivate();
+      });
+
+      when(projectFileDisplay, "drop", (event) => {
+        if (event.dataTransfer.files.length > 0) {
+          const file = event.dataTransfer.files[0];
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          fileInput.files = dt.files;
+          projectFileDisplay.innerText = file.name;
+          actionUpload.disabled = false;
+        }
+        event.preventDefault();
+      });
+
+      whenClicked("#action-submit-projects", () => {
+        window.location.replace("submit-projects");
+      });
+    }
+
+    window.onload = (event) => {
+      main()
+    };
+
+    const enableRipple = (element) => new mdc.ripple.MDCRipple(element);
+
+    const element = (selector) => document.querySelector(selector);
+
+    function whenClicked(selector, action) {
+      const node = element(selector);
+      const ripple = enableRipple(node);
+      if (node.classList.contains("mdc-icon-button")) {
+        ripple.unbounded = true;
+      }
+      node.addEventListener("click", action);
+    }
+
+    function when(el, event, action) {
+      ((el instanceof EventTarget) ? el : element(el)).addEventListener(event, action);
+    }
+
+  </script>
+
 </head>
 
-<body>
+<body class="mdc-typography">
 
-    <h1>Upload</h1>
-
-    <a href="api/" class="btn btn-secondary">Database Explorer</a>
-
-    <form method="post" th:action="@{/upload-projects}"
-          enctype="multipart/form-data" class="row g-3">
-
-        <h3 class="col-12"
-             th:if="${fileName ne null}"
-             th:text="'Uploaded file: ' + ${fileName}"></h3>
-
-        <div class="col-12"
-             th:if="${errorRows ne null}"
-             th:each="errorRow : ${errorRows}">
-            <div th:if="${errorRow.project ne null}">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead th:replace="base :: project_header()"/>
-                        <tbody>
-                        <tr th:replace="base :: project_tr(${errorRow.project})" />
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="alert alert-primary">
-                <span class="d-inline-block"
-                      th:each="message: ${errorRow.messages}"
-                      th:text="${message}" />
-            </div>
-        </div>
-
-        <div class="col-12">
-            <label for="file" class="form-label">Choose CSV file</label>
-            <input type="file" name="projectsCsv" class="form-control"
-                   id="file" required
-                   onChange="document.getElementById('uploadSubmitButton').style.visibility = this.value ? 'visible' : 'hidden'">
-        </div>
-        <div class="col-12">
-            <button type="submit" id="uploadSubmitButton"
-                    class="btn btn-primary">Upload File</button>
-        </div>
-    </form>
-
-    <section class="project-list" th:if="${session.projects ne null}">
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead th:replace="base :: project_header()"/>
-                <tbody>
-                <th:block th:each="project : ${session.projects}">
-                    <tr th:replace="base :: project_tr(${project})" />
-                </th:block>
-                </tbody>
-            </table>
-        </div>
-        <div class="col-12" th:if="${#lists.isEmpty(errors)}">
-            <a href="/submit-projects" class="btn btn-primary">Submit Projects</a>
-        </div>
+<header class="mdc-top-app-bar">
+  <div class="mdc-top-app-bar__row">
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+      <button id="dkjs-nav-handle"
+              class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button"
+              aria-label="Open navigation menu">
+        <span class="mdc-icon-button__ripple"></span>
+        <span class="mdc-icon-button__touch"></span>
+        menu
+      </button>
+      <h1 class="mdc-top-app-bar__title">DKJS Survey Process Engine</h1>
     </section>
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end"
+             role="toolbar">
+      <button id="toolbar-action-upload"
+              class="material-icons mdc-top-app-bar__action-item mdc-icon-button"
+              aria-label="Upload Projects CSV">
+        <span class="mdc-icon-button__ripple"></span>
+        <span class="mdc-icon-button__touch"></span>
+        upload
+      </button>
+      <button id="toolbar-action-explore"
+              class="material-icons mdc-top-app-bar__action-item mdc-icon-button"
+              aria-label="Explore Database">
+        <span class="mdc-icon-button__ripple"></span>
+        <span class="mdc-icon-button__touch"></span>
+        search
+      </button>
+    </section>
+  </div>
+</header>
 
-    <footer th:replace="base :: common_footer()"/>
+<aside class="mdc-drawer mdc-drawer--modal">
+  <div class="mdc-drawer__header">
+    <h3 class="mdc-drawer__title">Survey Process Engine</h3>
+    <h6 class="mdc-drawer__subtitle">Deutsche Kinder - und Jugendstiftung</h6>
+  </div>
+  <div class="mdc-drawer__content">
+    <nav class="mdc-list">
+      <a id="nav-action-upload" class="mdc-list-item mdc-list-item--activated" aria-current="page" tabindex="0">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">upload</i>
+        <span class="mdc-list-item__text">Upload Project CSV</span>
+      </a>
+      <a id="nav-action-explore" class="mdc-list-item">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">search</i>
+        <span class="mdc-list-item__text">Explore Database</span>
+      </a>
+    </nav>
+  </div>
+</aside>
+<!-- will block the main panel when drawer is open, scrim has to be the following element -->
+<div class="mdc-drawer-scrim"></div>
+
+<main class="mdc-top-app-bar--fixed-adjust">
+
+  <section id="file-selector">
+
+    <form method="post"
+          th:action="@{/upload-projects}"
+          enctype="multipart/form-data">
+
+      <div class="mdc-touch-target-wrapper">
+        <label for="file-input"
+               id="action-select-file"
+               class="mdc-button mdc-button--touch mdc-button--outlined mdc-button--icon-leading">
+          <span class="mdc-button__ripple"></span>
+          <span class="mdc-button__touch"></span>
+          <i class="material-icons mdc-button__icon" aria-hidden="true">file_open</i>
+          <span class="mdc-button__label">Select CSV file</span>
+        </label>
+      </div>
+
+      <input type="file" name="projectsCsv" id="file-input" required>
+
+      <div id="project-file-display" class="mdc-typography--headline5 mdc-ripple-surface">
+        or drop it here
+      </div>
+
+      <div class="mdc-touch-target-wrapper">
+        <button type="submit"
+                id="action-upload"
+                class="mdc-button mdc-button--touch mdc-button--raised mdc-button--icon-leading"
+                disabled>
+          <span class="mdc-button__ripple"></span>
+          <span class="mdc-button__touch"></span>
+          <i class="material-icons mdc-button__icon" aria-hidden="true">upload</i>
+          <span class="mdc-button__label">Upload</span>
+        </button>
+      </div>
+
+    </form>
+  </section>
+
+  <section id="dkjs-project-csv-table" th:if="${csvError ne null}">
+    <h2 class="mdc-typography--headline4 dkjs-message dkjs-error">cannot process <code th:text="${fileName}"></code></h2>
+    <h3 class="mdc-typography--headline5 dkjs-message dkjs-error" th:text="${csvError}">Error message</h3>
+    <div class="mdc-data-table">
+      <div class="mdc-data-table__table-container">
+        <table class="mdc-data-table__table" aria-label="Project CSV import errors">
+          <thead>
+          <tr class="mdc-data-table__header-row">
+            <th class="mdc-data-table__header-cell" role="columnheader" scope="col">row</th>
+            <th:block th:each="column, iter : ${csvColumns}">
+              <th class="mdc-data-table__header-cell"
+                  th:classappend="${column.isNumeric} ? mdc-data-table__header-cell--numeric"
+                  role="columnheader"
+                  scope="col" th:text="${column.csvName}">
+                column name
+              </th>
+            </th:block>
+          </tr>
+          </thead>
+          <tbody class="mdc-data-table__content">
+          <th:block th:each="row, iter : ${csvRows}">
+            <tr class="mdc-data-table__row" th:classappend="${row.hasErrors} ? dkjs-error-row">
+              <th class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  scope="row">
+                <div th:text="${iter.index + 1}">1</div>
+                <th:block th:each="rowError: ${row.rowErrors}">
+                  <div th:text="${rowError}" class="dkjs-error">row error</div>
+                </th:block>
+              </th>
+              <th:block th:each="data, iter: ${row.data}">
+                <td class="mdc-data-table__cell"
+                    th:classappend="${csvColumns[iter.index].isNumeric} ? mdc-data-table__cell--numeric">
+                  <div th:text="${data}">foo</div>
+                  <th:block th:each="columnError: ${row.columnErrors.get(csvColumns[iter.index])}">
+                    <div th:text="${columnError}"
+                         class="dkjs-error-column">
+                      column error
+                    </div>
+                  </th:block>
+                </td>
+              </th:block>
+            </tr>
+          </th:block>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="dkjs-projects-table" th:if="${session.projects ne null}">
+    <h2 class="mdc-typography--headline4 dkjs-message">Review projects before submitting</h2>
+    <div class="mdc-data-table">
+      <div class="mdc-data-table__table-container">
+        <table class="mdc-data-table__table" aria-label="Imported projects for review">
+          <thead>
+          <tr class="mdc-data-table__header-row">
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col"
+                rowspan="2">
+              Row
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col"
+                rowspan="2">
+              Name
+            </th>
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col"
+                rowspan="2">
+              Id
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col"
+                rowspan="2">
+              Status
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col"
+                rowspan="2">
+              Provider
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col"
+                rowspan="2">
+              Person
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col"
+                rowspan="2">
+              Goals
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col" colspan="6">
+              Participants
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col" colspan="2">
+              Period
+            </th>
+          </tr>
+          <tr class="mdc-data-table__header-row">
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col">
+              1-5
+            </th>
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col">
+              6-10
+            </th>
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col">
+              11-15
+            </th>
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col">
+              16-20
+            </th>
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col">
+              20-26
+            </th>
+            <th class="mdc-data-table__header-cell mdc-data-table__header-cell--numeric"
+                role="columnheader"
+                scope="col">
+              worker
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col">
+              Start
+            </th>
+            <th class="mdc-data-table__header-cell"
+                role="columnheader"
+                scope="col">
+              End
+            </th>
+          </tr>
+          </thead>
+          <tbody class="mdc-data-table__content">
+          <th:block th:each="project, iter : ${session.projects}">
+            <tr class="mdc-data-table__row">
+              <th class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  scope="row"
+                  th:text="${iter.index + 1}">
+              </th>
+              <td class="mdc-data-table__cell" th:text="${project.name}"></td>
+              <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  th:text="${project.id}">
+              </td>
+              <td class="mdc-data-table__cell" th:text="${project.status}"></td>
+              <td class="mdc-data-table__cell">
+                <div th:text="${project.provider.id}"></div>
+                <div th:text="${project.provider.name}"></div>
+              </td>
+              <td class="mdc-data-table__cell">
+                <div>
+                  <span th:text="${project.contactPerson.pronoun}"></span>
+                  <span th:text="${project.contactPerson.firstName}"></span>
+                  <span th:text="${project.contactPerson.lastName}"></span>
+                </div>
+                <div>
+                  <a th:href="'mailto:'+${project.contactPerson.email}"
+                     th:text="${project.contactPerson.email}">
+                  </a>
+                </div>
+              </td>
+              <td class="mdc-data-table__cell"
+                  th:text="${T(de.dkjs.survey.model.DkjsDomainModelKt).goalsToLetters(project.goals)}">
+              </td>
+              <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  th:text="${project.participants.age1to5} ?: 'N/A'">
+              </td>
+              <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  th:text="${project.participants.age6to10} ?: 'N/A'">
+              </td>
+              <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  th:text="${project.participants.age11to15} ?: 'N/A'">
+              </td>
+              <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  th:text="${project.participants.age16to19} ?: 'N/A'">
+              </td>
+              <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  th:text="${project.participants.age20to26} ?: 'N/A'">
+              </td>
+              <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
+                  th:text="${project.participants.worker} ?: 'N/A'">
+              </td>
+              <td class="mdc-data-table__cell"
+                  th:text="${T(de.dkjs.survey.time.DkjsTimeKt).getDkjsDate(project.start)}">
+              </td>
+              <td class="mdc-data-table__cell"
+                  th:text="${T(de.dkjs.survey.time.DkjsTimeKt).getDkjsDate(project.end)}">
+              </td>
+            </tr>
+          </th:block>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="dkjs-projects-actions">
+      <div class="mdc-touch-target-wrapper">
+        <button type="submit"
+                id="action-submit-projects"
+                class="mdc-button mdc-button--touch mdc-button--raised mdc-button--icon-leading">
+          <span class="mdc-button__ripple"></span>
+          <span class="mdc-button__touch"></span>
+          <i class="material-icons mdc-button__icon" aria-hidden="true">done</i>
+          <span class="mdc-button__label">Submit Projects</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
 </body>
 </html>

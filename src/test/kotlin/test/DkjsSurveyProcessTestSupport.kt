@@ -4,7 +4,9 @@
 
 package de.dkjs.survey.test
 
+import de.dkjs.survey.csv.Column
 import de.dkjs.survey.csv.CsvParsingException
+import de.dkjs.survey.csv.RowResult
 import org.slf4j.Logger
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -41,7 +43,7 @@ fun sleepForMaximalProcessDuration(logger: Logger, seconds: Int) {
 fun startOfDay(year: Int, month: Int, day: Int): LocalDateTime =
   LocalDate.of(year, month, day).atStartOfDay()
 
-fun CsvParsingException.shouldReportRow(row: Int, vararg errors: String) {
+fun CsvParsingException.shouldReportRow(row: Int, vararg errors: RowResult.Error) {
   require(row > 0) { "row numeration must start with 1" }
   require(errors.isNotEmpty()) { "messages cannot be empty" }
   if (errors.size == 1) {
@@ -49,9 +51,21 @@ fun CsvParsingException.shouldReportRow(row: Int, vararg errors: String) {
   } else {
     assertSoftly {
       rows shouldHaveAtLeastSize row
-      rows[row - 1].errors.sorted() shouldContainExactly errors.sorted().toList()
+      rows[row - 1].errors
+        .sortedWith(errorOrder)
+        .shouldContainExactly(
+          errors.sortedWith(errorOrder).toList()
+        )
     }
   }
+}
+
+private val errorOrder = Comparator<RowResult.Error> { a, b ->
+  val difference = if ((a is RowResult.ColumnError) && (b is RowResult.ColumnError)) {
+    a.column.compareTo(b.column)
+  } else 0
+  if (difference != 0) difference
+  else a.message.compareTo(b.message)
 }
 
 fun CsvParsingException.shouldNotReportRow(row: Int) {
@@ -59,3 +73,8 @@ fun CsvParsingException.shouldNotReportRow(row: Int) {
   rows shouldHaveAtLeastSize row
   rows[row - 1].errors shouldHaveSize 0
 }
+
+infix fun Column.that(message: String): RowResult.ColumnError = RowResult.ColumnError(
+  message,
+  this
+)
