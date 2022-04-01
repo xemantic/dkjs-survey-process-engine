@@ -1,24 +1,53 @@
-package de.dkjs.survey
+package de.dkjs.survey.security
 
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.ConstructorBinding
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.crypto.factory.PasswordEncoderFactories
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
+import javax.inject.Inject
 
+
+@ConstructorBinding
+@ConfigurationProperties("credentials")
+data class CredentialsFromProperties (
+    val username: String,
+    val password: String
+)
 
 @Configuration
 @EnableWebSecurity
-class WebSecurityConfig : WebSecurityConfigurerAdapter() {
+class WebSecurityConfig @Inject constructor(
+    private val credentials: CredentialsFromProperties,
+) : WebSecurityConfigurerAdapter() {
 
-    override fun configure(auth: AuthenticationManagerBuilder) {
-
-        val encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder()
-
-        auth
-            .inMemoryAuthentication()
-            .withUser("dkjs")
-            .password("{bcrypt}\$2a\$12\$5QZi66oy2yNpjhRsGwvO5uldyP/z90nYJbQrxj2d4sNpoJVa93XOq")
+    @Bean
+    override fun userDetailsService(): UserDetailsService? {
+        val user: UserDetails = User.builder()
+            .username(credentials.username)
+            .password(credentials.password)
             .roles("USER")
+            .build()
+        return InMemoryUserDetailsManager(user)
     }
+
+    @Throws(Exception::class)
+    override fun configure(http: HttpSecurity) {
+        http
+            .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+            .formLogin()
+                .permitAll()
+                .and()
+            .logout()
+                .permitAll()
+    }
+
 }
