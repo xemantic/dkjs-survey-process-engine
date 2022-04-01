@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -16,6 +17,7 @@ import javax.inject.Inject
 
 @ConstructorBinding
 @ConfigurationProperties("credentials")
+@Profile("!test")
 data class CredentialsFromProperties (
     val username: String,
     val password: String
@@ -23,6 +25,7 @@ data class CredentialsFromProperties (
 
 @Configuration
 @EnableWebSecurity
+@Profile("!test")
 class WebSecurityConfig @Inject constructor(
     private val credentials: CredentialsFromProperties,
 ) : WebSecurityConfigurerAdapter() {
