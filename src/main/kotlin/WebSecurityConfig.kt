@@ -1,4 +1,4 @@
-package de.dkjs.survey.security
+package de.dkjs.survey
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
