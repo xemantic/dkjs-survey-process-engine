@@ -34,7 +34,7 @@ class Project(
   @get:NotEmpty
   val name: String,
 
-  @OneToOne
+  @OneToOne(cascade = [CascadeType.ALL])
   @get:Valid
   val provider: Provider,
 
@@ -58,7 +58,7 @@ class Project(
   @get:NotNull
   val end: LocalDateTime,
 
-  @OneToOne
+  @OneToOne(cascade = [CascadeType.ALL])
   var surveyProcess: SurveyProcess? = null
 
 )
@@ -151,12 +151,19 @@ class Notification(
 
 )
 
-fun goalsToLetters(goals: Set<Int>): String =
+fun goalsToCapitalLetters(goals: Set<Int>): String =
   goals
     .filter { it != 1 }
     .sorted()
-    .map { (it + 64).toChar() }
+    .map { goalToCapitalLetter(it) }
     .joinToString(", ")
+
+fun goalToCapitalLetter(goal: Int): Char = goalToLetter(goal, 64)
+
+fun goalToSmallLetter(goal: Int): Char = goalToLetter(goal, 96)
+
+fun goalToLetter(goal: Int, charOffset: Int): Char =
+  (goal + charOffset).toChar()
 
 interface ProjectRepository : CrudRepository<Project, String> {
 

@@ -23,6 +23,7 @@ import javax.inject.Singleton
 @Component
 class DkjsSurveyProcessEngine @Inject constructor(
   private val logger: Logger,
+  private val providerRepository: ProviderRepository,
   private val projectRepository: ProjectRepository,
   private val linkGenerator: TypeformSurveyLinkGenerator,
   private val emailService: SurveyEmailSender,
