@@ -12,7 +12,6 @@ import javax.validation.*
 import javax.validation.constraints.*
 import kotlin.reflect.KClass
 
-
 enum class ScenarioType {
   PRE,
   POST,
@@ -26,37 +25,37 @@ class Project(
   @Id
 //  @get:Pattern(regexp = "[0-9- ]+")
   @get:NotEmpty
-  val id: String,  // project.number in input data
+  var id: String,  // project.number in input data
 
   @get:NotEmpty
-  val status: String,
+  var status: String,
 
   @get:NotEmpty
-  val name: String,
+  var name: String,
 
   @OneToOne(cascade = [CascadeType.ALL])
   @get:Valid
-  val provider: Provider,
+  var provider: Provider,
 
   @Embedded
   @get:Valid
-  val contactPerson: ContactPerson,
+  var contactPerson: ContactPerson,
 
   @ElementCollection
   @get:NotEmpty
   @get:Size(min = 1, max = 3)
   @get:ValidGoalIds
-  val goals: Set<Int>,
+  var goals: Set<Int>,
 
   @Embedded
   @get:Valid
-  val participants: Participants,
+  var participants: Participants,
 
   @get:NotNull
-  val start: LocalDateTime,
+  var start: LocalDateTime,
 
   @get:NotNull
-  val end: LocalDateTime,
+  var end: LocalDateTime,
 
   @OneToOne(cascade = [CascadeType.ALL])
   var surveyProcess: SurveyProcess? = null
@@ -68,10 +67,10 @@ class Provider(
 
   @Id
   @get:NotEmpty
-  val id: String,
+  var id: String,
 
   @get:NotEmpty
-  val name: String
+  var name: String
 
 )
 
@@ -80,22 +79,22 @@ class Provider(
 class Participants(
 
   @get:Min(0)
-  val age1to5: Int?,
+  var age1to5: Int?,
 
   @get:Min(0)
-  val age6to10: Int?,
+  var age6to10: Int?,
 
   @get:Min(0)
-  val age11to15: Int?,
+  var age11to15: Int?,
 
   @get:Min(0)
-  val age16to19: Int?,
+  var age16to19: Int?,
 
   @get:Min(0)
-  val age20to26: Int?,
+  var age20to26: Int?,
 
   @get:Min(0)
-  val worker: Int?
+  var worker: Int?
 
 )
 
@@ -121,12 +120,12 @@ class ContactPerson(
 class SurveyProcess(
 
   @Id
-  val id: String, // should be always the same as project id
+  var id: String, // should be always the same as project id
 
   var phase: Phase,
 
   @OneToMany
-  val notifications: MutableList<Notification> = mutableListOf()
+  var notifications: MutableList<Notification> = mutableListOf()
 
 ) {
 
@@ -143,11 +142,15 @@ class Notification(
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE)
-  val id: Int,
+  var id: Int,
 
-  val mailType: MailType,
+  var mailType: MailType,
 
-  val sentAt: LocalDateTime = LocalDateTime.now()
+  var scenarioType: ScenarioType,
+
+  var sentAt: LocalDateTime = LocalDateTime.now(),
+
+  var failure: String? = null
 
 )
 
