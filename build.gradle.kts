@@ -4,21 +4,26 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins {
-  kotlin("jvm") version "1.6.10"
-  kotlin("plugin.serialization") version "1.6.10"
-  kotlin("plugin.spring") version "1.6.10"
-  kotlin("plugin.jpa") version "1.6.10"
-  id("org.springframework.boot") version "2.6.2"
+val kotlinVersion = "1.6.20"
 
+plugins {
+  kotlin("jvm") version "1.6.20"
+  kotlin("plugin.serialization") version "1.6.20"
+  kotlin("plugin.spring") version "1.6.20"
+  kotlin("plugin.jpa") version "1.6.20"
+  id("org.springframework.boot") version "2.6.6"
+  id("com.github.ben-manes.versions") version "0.42.0"
 }
 
 apply(plugin = "io.spring.dependency-management")
 
-val ktorVersion = "1.6.7"
+val ktorVersion = "1.6.8"
 val kotlinxSerializationVersion = "1.3.2"
-val kotestVersion = "5.0.3"
-val greenmailVersion = "2.0.0-alpha-2"
+val openCsvVersion = "5.6"
+val hibernateValidatorVersion = "7.0.4.Final"
+val kotestVersion = "5.2.2"
+val mockkVersion = "1.12.3"
+val hsqldbVersion = "2.6.1"
 
 group = "de.dkjs.survey"
 version = "1.0-SNAPSHOT"
@@ -34,7 +39,7 @@ tasks.withType<Test> {
 dependencies {
   implementation(kotlin("stdlib"))
   implementation("javax.inject:javax.inject:1")
-  implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
+  implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -53,15 +58,14 @@ dependencies {
   implementation("io.ktor:ktor-client-serialization:$ktorVersion")
 
   implementation("javax.validation:validation-api:2.0.1.Final")
-  implementation("com.opencsv:opencsv:5.5.2")
+  implementation("com.opencsv:opencsv:$openCsvVersion")
 
-  runtimeOnly("org.hibernate:hibernate-validator:7.0.1.Final")
-  runtimeOnly("org.hsqldb:hsqldb:2.6.1")
-  runtimeOnly("org.springframework.boot:spring-boot-devtools")
+  runtimeOnly("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
+  runtimeOnly("org.hsqldb:hsqldb:$hsqldbVersion")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-  testImplementation("io.mockk:mockk:1.12.2")
+  testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 tasks.withType<KotlinCompile> {
