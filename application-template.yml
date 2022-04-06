@@ -4,6 +4,15 @@
 typeform:
   clientId:
 
+# Required by WebSecurityConfig to enable authentication.
+# Gotcha: the password should identify the encoder, e.g.:
+# - "{noop}hunter7"
+# - "{bcrypt}$2a$12$v1C5OQYqGvD./dFy9eQcV.h9qj.X1lN/K0X4ISVcwPnfTYqXmZO0a"
+# Both of these values configure credentials with a password "hunter7"
+credentials:
+  username:
+  password:
+
 # note, using it with Gmail this way requires enabling access to less-safe apps
 spring:
   mail:
