@@ -1,6 +1,9 @@
 # copy this file under name application.yml (in .gitignore to prevent from committing secrets)
 # fill it up with the secrets
 
+dkjs:
+  environment: DEV
+
 typeform:
   clientId:
 
