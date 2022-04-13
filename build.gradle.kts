@@ -59,6 +59,7 @@ dependencies {
 
   implementation("javax.validation:validation-api:2.0.1.Final")
   implementation("com.opencsv:opencsv:$openCsvVersion")
+  implementation("org.flywaydb:flyway-core")
 
   runtimeOnly("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
   runtimeOnly("org.hsqldb:hsqldb:$hsqldbVersion")
