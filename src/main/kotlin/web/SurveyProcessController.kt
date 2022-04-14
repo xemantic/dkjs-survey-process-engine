@@ -2,12 +2,13 @@
  * Copyright (c) 2021 Kazimierz Pogoda / Xemantic
  */
 
-package de.dkjs.survey
+package de.dkjs.survey.web
 
 import de.dkjs.survey.csv.Column
 import de.dkjs.survey.csv.CsvParsingException
 import de.dkjs.survey.csv.ProjectCsvParser
 import de.dkjs.survey.csv.RowResult
+import de.dkjs.survey.engine.DkjsSurveyProcessEngine
 import de.dkjs.survey.model.Project
 import org.slf4j.Logger
 import org.springframework.stereotype.Controller
@@ -33,9 +34,10 @@ class SurveyProcessController @Inject constructor(
   fun uploadProjects(
     @RequestPart("projectsCsv") projectCsv: MultipartFile,
     attributes: RedirectAttributes,
-    session: HttpSession
+    httpSession: HttpSession
   ): String {
 
+    val session = SessionView(httpSession)
     session.cleanDkjsAttributes()
 
     if (projectCsv.isEmpty) {
@@ -47,7 +49,7 @@ class SurveyProcessController @Inject constructor(
       if (projectCsv.originalFilename!!.endsWith(".csv")) {
         try {
           val projects = parser.parse(projectCsv)
-          session.setAttribute("projects", projects)
+          session.projects = projects
         } catch (e: CsvParsingException) {
           logger.error("Error parsing CSV file '${projectCsv.name}': ${e.message}")
           with (attributes) {
@@ -57,7 +59,7 @@ class SurveyProcessController @Inject constructor(
             addFlashAttribute("csvColumns", Column.values())
             addFlashAttribute("hasErrors", true)
           }
-          session.setAttribute("hasErrors", true)
+          session.hasErrors = true
         }
       } else {
         with (attributes) {
@@ -73,36 +75,46 @@ class SurveyProcessController @Inject constructor(
     return "redirect:/"
   }
 
+  // TODO it should be rather AJAX call to prevent it from entering browser history
   @GetMapping("/submit-projects")
-  fun submitProjects(
-    session: HttpSession
-  ): String {
-    @Suppress("UNCHECKED_CAST")
-    val hasErrors = session.getAttribute("hasErrors") as Boolean?
-    if (hasErrors != null && hasErrors) {
+  fun submitProjects(httpSession: HttpSession): String {
+    val session = SessionView(httpSession)
+    if (session.hasErrors) {
       logger.error("An attempt to submit projects with errors")
-      return "redirect:/"
+    } else {
+      engine.handleProjects(session.projects)
+      session.cleanDkjsAttributes()
     }
-    @Suppress("UNCHECKED_CAST")
-    val projects: List<Project> = session.getAttribute("projects") as List<Project>
-    projects.forEach {
-      engine.handleNew(it)
-    }
-    session.cleanDkjsAttributes()
     return "redirect:/"
   }
+
 }
 
-private fun HttpSession.cleanDkjsAttributes() {
-  this.removeAttribute("projects")
-  this.removeAttribute("hasErrors")
+class SessionView(private val session: HttpSession) {
+
+  var hasErrors: Boolean
+    get() = session.attribute("hasErrors") ?: false
+    set(value) = session.setAttribute("hasErrors", value)
+
+  var projects: List<Project>
+    get() = session.attribute("projects")
+    set(value) = session.setAttribute("projects", value)
+
+  fun cleanDkjsAttributes() {
+    session.removeAttribute("projects")
+    session.removeAttribute("hasErrors")
+  }
+
 }
+
+private inline fun <reified T> HttpSession.attribute(name: String): T = this.getAttribute(name) as T
 
 data class CsvRow(
   val data: List<String>,
   val rowErrors: List<String>,
   val columnErrors: Map<Column, List<String>>
 ) {
+  @Suppress("unused") // used in HTML template
   val hasErrors: Boolean get() = rowErrors.isNotEmpty() || columnErrors.isNotEmpty()
 }
 
