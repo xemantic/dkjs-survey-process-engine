@@ -41,10 +41,10 @@ typeform:
   # base URL of typeform forms
   urlBase:
   forms:
-    pre: O5yJuV9b
-    post: waBTYjMv
-    goalGPre: XYMgbimk
-    goalGPost: W1x2Lslz
+    retro: O5yJuV9b
+    prePost: waBTYjMv
+    goalGRetro: XYMgbimk
+    goalGPrePost: W1x2Lslz
 
 # Required by WebSecurityConfig to enable authentication.
 # Gotcha: the password should identify the encoder, e.g.:
