@@ -35,6 +35,6 @@ class MapGoalsToBlocksTest {
     )
   }
 
-  private fun mapGoals(vararg goals: Int) = mapGoalsToBlocks(goals.toSet())
+  private fun mapGoals(vararg goals: Int) = mapGoalsToBlocks(goals.toList())
 
 }
