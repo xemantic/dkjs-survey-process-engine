@@ -1,16 +1,20 @@
-# copy this file under name application.yml (in .gitignore to prevent from committing secrets)
-# fill it up with the secrets
+# 1. copy this file under name application.yml (mentioned in .gitignore to prevent from committing)
+# 2. fill it up with the secrets and configuration
 
 dkjs:
+  # PROD, DEV or CI (github actions) - appended to the alert emails sent from the system
   environment: DEV
 
-typeform:
-  clientId:
-
-# note, using it with Gmail this way requires enabling access to less-safe apps
 spring:
+  profiles:
+    # prod or test - test should be used also for development and CI
+    active: test
+
+  # standard SMTP settings
+  # note: using it with GMail requires enabling access to less-safe apps
+  # for more comprehensive setup, e.g. connection timeouts, refer to spring boot documentation
   mail:
-    host: smtp.gmail.com
+    host:
     port: 587
     username:
     password:
@@ -18,13 +22,35 @@ spring:
       mail:
         smtp:
           auth: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
-          # TLS , port 587
           starttls:
             enable: true
-#          # SSL, post 465
-#          socketFactory:
-#            port: 465
-#            class: javax.net.ssl.SSLSocketFactory
+
+documents:
+  # base URL of the website holding pre-generated survey PDF documents
+  urlBase:
+
+mail:
+  # the email address from which surveys mails are being sent
+  from:
+  # the email address of the mailbox receiving alert messages
+  sendAlertsTo:
+
+typeform:
+  # typeform client id - API key
+  clientId:
+  # base URL of typeform forms
+  urlBase:
+  forms:
+    pre: O5yJuV9b
+    post: waBTYjMv
+    goalGPre: XYMgbimk
+    goalGPost: W1x2Lslz
+
+# Required by WebSecurityConfig to enable authentication.
+# Gotcha: the password should identify the encoder, e.g.:
+# - "{noop}hunter7"
+# - "{bcrypt}$2a$12$v1C5OQYqGvD./dFy9eQcV.h9qj.X1lN/K0X4ISVcwPnfTYqXmZO0a"
+# Both of these values configure credentials with a password "hunter7"
+credentials:
+  username:
+  password:
