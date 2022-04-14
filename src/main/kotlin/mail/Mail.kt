@@ -6,13 +6,7 @@ package de.dkjs.survey.mail
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.validation.annotation.Validated
-import java.io.File
-import java.util.*
-import javax.inject.Named
-import javax.inject.Singleton
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotEmpty
 
@@ -27,7 +21,8 @@ enum class MailType {
   REMINDER_2_T0,
   INFOMAIL_T1,
   REMINDER_1_T1,
-  REMINDER_2_T1,
+  REMINDER_1_T1_RETRO,
+  REMINDER_2_T1_RETRO,
   INFOMAIL_RETRO,
   REMINDER_1_RETRO,
   REMINDER_2_RETRO,
@@ -42,13 +37,17 @@ data class MailData(
   val bodyHTML: String
 )
 
-@ConstructorBinding
-@ConfigurationProperties("mail")
 @Validated
+@ConfigurationProperties("mail")
+@ConstructorBinding
 data class MailConfig(
 
-  @NotEmpty
-  @Email
+  @get:NotEmpty
+  @get:Email
   val from: String,
+
+  @get:NotEmpty
+  @get:Email
+  val sendAlertsTo: String,
 
 )
