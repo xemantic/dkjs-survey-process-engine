@@ -8,8 +8,7 @@ import de.dkjs.survey.csv.Column
 import de.dkjs.survey.csv.CsvParsingException
 import de.dkjs.survey.csv.RowResult
 import de.dkjs.survey.mail.MailType
-import de.dkjs.survey.model.Notification
-import de.dkjs.survey.model.SurveyProcess
+import de.dkjs.survey.model.*
 import org.slf4j.Logger
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -93,3 +92,30 @@ fun SurveyProcess.addNotification(mailType: MailType) {
     )
   )
 }
+
+fun projectWithGoals(id: String, vararg goals: Int) = Project(
+  id          = id,
+  status      = "",
+  name        = "",
+  provider = Provider(
+    id        = "",
+    name      = ""
+  ),
+  contactPerson = ContactPerson(
+    pronoun   = "",
+    firstName = "",
+    lastName  = "",
+    email     = ""
+  ),
+  goals       = goals.toList(),
+  participants = Participants(
+    age1to5   = -1,
+    age6to10  = -1,
+    age11to15 = -1,
+    age16to19 = -1,
+    age20to26 = -1,
+    worker    = -1
+  ),
+  start       = LocalDateTime.MIN,
+  end         = LocalDateTime.MIN
+)
