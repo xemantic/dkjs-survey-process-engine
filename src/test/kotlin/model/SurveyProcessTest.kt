@@ -26,10 +26,10 @@ class SurveyProcessTest {
     val process = SurveyProcess(id = "42", phase = SurveyProcess.Phase.ACTIVE)
 
     // when
-    process.addNotification(MailType.REMINDER_1_T1)
+    process.addNotification(MailType.INFOMAIL_RETRO)
 
     // then
-    process.isAlreadySent(setOf(MailType.INFOMAIL_RETRO)) shouldBe false
+    process.isAlreadySent(setOf(MailType.REMINDER_1_T1)) shouldBe false
   }
 
   @Test
@@ -39,7 +39,7 @@ class SurveyProcessTest {
 
     // when
     process.addNotification(MailType.REMINDER_1_T1)
-    process.addNotification(MailType.REMINDER_2_T1)
+    process.addNotification(MailType.REMINDER_2_RETRO)
 
     // then
     process.isAlreadySent(setOf(MailType.REMINDER_1_T1)) shouldBe true
@@ -52,10 +52,10 @@ class SurveyProcessTest {
 
     // when
     process.addNotification(MailType.REMINDER_1_T1)
-    process.addNotification(MailType.REMINDER_2_T1)
+    process.addNotification(MailType.REMINDER_2_RETRO)
 
     // then
-    process.isAlreadySent(setOf(MailType.REMINDER_1_T1, MailType.REMINDER_2_T1)) shouldBe true
+    process.isAlreadySent(setOf(MailType.REMINDER_1_T1, MailType.REMINDER_2_RETRO)) shouldBe true
   }
 
 }
