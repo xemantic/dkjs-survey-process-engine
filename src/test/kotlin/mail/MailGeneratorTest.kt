@@ -16,6 +16,8 @@ import io.ktor.util.*
 import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
+// TODO review this test
+
 /**
  * [MailGenerator] integration test.
  *
@@ -51,12 +53,11 @@ class MailGeneratorTest {
       //goals = setOf(Goal.A),
       // next values will not influence mail
       //goals = setOf(Goal(1)),
-      goals = setOf(1),
+      goals = listOf(1),
       //participantCount = 42,
       surveyProcess = SurveyProcess(
         id = "42",
-        phase = SurveyProcess.Phase.PERSISTED,
-        notifications = mutableListOf()
+        phase = SurveyProcess.Phase.ACTIVE
       ),
       status = "foo",
       provider = Provider(
@@ -71,12 +72,12 @@ class MailGeneratorTest {
 
     // when
     val mail = mailGenerator.generate(
-      MailType.INFOMAIL_PRE_POST, project, ScenarioType.PRE
+      MailType.INFOMAIL_PRE_POST, project, Scenario.PRE_POST
     )
 
     // TODO which SenarioType should be chosen?
     val typeformLink = typeformSurveyLinkGenerator.generate(
-      project.id, project.goals, ScenarioType.PRE
+      project, Scenario.PRE_POST
     )
     val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
 
