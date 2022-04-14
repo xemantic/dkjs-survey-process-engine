@@ -7,12 +7,14 @@ package de.dkjs.survey.test
 import de.dkjs.survey.csv.Column
 import de.dkjs.survey.csv.CsvParsingException
 import de.dkjs.survey.csv.RowResult
+import de.dkjs.survey.mail.MailType
+import de.dkjs.survey.model.Notification
+import de.dkjs.survey.model.SurveyProcess
 import org.slf4j.Logger
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import java.util.concurrent.TimeUnit
-import de.dkjs.survey.util.debug
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
@@ -36,7 +38,7 @@ fun WebTestClient.uploadProjectsCsv(csv: String): WebTestClient.ResponseSpec =
     .exchange()
 
 fun sleepForMaximalProcessDuration(logger: Logger, seconds: Int) {
-  logger.debug { "Sleeping until maximal possible project duration is reached: $seconds seconds" }
+  logger.info("Sleeping until maximal possible project duration is reached: $seconds seconds")
   TimeUnit.SECONDS.sleep(seconds.toLong())
 }
 
@@ -78,3 +80,16 @@ infix fun Column.that(message: String): RowResult.ColumnError = RowResult.Column
   message,
   this
 )
+
+private var notificationSequence: Int = 0
+
+fun SurveyProcess.addNotification(mailType: MailType) {
+  this.notifications.add(
+    Notification(
+      id = notificationSequence++,
+      surveyProcessId = this.id,
+      mailType = mailType,
+      sentAt = LocalDateTime.now()
+    )
+  )
+}
