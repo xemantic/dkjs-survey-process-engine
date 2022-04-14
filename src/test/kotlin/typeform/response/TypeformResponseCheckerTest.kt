@@ -14,8 +14,6 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-// TODO verify this test
-
 @DkjsSurveyProcessEngineTest
 class TypeformResponseCheckerTest @Autowired constructor(
   private val checker: TypeformResponseChecker
@@ -27,6 +25,7 @@ class TypeformResponseCheckerTest @Autowired constructor(
     val project = mockk<Project>()
     every { project.id } returns "undine"
     every { project.goals } returns listOf(1, 3, 4)
+    every { project.isGoalG } returns false
 
     // when
     val count = checker.countSurveys(project, Scenario.RETRO)
@@ -39,8 +38,9 @@ class TypeformResponseCheckerTest @Autowired constructor(
   fun `should count 0 responses in typeform for non-existent project`() {
     // given
     val project = mockk<Project>()
-    every { project.id } returns "undine"
+    every { project.id } returns "non-existent project"
     every { project.goals } returns listOf(1, 3, 4)
+    every { project.isGoalG } returns false
 
     // when
     val count = checker.countSurveys(project, Scenario.RETRO)
