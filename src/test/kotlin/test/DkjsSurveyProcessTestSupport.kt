@@ -107,7 +107,7 @@ fun projectWithGoals(id: String, vararg goals: Int) = Project(
     lastName  = "",
     email     = ""
   ),
-  goals       = goals.toList(),
+  goals       = goals.toSet(),
   participants = Participants(
     age1to5   = -1,
     age6to10  = -1,

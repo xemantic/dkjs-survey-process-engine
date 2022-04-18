@@ -29,7 +29,7 @@ class ProjectTest {
         lastName  = "",
         email     = ""
       ),
-      goals       = emptyList(),
+      goals       = emptySet(),
       participants = Participants(
         age1to5   = -1,
         age6to10  = -1,

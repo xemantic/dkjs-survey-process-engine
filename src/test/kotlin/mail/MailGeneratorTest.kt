@@ -53,7 +53,7 @@ class MailGeneratorTest {
       //goals = setOf(Goal.A),
       // next values will not influence mail
       //goals = setOf(Goal(1)),
-      goals = listOf(1),
+      goals = setOf(1),
       //participantCount = 42,
       surveyProcess = SurveyProcess(
         id = "42",

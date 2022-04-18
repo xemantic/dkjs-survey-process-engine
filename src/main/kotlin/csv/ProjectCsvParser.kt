@@ -384,7 +384,7 @@ private class RowParser(private val row: Array<String>) {
   /**
    * Parse column as `Set<Int>` from a comma separated `String`
    */
-  fun parseGoals(): List<Int> = parseString(Column.PROJECT_GOALS)
+  fun parseGoals(): Set<Int> = parseString(Column.PROJECT_GOALS)
     .splitToSequence(',')
     .mapIndexed { index, value ->
       try {
@@ -401,7 +401,7 @@ private class RowParser(private val row: Array<String>) {
         index + 1
       }
     }
-    .toList()
+    .toSet()
 
   /**
    * Internal list where errors are appended to on failed parsing

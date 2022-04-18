@@ -24,7 +24,7 @@ class TypeformResponseCheckerTest @Autowired constructor(
     // given
     val project = mockk<Project>()
     every { project.id } returns "undine"
-    every { project.goals } returns listOf(1, 3, 4)
+    every { project.goals } returns setOf(1, 3, 4)
     every { project.isGoalG } returns false
 
     // when
@@ -39,7 +39,7 @@ class TypeformResponseCheckerTest @Autowired constructor(
     // given
     val project = mockk<Project>()
     every { project.id } returns "non-existent project"
-    every { project.goals } returns listOf(1, 3, 4)
+    every { project.goals } returns setOf(1, 3, 4)
     every { project.isGoalG } returns false
 
     // when

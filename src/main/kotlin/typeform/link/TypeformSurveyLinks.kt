@@ -25,11 +25,11 @@ class TypeformSurveyLinkGenerator(
 
 }
 
-fun toUrlBlocks(goals: List<Int>): String = mapGoalsToBlocks(goals)
+fun toUrlBlocks(goals: Set<Int>): String = mapGoalsToBlocks(goals)
   .map { entry -> "${entry.key}=${entry.value}" }
   .joinToString("&")
 
-fun mapGoalsToBlocks(goals: List<Int>): Map<String, String> = goals
+fun mapGoalsToBlocks(goals: Set<Int>): Map<String, String> = goals
   .filter { it != 1 }
   .mapIndexed { index, i ->
     Pair(

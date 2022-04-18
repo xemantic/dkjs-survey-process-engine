@@ -43,7 +43,7 @@ class Project(
   @get:NotEmpty
   @get:Size(min = 1, max = 3)
   @get:ValidGoalIds
-  var goals: List<Int>,
+  var goals: Set<Int>,
 
   @Embedded
   @get:Valid
@@ -167,6 +167,7 @@ class Notification(
 
   var sentAt: LocalDateTime = LocalDateTime.now(),
 
+  @Suppress("unused")
   var failure: String? = null
 
 )
