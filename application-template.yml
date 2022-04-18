@@ -7,7 +7,9 @@ dkjs:
 
 spring:
   profiles:
-    # prod or test - test should be used also for development and CI
+    # separated by comma:
+    #  prod or test - test should be used also for development and CI
+    #  security - enables security - login window
     active: test
 
   # standard SMTP settings
