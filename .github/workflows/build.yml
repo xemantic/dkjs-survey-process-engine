@@ -18,6 +18,11 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Execute Gradle build
         env:
-          TYPEFORM_CLIENT_ID: ${{ secrets.TYPEFORM_CLIENT_ID }}
           SPRING_PROFILES_ACTIVE: ci
+          TYPEFORM_CLIENT_ID: ${{ secrets.TYPEFORM_CLIENT_ID }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_SEND_ALERTS_TO: ${{ secrets.MAIL_SEND_ALERTS_TO }}
         run: ./gradlew build
