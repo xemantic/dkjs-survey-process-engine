@@ -1,3 +1,58 @@
-# this file is used with secrets sets by continuous integration environment, like GitHub actions
+# 1. copy this file under name application.yml (mentioned in .gitignore to prevent from committing)
+# 2. fill it up with the secrets and configuration
+
+dkjs:
+  # PROD, DEV or CI (github actions) - appended to the alert emails sent from the system
+  environment: CI
+
+spring:
+  profiles:
+    # separated by comma:
+    #  prod or test - test should be used also for development and CI
+    #  security - enables security - login window
+    active: test, ci
+
+  # standard SMTP settings
+  # note: using it with GMail requires enabling access to less-safe apps
+  # for more comprehensive setup, e.g. connection timeouts, refer to spring boot documentation
+  mail:
+    host: ${MAIL_HOST}
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+documents:
+  # base URL of the website holding pre-generated survey PDF documents
+  urlBase: https://www.auf-leben.org/documents/
+
+mail:
+  # the email address from which surveys mails are being sent
+  from: ${MAIL_HOST}
+  # the email address of the mailbox receiving alert messages
+  sendAlertsTo: ${MAIL_SEND_ALERTS_TO}
+
 typeform:
+  # typeform client id - API key
   clientId: ${TYPEFORM_CLIENT_ID}
+  # base URL of typeform forms
+  urlBase: https://aufleben.typeform.com/to/
+  forms:
+    retro: O5yJuV9b
+    prePost: waBTYjMv
+    goalGRetro: XYMgbimk
+    goalGPrePost: W1x2Lslz
+
+# Required by WebSecurityConfig to enable authentication.
+# Gotcha: the password should identify the encoder, e.g.:
+# - "{noop}hunter7"
+# - "{bcrypt}$2a$12$v1C5OQYqGvD./dFy9eQcV.h9qj.X1lN/K0X4ISVcwPnfTYqXmZO0a"
+# Both of these values configure credentials with a password "hunter7"
+credentials:
+  username:
+  password:
