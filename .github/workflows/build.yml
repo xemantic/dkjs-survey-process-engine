@@ -25,4 +25,4 @@ jobs:
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_SEND_ALERTS_TO: ${{ secrets.MAIL_SEND_ALERTS_TO }}
-        run: ./gradlew build
+        run: ./gradlew build --debug
