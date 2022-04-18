@@ -7,6 +7,9 @@ package de.dkjs.survey
 import de.dkjs.survey.engine.defineProcess
 import de.dkjs.survey.mail.MailType
 
+/**
+ * Defines the process triggered when scenario `PRE_POST` is detected.
+ */
 fun definePrePostProcess() = defineProcess {
 
   sendImmediately(MailType.INFOMAIL_PRE_POST)

@@ -7,6 +7,9 @@ package de.dkjs.survey
 import de.dkjs.survey.engine.defineProcess
 import de.dkjs.survey.mail.MailType
 
+/**
+ * Defines the process triggered when scenario `RETRO` is detected.
+ */
 fun defineRetroProcess() = defineProcess {
 
   sendImmediately(MailType.REMINDER_1_RETRO)
