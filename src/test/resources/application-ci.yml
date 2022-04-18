@@ -39,7 +39,8 @@ mail:
 
 typeform:
   # typeform client id - API key
-  clientId: ${TYPEFORM_CLIENT_ID}
+  #clientId: ${TYPEFORM_CLIENT_ID}
+  clientId: abc
   # base URL of typeform forms
   urlBase: https://aufleben.typeform.com/to/
   forms:
