@@ -211,14 +211,14 @@ annotation class ValidGoalIds(
   val payload: Array<KClass<out Payload>> = []
 )
 
-class GoalIdsValidator : ConstraintValidator<ValidGoalIds, List<Int>> {
+class GoalIdsValidator : ConstraintValidator<ValidGoalIds, Set<Int>> {
 
   private val allowedGoalRange = 1..7
 
   override fun initialize(contactNumber: ValidGoalIds) {}
 
   override fun isValid(
-    goals: List<Int>,
+    goals: Set<Int>,
     cxt: ConstraintValidatorContext
   ): Boolean = goals.contains(1) and goals.all {
     allowedGoalRange.contains(it)
