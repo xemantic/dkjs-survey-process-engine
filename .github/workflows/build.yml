@@ -19,5 +19,5 @@ jobs:
       - name: Execute Gradle build
         env:
           TYPEFORM_CLIENT_ID: ${{ secrets.TYPEFORM_CLIENT_ID }}
-          SPRING_PROFILES_ACTIVE: test ci
+          SPRING_PROFILES_ACTIVE: ci
         run: ./gradlew build
