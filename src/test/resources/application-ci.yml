@@ -6,11 +6,12 @@ dkjs:
   environment: CI
 
 spring:
-  profiles:
+  #profiles:
     # separated by comma:
     #  prod or test - test should be used also for development and CI
     #  security - enables security - login window
-    active: test, ci
+    # setting it will crash CI build
+    #active: test, ci
 
   # standard SMTP settings
   # note: using it with GMail requires enabling access to less-safe apps
