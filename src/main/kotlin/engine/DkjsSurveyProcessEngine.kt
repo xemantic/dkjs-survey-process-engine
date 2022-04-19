@@ -99,7 +99,6 @@ class TestTimeConstraints(private val project: Project) : TimeConstraints {
 @Component
 class DkjsSurveyProcessEngine @Inject constructor(
   private val logger: Logger,
-  private val providerRepository: ProviderRepository,
   private val projectRepository: ProjectRepository,
   private val emailService: SurveyEmailSender,
   private val taskScheduler: TaskScheduler,
@@ -127,14 +126,6 @@ class DkjsSurveyProcessEngine @Inject constructor(
       if (isNotSent(mailType)) {
         scheduleAt(time, project) {
           send(mailType)
-        }
-      }
-    }
-
-    fun doIfNotSent(mailType: MailType, block: ScheduledContext.() -> Unit) {
-      if (isNotSent(mailType)) {
-        taskExecutor.submit {
-          block.invoke(scheduledContext)
         }
       }
     }
@@ -245,23 +236,11 @@ class DkjsSurveyProcessEngine @Inject constructor(
     logger.info("Sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}")
     val notification = try {
       emailService.send(mailType, scenario, project)
-      Notification(
-        mailType = mailType,
-        surveyProcessId = project.surveyProcess!!.id
-      )
+      Notification(mailType = mailType)
     } catch (e : Exception) {
-      Notification(
-        mailType = mailType,
-        surveyProcessId = project.surveyProcess!!.id,
-        failure = e.message
-      )
+      Notification(mailType = mailType, failure = e.message)
     }
     project.surveyProcess!!.notifications.add(notification)
-    // TODO: init project.surveyProcess
-//    project.surveyProcess.notifications.add(Notification(
-//      id = 0,
-//      mailType = mailType
-//    ))
     projectRepository.save(project)
   }
 

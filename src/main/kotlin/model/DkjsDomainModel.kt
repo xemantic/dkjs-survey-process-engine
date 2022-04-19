@@ -137,7 +137,8 @@ class SurveyProcess(
   @Enumerated(EnumType.STRING)
   var phase: Phase,
 
-  @OneToMany(cascade = [CascadeType.ALL], mappedBy = "surveyProcessId")
+  @OneToMany(cascade = [CascadeType.ALL])
+  @JoinColumn(name = "survey_process_id")
   var notifications: MutableList<Notification> = mutableListOf()
 
 ) {
@@ -159,8 +160,6 @@ class Notification(
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE)
   var id: Int = 0,
-
-  var surveyProcessId: String,
 
   @Enumerated(EnumType.STRING)
   var mailType: MailType,

@@ -86,7 +86,6 @@ fun SurveyProcess.addNotification(mailType: MailType) {
   this.notifications.add(
     Notification(
       id = notificationSequence++,
-      surveyProcessId = this.id,
       mailType = mailType,
       sentAt = LocalDateTime.now()
     )
