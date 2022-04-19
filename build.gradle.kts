@@ -17,13 +17,14 @@ plugins {
 
 apply(plugin = "io.spring.dependency-management")
 
-val ktorVersion = "1.6.8"
+val ktorVersion = "2.0.0"
 val kotlinxSerializationVersion = "1.3.2"
 val openCsvVersion = "5.6"
 val hibernateValidatorVersion = "7.0.4.Final"
-val kotestVersion = "5.2.2"
+val kotestVersion = "5.2.3"
 val mockkVersion = "1.12.3"
 val hsqldbVersion = "2.6.1"
+val flywayVersion = "8.5.8"
 
 group = "de.dkjs.survey"
 version = "1.0-SNAPSHOT"
@@ -60,7 +61,7 @@ dependencies {
 
   implementation("javax.validation:validation-api:2.0.1.Final")
   implementation("com.opencsv:opencsv:$openCsvVersion")
-  implementation("org.flywaydb:flyway-core")
+  implementation("org.flywaydb:flyway-core:$flywayVersion")
 
   runtimeOnly("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
   runtimeOnly("org.hsqldb:hsqldb:$hsqldbVersion")
