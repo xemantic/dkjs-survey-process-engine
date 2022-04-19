@@ -20,7 +20,7 @@ fun defineRetroProcess() = defineProcess {
 
   scheduleAt(time.twoWeeksAfterProjectEnds) {
     if (hasNoAnswers()) {
-      sendAlert("No answers received") // TODO what should be the message?
+      sendAlert("No surveys received 2 weeks after project ended")
     }
     finishProcess()
   }

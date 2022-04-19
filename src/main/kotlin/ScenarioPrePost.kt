@@ -39,7 +39,7 @@ fun definePrePostProcess() = defineProcess {
 
   if (!time.is14DaysProjectDuration) {
     scheduleAt(time.twoWeeksAfterProjectStarts) {
-      sendAlert("message") // TODO what should be the message?
+      sendAlert("No surveys received 2 weeks after project started")
     }
   }
 
@@ -61,7 +61,7 @@ fun definePrePostProcess() = defineProcess {
 
   scheduleAt(time.twoWeeksAfterProjectEnds) {
     if (hasNoAnswers()) {
-      sendAlert("message") // TODO what should be the message?
+      sendAlert("No surveys received 2 weeks after project ended")
     }
     finishProcess()
   }
