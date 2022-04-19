@@ -68,8 +68,8 @@ dependencies {
   implementation("javax.validation:validation-api:2.0.1.Final")
   implementation("com.opencsv:opencsv:$opencsvVersion")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
-  implementation(" net.bytebuddy:byte-buddy:$byteBuddyVersion")
-  implementation(" net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
+  implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
+  implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
 
   runtimeOnly("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
   runtimeOnly("org.hsqldb:hsqldb:$hsqldbVersion")
