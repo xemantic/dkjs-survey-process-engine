@@ -16,6 +16,7 @@ import org.slf4j.Logger
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Profile
+import org.springframework.mail.MailException
 import org.springframework.scheduling.SchedulingTaskExecutor
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.stereotype.Component
@@ -103,6 +104,7 @@ class TestTimeConstraints(private val project: Project) : TimeConstraints {
 class DkjsSurveyProcessEngine @Inject constructor(
   private val logger: Logger,
   private val projectRepository: ProjectRepository,
+  private val processRepository: SurveyProcessRepository,
   private val emailService: SurveyEmailSender,
   private val taskScheduler: TaskScheduler,
   private val taskExecutor: SchedulingTaskExecutor,
@@ -174,8 +176,9 @@ class DkjsSurveyProcessEngine @Inject constructor(
     }
 
     fun finishProcess() {
-      project.surveyProcess!!.phase = SurveyProcess.Phase.FINISHED
-      projectRepository.save(project)
+      val process = project.surveyProcess!!
+      process.phase = SurveyProcess.Phase.FINISHED
+      processRepository.save(process)
     }
 
   }
@@ -237,14 +240,25 @@ class DkjsSurveyProcessEngine @Inject constructor(
     scenario: Scenario
   ) {
     logger.info("Sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}")
+    val process = project.surveyProcess!!
     val notification = try {
       emailService.send(mailType, scenario, project)
       Notification(mailType = mailType)
-    } catch (e : Exception) {
+    } catch (e : MailException) {
+      logger.error("Error sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}", e)
+      process.phase = SurveyProcess.Phase.FAILED
       Notification(mailType = mailType, failure = e.message)
     }
-    project.surveyProcess!!.notifications.add(notification)
-    projectRepository.save(project)
+    process.notifications.add(notification)
+    processRepository.save(process)
+    if (process.phase == SurveyProcess.Phase.FAILED) {
+      taskExecutor.submit {
+        alertEmailSender.sendAlertEmail(
+          "Error sending mail to project: ${project.id}",
+          "Error sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}"
+        )
+      }
+    }
   }
 
   // TODO move the where the project is known
