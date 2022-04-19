@@ -164,16 +164,4 @@ Some context and learning materials useful in development of this application:
  * https://ktor.io/docs/auth.html
  * https://github.com/ktorio/ktor-documentation/tree/main/codeSnippets/snippets/client-auth-oauth-google
  * https://www.wimdeblauwe.com/blog/2021/09/14/thymeleaf-iteration-and-fragments/
-
-## Possible email format extensions
-
-See [SurveyEmailSender](src/main/kotlin/mail/SurveyEmailSender.kt)
-
-```kotlin
-// Inline image
-setText("my text <img src='cid:myLogo'>", true)
-addInline("myLogo", ClassPathResource("img/mylogo.gif"))
-
-// Attachment
-addAttachment("myDocument.pdf", ClassPathResource("doc/myDocument.pdf"))
-```
+ 

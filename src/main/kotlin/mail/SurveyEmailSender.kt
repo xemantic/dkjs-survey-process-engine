@@ -31,6 +31,20 @@ interface SurveyEmailSender {
 
 }
 
+/**
+ * The [SurveyEmailSender] implementation using spring [JavaMailSender]
+ *
+ * If it needs to be extended in the future with more advanced formatting, here are some hints:
+ *
+ * ```
+ *   // Inline image
+ *   setText("my text <img src='cid:myLogo'>", true)
+ *   addInline("myLogo", ClassPathResource("img/mylogo.gif"))
+ *
+ *   // Attachment
+ *   addAttachment("myDocument.pdf", ClassPathResource("doc/myDocument.pdf"))
+ * ```
+ */
 @Singleton
 @Component
 class DefaultSurveyEmailSender @Inject constructor(
