@@ -6,7 +6,7 @@ package de.dkjs.survey.mail
 
 import de.dkjs.survey.documents.SurveyDocumentPdfLinkGenerator
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.ScenarioType
+import de.dkjs.survey.model.Scenario
 import de.dkjs.survey.time.dkjsDate
 import de.dkjs.survey.typeform.link.TypeformSurveyLinkGenerator
 import org.springframework.stereotype.Component
@@ -26,9 +26,9 @@ class MailGenerator @Inject constructor(
   fun generate(
     mailType: MailType,
     project: Project,
-    scenarioType: ScenarioType
+    scenario: Scenario
   ): MailData {
-    val formLink = typeformSurveyLinkGenerator.generate(project.id, project.goals, scenarioType)
+    val formLink = typeformSurveyLinkGenerator.generate(project, scenario)
     val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
 
     val ctx = Context().apply {

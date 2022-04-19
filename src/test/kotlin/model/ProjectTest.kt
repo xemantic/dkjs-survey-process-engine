@@ -6,12 +6,11 @@ package de.dkjs.survey.model
 
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import javax.validation.Validation
 
-class ModelValidationTest {
+class ProjectTest {
 
   @Test
   fun `should validate hierarchical project`() {
@@ -72,18 +71,6 @@ class ModelValidationTest {
         "provider.name - must not be empty",
         "status - must not be empty"
       )
-  }
-
-}
-
-class GoalsToAlphabetLettersTest {
-
-  @Test
-  fun `should return goals as alphabet letters`() {
-    goalsToLetters(setOf(1)) shouldBe ""
-    goalsToLetters(setOf(1, 2, 3)) shouldBe "B, C"
-    goalsToLetters(setOf(1, 5, 2)) shouldBe "B, E"
-    goalsToLetters(setOf(1, 5, 2, 3)) shouldBe "B, C, E"
   }
 
 }

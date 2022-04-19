@@ -43,7 +43,7 @@ class ProjectCsvParserTest {
       id shouldBe "4021000014 -1"
       name shouldBe "Project Foo"
       status shouldBe "50 - bewilligt"
-      goals shouldBe setOf(1, 3, 5)
+      goals shouldBe setOf(1, 5, 3)
       with (contactPerson) {
         pronoun shouldBe "Frau"
         firstName shouldBe "Maxi"

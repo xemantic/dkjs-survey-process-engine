@@ -4,7 +4,8 @@
 
 package de.dkjs.survey.typeform
 
-import de.dkjs.survey.model.ScenarioType
+import de.dkjs.survey.model.Project
+import de.dkjs.survey.model.Scenario
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.auth.*
@@ -20,6 +21,7 @@ import javax.annotation.PreDestroy
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 
 @ConstructorBinding
@@ -27,37 +29,36 @@ import javax.validation.constraints.NotEmpty
 @Validated
 data class TypeformConfig(
 
-  @NotEmpty
+  @get:NotEmpty
   val clientId: String,
 
-  @NotEmpty
-  val linkBase: String,
+  @get:NotEmpty
+  val urlBase: String,
 
+  @get:Valid
   val forms: Forms
 
 ) {
 
   data class Forms(
 
-    @NotEmpty
-    val pre: String,
+    @get:NotEmpty
+    val retro: String,
 
-    @NotEmpty
-    val post: String,
+    @get:NotEmpty
+    val prePost: String,
 
-    @NotEmpty
-    val goalGPre: String,
+    @get:NotEmpty
+    val goalGRetro: String,
 
-    @NotEmpty
-    val goalGPost: String
+    @get:NotEmpty
+    val goalGPrePost: String
 
   ) {
 
-    fun getFormId(type: ScenarioType): String = when (type) {
-      ScenarioType.PRE -> pre
-      ScenarioType.POST -> post
-      ScenarioType.GOAL_G_PRE -> goalGPre
-      ScenarioType.GOAL_G_POST -> goalGPost
+    fun getFormId(project: Project, type: Scenario): String = when (type) {
+      Scenario.RETRO -> if (project.isGoalG) goalGRetro else retro
+      Scenario.PRE_POST -> if (project.isGoalG) goalGPrePost else prePost
     }
 
   }

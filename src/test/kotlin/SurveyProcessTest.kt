@@ -7,7 +7,7 @@ package de.dkjs.survey
 import de.dkjs.survey.mail.MailType
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.model.ProjectRepository
-import de.dkjs.survey.model.ScenarioType
+import de.dkjs.survey.model.Scenario
 import de.dkjs.survey.model.SurveyProcess
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import de.dkjs.survey.test.uploadProjectsCsv
@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.time.LocalDateTime
+
+// TODO update this test with more test cases
 
 @DkjsSurveyProcessEngineTest
 class SurveyProcessTest @Autowired constructor(
@@ -58,7 +60,7 @@ class SurveyProcessTest @Autowired constructor(
     project!!.surveyProcess shouldNotBe null
     project.surveyProcess!!.phase shouldBe SurveyProcess.Phase.FINISHED
     verifyOrder {
-      surveyEmailSender.send(MailType.INFOMAIL_RETRO, any(), ScenarioType.PRE)
+      surveyEmailSender.send(MailType.INFOMAIL_RETRO,  Scenario.PRE_POST, any())
     }
   }
 

@@ -146,7 +146,11 @@ allOpen {
 }
 ```
 
-### Various resources
+
+## References
+
+Some context and learning materials useful in development of this application:
+
  * https://zetcode.com/springboot/undertow/
  * https://getbootstrap.com/docs/5.1/forms/validation/
  * https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html
@@ -160,4 +164,4 @@ allOpen {
  * https://ktor.io/docs/auth.html
  * https://github.com/ktorio/ktor-documentation/tree/main/codeSnippets/snippets/client-auth-oauth-google
  * https://www.wimdeblauwe.com/blog/2021/09/14/thymeleaf-iteration-and-fragments/
-
+ 

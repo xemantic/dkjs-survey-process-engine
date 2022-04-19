@@ -13,27 +13,23 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.constraints.NotEmpty
 
-@ConstructorBinding
-@ConfigurationProperties("documents")
 @Validated
+@ConfigurationProperties("documents")
+@ConstructorBinding
 data class DocumentsConfig(
 
-  @NotEmpty
-  val linkBase: String,
-
-  @NotEmpty
-  val pdfURL: String
+  @get:NotEmpty
+  val urlBase: String
 
 )
 
-@Component
 @Singleton
+@Component
 class SurveyDocumentPdfLinkGenerator(
   @Inject private val config: DocumentsConfig
 ) {
 
   // TODO we need a rule for generating these
-  fun generate(project: Project) =
-    config.pdfURL.format(config.linkBase, "TODO")
+  fun generate(project: Project) = "${config.urlBase}/TODO-we-need-to-establish-format"
 
 }

@@ -4,24 +4,24 @@
 
 package de.dkjs.survey.typeform.link
 
-import de.dkjs.survey.model.ScenarioType
+import de.dkjs.survey.model.Project
+import de.dkjs.survey.model.Scenario
 import de.dkjs.survey.typeform.TypeformConfig
 import org.springframework.stereotype.Component
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Component
 @Singleton
+@Component
 class TypeformSurveyLinkGenerator(
   @Inject private val config: TypeformConfig
 ) {
 
   fun generate(
-    projectId: String,
-    goals: Set<Int>,
-    scenarioType: ScenarioType
-  ) = "${config.linkBase}${config.forms.getFormId(scenarioType)}" +
-      "?project_id=$projectId&${toUrlBlocks(goals)}"
+    project: Project,
+    scenario: Scenario
+  ) = "${config.urlBase}${config.forms.getFormId(project, scenario)}" +
+      "?project_id=${project.id}&${toUrlBlocks(project.goals)}"
 
 }
 

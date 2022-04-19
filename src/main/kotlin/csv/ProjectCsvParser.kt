@@ -108,11 +108,13 @@ enum class Column(
   /**
    * The name of the column as it appears in CSV file header.
    */
+  @Suppress("unused") // used in HTML template
   val csvName get() = name.replace('_', '.').lowercase()
 
   /**
    * Indicates if the column is numeric.
    */
+  @Suppress("unused") // used in HTML template
   val isNumeric: Boolean get() = (type == Type.NUMERIC)
 
   companion object {
@@ -144,9 +146,9 @@ class ProjectCsvParser @Inject constructor(
 ) {
 
   /**
-   * Parses a CSV file creating a list of items, each item containing
-   * a [Project] and null `message` on success, or
-   * a null [Project] and a `message` describing why it couldn't be created.
+   * Parses a CSV file creating a list of [Project] instances.
+   *
+   * @throws CsvParsingException in case of errors detected in input data.
    */
   fun parse(projectCsv: InputStreamSource): List<Project> {
     val batchContext = RowBatchContext()

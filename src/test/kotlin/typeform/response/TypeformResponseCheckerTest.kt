@@ -4,10 +4,13 @@
 
 package de.dkjs.survey.typeform.response
 
-import de.dkjs.survey.model.ScenarioType
+import de.dkjs.survey.model.Project
+import de.dkjs.survey.model.Scenario
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -19,10 +22,13 @@ class TypeformResponseCheckerTest @Autowired constructor(
   @Test
   fun `should count existing responses in typeform for a given project`() {
     // given
-    val projectId = "undine" // created during testing
+    val project = mockk<Project>()
+    every { project.id } returns "undine"
+    every { project.goals } returns setOf(1, 3, 4)
+    every { project.isGoalG } returns false
 
     // when
-    val count = checker.countSurveys(projectId, ScenarioType.PRE)
+    val count = checker.countSurveys(project, Scenario.RETRO)
 
     // then
     count shouldBeGreaterThan 0
@@ -31,10 +37,13 @@ class TypeformResponseCheckerTest @Autowired constructor(
   @Test
   fun `should count 0 responses in typeform for non-existent project`() {
     // given
-    val projectId = "non-existent project"
+    val project = mockk<Project>()
+    every { project.id } returns "non-existent project"
+    every { project.goals } returns setOf(1, 3, 4)
+    every { project.isGoalG } returns false
 
     // when
-    val count = checker.countSurveys(projectId, ScenarioType.PRE)
+    val count = checker.countSurveys(project, Scenario.RETRO)
 
     // then
     count shouldBe 0

@@ -1,31 +1,12 @@
-mail:
-  from: test@xemantic.com
-  templateDir: src/main/resources/templates/
-
-documents:
-  linkBase: https://dkjs.de
-  pdfURL: "%s?TODO_PDF=%s"
-
-typeform:
-  linkBase: https://typeform-todo.com
-  surveyURL: "%s?projectNumber=%s&blocks=%s"
-  forms:
-    pre: O5yJuV9b
-    post: waBTYjMv
-    goalGPre: XYMgbimk
-    goalGPost: W1x2Lslz
-
 spring:
-  profiles:
-    active: prod
   datasource:
     driver-class-name: org.hsqldb.jdbc.JDBCDriver
-    url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
+    url: jdbc:hsqldb:file:db/dkjs
     username: sa
     password:
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
 
 server:
   servlet:
