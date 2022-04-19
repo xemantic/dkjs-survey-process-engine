@@ -2,7 +2,6 @@
  * Copyright (c) 2021-2022 Kazimierz Pogoda / Xemantic
  */
 
-// TODO review again at the end
 package de.dkjs.survey.engine
 
 import de.dkjs.survey.definePrePostProcess
@@ -172,10 +171,27 @@ class DkjsSurveyProcessEngine @Inject constructor(
     fun hasNoAnswers() = typeformChecker.countSurveys(project, scenario) == 0
 
     fun sendAlert(message: String) {
-      alertEmailSender.sendAlertEmail(message, message)
+      logger.info("Sending alert about project: ${project.id} - $message")
+      alertEmailSender.sendAlertEmail(
+        "Project: ${project.id} - $message",
+        """
+            $message
+
+            project: ${project.id},
+            name: ${project.name},
+            status: ${project.status},
+            provider id: ${project.provider.id}
+            provider name: ${project.provider.name}
+            scenario: ${scenario.name}
+            start: ${project.start}
+            end: ${project.end}
+            "
+        """.trimIndent()
+      )
     }
 
     fun finishProcess() {
+      logger.info("Survey process has finished for project: ${project.id}")
       val process = project.surveyProcess!!
       process.phase = SurveyProcess.Phase.FINISHED
       processRepository.save(process)
@@ -234,34 +250,28 @@ class DkjsSurveyProcessEngine @Inject constructor(
     processDefinitions[ctx.time.scenario]!!.invoke(ctx)
   }
 
-  private fun send(
-    mailType: MailType,
-    project: Project,
-    scenario: Scenario
-  ) {
+  private fun send(mailType: MailType, project: Project, scenario: Scenario) {
     logger.info("Sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}")
     val process = project.surveyProcess!!
     val notification = try {
       emailService.send(mailType, scenario, project)
       Notification(mailType = mailType)
-    } catch (e : MailException) {
+    } catch (e: MailException) {
       logger.error("Error sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}", e)
-      process.phase = SurveyProcess.Phase.FAILED
       Notification(mailType = mailType, failure = e.message)
     }
     process.notifications.add(notification)
-    processRepository.save(process)
-    if (process.phase == SurveyProcess.Phase.FAILED) {
-      taskExecutor.submit {
-        alertEmailSender.sendAlertEmail(
-          "Error sending mail to project: ${project.id}",
-          "Error sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}"
-        )
-      }
+    if (notification.failure != null) {
+      process.phase = SurveyProcess.Phase.FAILED
+      alertEmailSender.sendAlertEmail(
+        "Survey process failed, project: ${project.id}",
+        "Error sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}\n\n" +
+            "${notification.failure}"
+      )
     }
+    processRepository.save(process)
   }
 
-  // TODO move the where the project is known
   private fun scheduleAt(date: LocalDateTime, project: Project, call: () -> Unit) {
     logger.info("Scheduling action at $date for project: ${project.id}")
     taskScheduler.schedule(
@@ -275,4 +285,3 @@ class DkjsSurveyProcessEngine @Inject constructor(
   }
 
 }
-
