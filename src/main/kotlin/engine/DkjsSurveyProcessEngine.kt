@@ -28,12 +28,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.constraints.NotEmpty
 
-@ConstructorBinding
-@ConfigurationProperties("dkjs")
 @Validated
+@ConfigurationProperties("dkjs")
+@ConstructorBinding
 data class DkjsConfig(
 
-  // DEV, TEST, PROD, etc.
+  /**
+   * Might be `DEV`, `TEST`, `CI`, `PROD`, an arbitrary string used in the logs and alert emails
+   * to distinguish environments.
+   */
   @get:NotEmpty
   val environment: String
 
