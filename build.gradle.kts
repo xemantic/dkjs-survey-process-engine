@@ -4,8 +4,6 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kotlinVersion = "1.6.20"
-
 plugins {
   kotlin("jvm") version "1.6.20"
   kotlin("plugin.serialization") version "1.6.20"
@@ -13,18 +11,21 @@ plugins {
   kotlin("plugin.jpa") version "1.6.20"
   id("org.springframework.boot") version "2.6.6"
   id("com.github.ben-manes.versions") version "0.42.0"
+  id("com.gorylenko.gradle-git-properties") version "2.4.0"
 }
 
 apply(plugin = "io.spring.dependency-management")
 
-val ktorVersion = "2.0.0"
+val kotlinxCoroutinesVersion = "1.6.1"
 val kotlinxSerializationVersion = "1.3.2"
-val openCsvVersion = "5.6"
+val ktorVersion = "2.0.0"
+val opencsvVersion = "5.6"
 val hibernateValidatorVersion = "7.0.4.Final"
 val kotestVersion = "5.2.3"
 val mockkVersion = "1.12.3"
 val hsqldbVersion = "2.6.1"
 val flywayVersion = "8.5.8"
+val byteBuddyVersion = "1.12.9"
 
 group = "de.dkjs.survey"
 version = "1.0-SNAPSHOT"
@@ -39,9 +40,13 @@ tasks.withType<Test> {
 
 dependencies {
   implementation(kotlin("stdlib"))
-  implementation("javax.inject:javax.inject:1")
-  implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+  implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$kotlinxCoroutinesVersion")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxCoroutinesVersion")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$kotlinxCoroutinesVersion")
+  implementation("javax.inject:javax.inject:1")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -57,11 +62,14 @@ dependencies {
   implementation("io.ktor:ktor-client-core:$ktorVersion")
   implementation("io.ktor:ktor-client-cio:$ktorVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
-  implementation("io.ktor:ktor-client-serialization:$ktorVersion")
+  implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+  implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
   implementation("javax.validation:validation-api:2.0.1.Final")
-  implementation("com.opencsv:opencsv:$openCsvVersion")
+  implementation("com.opencsv:opencsv:$opencsvVersion")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
+  implementation(" net.bytebuddy:byte-buddy:$byteBuddyVersion")
+  implementation(" net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
 
   runtimeOnly("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
   runtimeOnly("org.hsqldb:hsqldb:$hsqldbVersion")

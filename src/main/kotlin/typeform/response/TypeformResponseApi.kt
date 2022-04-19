@@ -5,6 +5,7 @@
 package de.dkjs.survey.typeform.response
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -51,9 +52,9 @@ class KtorTypeformResponseService constructor(
   override suspend fun countResponses(
     formId: String,
     projectId: String
-  ): Int = client.request<ResponsePage>("https://api.typeform.com/forms/$formId/responses") {
+  ): Int = client.request("https://api.typeform.com/forms/$formId/responses") {
       parameter("fields", "hidden")
       parameter("query", projectId)
-    }.totalItems
+    }.body<ResponsePage>().totalItems
 
 }

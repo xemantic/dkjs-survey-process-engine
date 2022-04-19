@@ -8,10 +8,11 @@ import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.Scenario
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.auth.*
-import io.ktor.client.features.auth.providers.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Bean
@@ -69,8 +70,8 @@ data class TypeformConfig(
 class TypeformApiSetup(@Inject private val config: TypeformConfig) {
 
   private val client: HttpClient = HttpClient(CIO) {
-    install(JsonFeature) {
-      serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
+    install(ContentNegotiation) {
+      json(Json {
         ignoreUnknownKeys = true
       })
     }
