@@ -51,7 +51,7 @@ class SurveyProcessTest @Autowired constructor(
     """)
 
     // then
-      .expectStatus().isOk
+      .expectStatus().is3xxRedirection
 
     sleepForMaximalProcessDuration()
 
@@ -60,7 +60,7 @@ class SurveyProcessTest @Autowired constructor(
     project!!.surveyProcess shouldNotBe null
     project.surveyProcess!!.phase shouldBe SurveyProcess.Phase.FINISHED
     verifyOrder {
-      surveyEmailSender.send(MailType.INFOMAIL_RETRO,  Scenario.PRE_POST, any())
+      surveyEmailSender.send(MailType.INFOMAIL_RETRO, Scenario.PRE_POST, any())
     }
   }
 

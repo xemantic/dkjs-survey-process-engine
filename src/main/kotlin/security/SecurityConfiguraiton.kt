@@ -33,8 +33,8 @@ data class CredentialsConfig (
 )
 
 @Profile("security")
-@Configuration
 @EnableWebSecurity
+@Configuration
 class SecurityConfiguration {
 
   @Bean
