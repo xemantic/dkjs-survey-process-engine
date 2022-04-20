@@ -142,6 +142,8 @@
 
       const navItemActivatedClass = "mdc-list-item--activated";
 
+      const searchUrl = element("#search-url").innerText;
+
       var isOnMain = true;
       const showDatabaseExplorer = () => {
         if (!isOnMain) {
@@ -149,7 +151,7 @@
         }
         mainElement.style.display = "none";
         const explorerFrame = document.createElement("iframe");
-        explorerFrame.src = "api/";
+        explorerFrame.src = searchUrl;
         explorerFrame.className = "mdc-top-app-bar--fixed-adjust";
         document.body.appendChild(explorerFrame);
         element("#nav-action-upload").classList.remove(navItemActivatedClass);
@@ -224,6 +226,9 @@
 
     function whenClicked(selector, action) {
       const node = element(selector);
+      if (!node) {
+        return;
+      }
       const ripple = enableRipple(node);
       if (node.classList.contains("mdc-icon-button")) {
         ripple.unbounded = true;
@@ -240,6 +245,8 @@
 </head>
 
 <body class="mdc-typography">
+
+<span id="search-url" style="display: none" th:text="${searchUrl}"></span>
 
 <header class="mdc-top-app-bar">
   <div class="mdc-top-app-bar__row">

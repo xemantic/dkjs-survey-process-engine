@@ -58,6 +58,11 @@ class SecurityConfiguration {
       .and()
       .logout()
       .permitAll()
+    // important to allow iframe
+    http
+      .headers()
+      .frameOptions()
+      .sameOrigin()
     return http.build()
   }
 

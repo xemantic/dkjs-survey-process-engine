@@ -12,11 +12,11 @@ import de.dkjs.survey.engine.DkjsSurveyProcessEngine
 import de.dkjs.survey.model.Project
 import org.slf4j.Logger
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
+import org.springframework.web.util.UriComponentsBuilder
 import javax.inject.Inject
 import javax.servlet.http.HttpSession
 
@@ -27,9 +27,18 @@ class SurveyProcessController @Inject constructor(
   private val engine: DkjsSurveyProcessEngine
 ) {
 
-//  @GetMapping()
-//  fun index() = "index"
+  @Suppress("unused")
+  @ModelAttribute
+  fun addAttributes(ubc: UriComponentsBuilder, model: Model) {
+    val url = ubc.path("/api/explorer/index.html#uri=/api").build().toUriString()
+    model.addAttribute("searchUrl", url)
+  }
 
+  @Suppress("unused")
+  @GetMapping
+  fun index() = "index"
+
+  @Suppress("unused")
   @PostMapping("/upload-projects")
   fun uploadProjects(
     @RequestPart("projectsCsv") projectCsv: MultipartFile,
@@ -76,6 +85,7 @@ class SurveyProcessController @Inject constructor(
   }
 
   // TODO it should be rather AJAX call to prevent it from entering browser history
+  @Suppress("unused")
   @GetMapping("/submit-projects")
   fun submitProjects(httpSession: HttpSession): String {
     val session = SessionView(httpSession)
