@@ -21,7 +21,8 @@ class TypeformSurveyLinkGenerator(
     project: Project,
     scenario: Scenario
   ) = "${config.urlBase}${config.forms.getFormId(project, scenario)}" +
-      "?project_id=${project.id}&${toUrlBlocks(project.goals)}"
+      "#project_id=${project.id}" +
+      if (project.isGoalG) "" else "&" + toUrlBlocks(project.goals)
 
 }
 
@@ -30,6 +31,7 @@ fun toUrlBlocks(goals: Set<Int>): String = mapGoalsToBlocks(goals)
   .joinToString("&")
 
 fun mapGoalsToBlocks(goals: Set<Int>): Map<String, String> = goals
+  .sorted()
   .filter { it != 1 }
   .mapIndexed { index, i ->
     Pair(
