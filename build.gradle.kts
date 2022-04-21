@@ -5,11 +5,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.6.20"
-  kotlin("plugin.serialization") version "1.6.20"
-  kotlin("plugin.spring") version "1.6.20"
-  kotlin("plugin.jpa") version "1.6.20"
-  id("org.springframework.boot") version "2.6.6"
+  kotlin("jvm") version "1.6.21"
+  kotlin("plugin.serialization") version "1.6.21"
+  kotlin("plugin.spring") version "1.6.21"
+  kotlin("plugin.jpa") version "1.6.21"
+  id("org.springframework.boot") version "2.6.7"
   id("com.github.ben-manes.versions") version "0.42.0"
   id("com.gorylenko.gradle-git-properties") version "2.4.0"
 }
@@ -24,7 +24,7 @@ val hibernateValidatorVersion = "7.0.4.Final"
 val kotestVersion = "5.2.3"
 val mockkVersion = "1.12.3"
 val hsqldbVersion = "2.6.1"
-val flywayVersion = "8.5.8"
+val flywayVersion = "8.5.9"
 val byteBuddyVersion = "1.12.9"
 
 group = "de.dkjs.survey"
