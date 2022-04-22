@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 /**
  * A scheduler which takes configured time zone into account when
- * scheduling
+ * calculating execution time.
  */
 @Component
 class DkjsScheduler @Inject constructor(
@@ -57,7 +57,9 @@ interface TimeConstraintsFactory {
 @Component
 @Profile("prod")
 class ProductionTimeConstraintsFactory : TimeConstraintsFactory {
-  override fun newTimeConstraints(project: Project) = ProductionTimeConstraints(project)
+  override fun newTimeConstraints(project: Project) = ProductionTimeConstraints(
+    project.start, project.end
+  )
 }
 
 @Component
@@ -65,35 +67,40 @@ class ProductionTimeConstraintsFactory : TimeConstraintsFactory {
 class TestTimeConstraintsFactory @Inject constructor(
   private val config: TimeConfig
 ) : TimeConstraintsFactory {
-  override fun newTimeConstraints(project: Project) = TestTimeConstraints(project, config)
+  override fun newTimeConstraints(project: Project) = TestTimeConstraints(
+    project.start, project.end, config
+  )
 }
 
-class ProductionTimeConstraints(private val project: Project) : TimeConstraints {
+class ProductionTimeConstraints(
+  private val start: LocalDateTime,
+  private val end: LocalDateTime,
+) : TimeConstraints {
   override val scenario: Scenario get() =
-    if (Duration.between(project.start, project.end).toDays() <= 13) Scenario.RETRO
-    else Scenario.PRE_POST
-  override val isMoreThan14DaysProjectDuration: Boolean get() = Duration.between(project.start, project.end).toDays() > 14L
-  override val oneWeekBeforeProjectStarts: LocalDateTime get() = project.start.minusWeeks(1)
-  override val oneWeekAfterProjectStarts: LocalDateTime get() = project.start.plusWeeks(1)
-  override val twoWeeksAfterProjectStarts: LocalDateTime get() = project.start.plusWeeks(2)
-  override val oneWeekBeforeProjectEnds: LocalDateTime get() = project.end.minusWeeks(1)
-  override val oneWeekAfterProjectEnds: LocalDateTime get() = project.end.plusWeeks(1)
-  override val twoWeeksAfterProjectEnds: LocalDateTime get() = project.end.plusWeeks(2)
+    if (Duration.between(start, end).toDays() <= 13) Scenario.RETRO else Scenario.PRE_POST
+  override val isMoreThan14DaysProjectDuration: Boolean get() = Duration.between(start, end).toDays() > 14L
+  override val oneWeekBeforeProjectStarts: LocalDateTime get() = start.minusWeeks(1)
+  override val oneWeekAfterProjectStarts: LocalDateTime get() = start.plusWeeks(1)
+  override val twoWeeksAfterProjectStarts: LocalDateTime get() = start.plusWeeks(2)
+  override val oneWeekBeforeProjectEnds: LocalDateTime get() = end.minusWeeks(1)
+  override val oneWeekAfterProjectEnds: LocalDateTime get() = end.plusWeeks(1)
+  override val twoWeeksAfterProjectEnds: LocalDateTime get() = end.plusWeeks(2)
 }
 
 class TestTimeConstraints(
-  private val project: Project,
+  private val start: LocalDateTime,
+  private val end: LocalDateTime,
   testConfig: TimeConfig
 ) : TimeConstraints {
   private val multiplier: Long = testConfig.dayDurationAsNumberOfSeconds.toLong()
   override val scenario: Scenario get() =
-    if (Duration.between(project.start, project.end).toSeconds() <= 13 * multiplier) Scenario.RETRO
+    if (Duration.between(start, end).toSeconds() <= 13 * multiplier) Scenario.RETRO
     else Scenario.PRE_POST
-  override val isMoreThan14DaysProjectDuration: Boolean get() = Duration.between(project.start, project.end).toSeconds() > (14 * multiplier)
-  override val oneWeekBeforeProjectStarts: LocalDateTime get() = project.start.minusSeconds(7 * multiplier)
-  override val oneWeekAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(7 * multiplier)
-  override val twoWeeksAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(14 * multiplier)
-  override val oneWeekBeforeProjectEnds: LocalDateTime get() = project.end.minusSeconds(7 * multiplier)
-  override val oneWeekAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(7 * multiplier)
-  override val twoWeeksAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(14 * multiplier)
+  override val isMoreThan14DaysProjectDuration: Boolean get() = Duration.between(start, end).toSeconds() > (14 * multiplier)
+  override val oneWeekBeforeProjectStarts: LocalDateTime get() = start.minusSeconds(7 * multiplier)
+  override val oneWeekAfterProjectStarts: LocalDateTime get() = start.plusSeconds(7 * multiplier)
+  override val twoWeeksAfterProjectStarts: LocalDateTime get() = start.plusSeconds(14 * multiplier)
+  override val oneWeekBeforeProjectEnds: LocalDateTime get() = end.minusSeconds(7 * multiplier)
+  override val oneWeekAfterProjectEnds: LocalDateTime get() = end.plusSeconds(7 * multiplier)
+  override val twoWeeksAfterProjectEnds: LocalDateTime get() = end.plusSeconds(14 * multiplier)
 }
