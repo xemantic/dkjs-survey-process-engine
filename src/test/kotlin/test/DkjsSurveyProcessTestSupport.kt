@@ -7,7 +7,6 @@ package de.dkjs.survey.test
 import de.dkjs.survey.csv.Column
 import de.dkjs.survey.csv.CsvParsingException
 import de.dkjs.survey.csv.RowResult
-import de.dkjs.survey.mail.MailType
 import de.dkjs.survey.model.*
 import org.slf4j.Logger
 import org.springframework.http.client.MultipartBodyBuilder
@@ -80,14 +79,12 @@ infix fun Column.that(message: String): RowResult.ColumnError = RowResult.Column
   this
 )
 
-private var notificationSequence: Int = 0
-
-fun SurveyProcess.addNotification(mailType: MailType) {
-  this.notifications.add(
-    Notification(
-      id = notificationSequence++,
-      mailType = mailType,
-      sentAt = LocalDateTime.now()
+fun SurveyProcess.addTestActivity(name: String) {
+  this.activities.add(
+    Activity(
+      surveyProcessId = "foo",
+      name = name,
+      result = "test ok"
     )
   )
 }

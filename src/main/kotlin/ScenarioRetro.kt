@@ -9,16 +9,33 @@ import de.dkjs.survey.mail.MailType
 
 /**
  * Defines the process triggered when scenario `RETRO` is detected.
+ *
+ * Note: names of executed activities HAVE TO DIFFER!
  */
 fun defineRetroProcess() = defineProcess {
 
-  sendImmediately(MailType.REMINDER_1_RETRO)
+  execute("send REMINDER_1_RETRO") {
+    send(MailType.REMINDER_1_RETRO)
+  }
 
-  scheduleMailAt(time.oneWeekBeforeProjectEnds, MailType.REMINDER_1_RETRO)
+  schedule(
+    "send REMINDER_1_RETRO again 1 week before project ends",
+    time.oneWeekBeforeProjectEnds
+  ) {
+    send(MailType.REMINDER_1_RETRO)
+  }
 
-  scheduleMailAt(time.oneWeekAfterProjectEnds, MailType.REMINDER_2_RETRO)
+  schedule(
+    "send REMINDER_2_RETRO 1 week after project ends",
+    time.oneWeekAfterProjectEnds
+  ) {
+    send(MailType.REMINDER_2_RETRO)
+  }
 
-  scheduleAt(time.twoWeeksAfterProjectEnds) {
+  schedule(
+    "end check",
+    time.twoWeeksAfterProjectEnds
+  ) {
     if (hasNoAnswers()) {
       sendAlert("No surveys received 2 weeks after project ended")
     }

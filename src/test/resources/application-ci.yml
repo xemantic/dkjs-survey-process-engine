@@ -58,3 +58,7 @@ typeform:
 credentials:
   username:
   password:
+
+test:
+  # applied only for profile test, value 1 -> 1 day = 1s; 60 -> 1 day = 1m
+  dayDurationAsNumberOfSeconds: 1

@@ -4,7 +4,7 @@
 
 package de.dkjs.survey.model
 
-import de.dkjs.survey.mail.MailType
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.data.repository.CrudRepository
 import java.time.LocalDateTime
 import javax.persistence.*
@@ -21,7 +21,6 @@ enum class Scenario {
 class Project(
 
   @Id
-//  @get:Pattern(regexp = "[0-9- ]+")
   @get:NotEmpty
   var id: String,  // project.number in input data
 
@@ -31,7 +30,10 @@ class Project(
   @get:NotEmpty
   var name: String,
 
-  @OneToOne(cascade = [CascadeType.ALL])
+  @OneToOne(
+    cascade = [CascadeType.ALL],
+    fetch = FetchType.EAGER
+  )
   @get:Valid
   var provider: Provider,
 
@@ -39,7 +41,7 @@ class Project(
   @get:Valid
   var contactPerson: ContactPerson,
 
-  @ElementCollection
+  @ElementCollection(fetch = FetchType.EAGER)
   @get:NotEmpty
   @get:Size(min = 1, max = 3)
   @get:ValidGoalIds
@@ -55,7 +57,10 @@ class Project(
   @get:NotNull
   var end: LocalDateTime,
 
-  @OneToOne(cascade = [CascadeType.ALL])
+  @OneToOne(
+    cascade = [CascadeType.ALL],
+    fetch = FetchType.EAGER
+  )
   var surveyProcess: SurveyProcess? = null
 
 ) {
@@ -137,9 +142,13 @@ class SurveyProcess(
   @Enumerated(EnumType.STRING)
   var phase: Phase,
 
-  @OneToMany(cascade = [CascadeType.ALL])
-  @JoinColumn(name = "survey_process_id")
-  var notifications: MutableList<Notification> = mutableListOf()
+  @OneToMany(
+    cascade = [CascadeType.ALL],
+    mappedBy = "surveyProcessId",
+    fetch = FetchType.EAGER
+  )
+  @OrderBy("executedAt")
+  var activities: MutableList<Activity> = mutableListOf()
 
 ) {
 
@@ -149,27 +158,49 @@ class SurveyProcess(
     FINISHED
   }
 
-  fun isAlreadySent(mailTypes: Set<MailType>): Boolean =
-    notifications.any { it.mailType in mailTypes }
+  fun alreadyExecuted(name: String): Boolean =
+    activities.any { it.name == name }
 
 }
 
+/**
+ * [Activity]'s composite key.
+ *
+ * Note: It's defined as kotlin data class to be Serializable and have proper
+ * hashCode / equals generated, as required by JPA specs. Marking it as @Embeddable
+ * is not required by JPA but will result in generating additional no-args constructor
+ * required by JPA provider.
+ */
+@Embeddable
+data class ActivityId(
+  val surveyProcessId: String,
+  val name: String
+) : java.io.Serializable
+
 @Entity
-class Notification(
+@IdClass(ActivityId::class)
+class Activity(
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
-  var id: Int = 0,
+  val surveyProcessId: String,
 
-  @Enumerated(EnumType.STRING)
-  var mailType: MailType,
+  @Id
+  val name: String,
 
-  var sentAt: LocalDateTime = LocalDateTime.now(),
+  @Suppress("unused") // use in JPA sorting criteria
+  var executedAt: LocalDateTime = LocalDateTime.now(),
 
-  @Suppress("unused")
+  @Suppress("unused") // REST api display (through reflection)
+  var result: String? = null,
+
   var failure: String? = null
 
-)
+) {
+
+  @get:JsonIgnore
+  val failed: Boolean get() = (failure != null)
+
+}
 
 fun goalsToCapitalLetters(goals: Set<Int>): String =
   goals
@@ -197,6 +228,9 @@ interface ProviderRepository : CrudRepository<Provider, String>
 
 @Suppress("unused") // used automagically by spring-data-rest
 interface SurveyProcessRepository : CrudRepository<SurveyProcess, String>
+
+@Suppress("unused") // used automagically by spring-data-rest
+interface ActivityRepository : CrudRepository<Activity, Int>
 
 @MustBeDocumented
 @Constraint(validatedBy = [GoalIdsValidator::class])

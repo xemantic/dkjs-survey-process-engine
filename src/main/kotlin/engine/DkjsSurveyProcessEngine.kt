@@ -15,7 +15,7 @@ import org.slf4j.Logger
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Profile
-import org.springframework.mail.MailException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.SchedulingTaskExecutor
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.stereotype.Component
@@ -27,6 +27,7 @@ import javax.annotation.PostConstruct
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 
 @Validated
 @ConfigurationProperties("dkjs")
@@ -38,7 +39,22 @@ data class DkjsConfig(
    * to distinguish environments.
    */
   @get:NotEmpty
-  val environment: String
+  val environment: String,
+
+)
+
+@Profile("test")
+@Validated
+@ConfigurationProperties("test")
+@ConstructorBinding
+data class TestConfig(
+
+  /**
+   * Test [TimeConstraints] are operating on second basis instead of day/week basis
+   * for time calculation.
+   */
+  @get:NotNull
+  val dayDurationAsNumberOfSeconds: Int
 
 )
 
@@ -68,8 +84,10 @@ class ProductionTimeConstraintsFactory : TimeConstraintsFactory {
 
 @Component
 @Profile("test")
-class TestTimeConstraintsFactory : TimeConstraintsFactory {
-  override fun newTimeConstraints(project: Project) = TestTimeConstraints(project)
+class TestTimeConstraintsFactory @Inject constructor(
+  private val config: TestConfig
+) : TimeConstraintsFactory {
+  override fun newTimeConstraints(project: Project) = TestTimeConstraints(project, config)
 }
 
 class ProductionTimeConstraints(private val project: Project) : TimeConstraints {
@@ -85,17 +103,21 @@ class ProductionTimeConstraints(private val project: Project) : TimeConstraints 
   override val twoWeeksAfterProjectEnds: LocalDateTime get() = project.end.plusWeeks(2)
 }
 
-class TestTimeConstraints(private val project: Project) : TimeConstraints {
+class TestTimeConstraints(
+  private val project: Project,
+  testConfig: TestConfig
+) : TimeConstraints {
+  private val multiplier: Long = testConfig.dayDurationAsNumberOfSeconds.toLong()
   override val scenario: Scenario get() =
-    if (Duration.between(project.start, project.end).toSeconds() <= 13) Scenario.RETRO
+    if (Duration.between(project.start, project.end).toSeconds() <= 13 * multiplier) Scenario.RETRO
     else Scenario.PRE_POST
-  override val is14DaysProjectDuration: Boolean get() = Duration.between(project.start, project.end).toSeconds() == 14L
-  override val oneWeekBeforeProjectStarts: LocalDateTime get() = project.start.minusSeconds(1 * 7)
-  override val oneWeekAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(1 * 7)
-  override val twoWeeksAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(2 * 7)
-  override val oneWeekBeforeProjectEnds: LocalDateTime get() = project.end.minusSeconds(1 * 7)
-  override val oneWeekAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(1 * 7)
-  override val twoWeeksAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(2 * 7)
+  override val is14DaysProjectDuration: Boolean get() = Duration.between(project.start, project.end).toSeconds() == (14 * multiplier)
+  override val oneWeekBeforeProjectStarts: LocalDateTime get() = project.start.minusSeconds(7 * multiplier)
+  override val oneWeekAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(7 * multiplier)
+  override val twoWeeksAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(14 * multiplier)
+  override val oneWeekBeforeProjectEnds: LocalDateTime get() = project.end.minusSeconds(7 * multiplier)
+  override val oneWeekAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(7 * multiplier)
+  override val twoWeeksAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(14 * multiplier)
 }
 
 @Singleton
@@ -104,6 +126,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
   private val logger: Logger,
   private val projectRepository: ProjectRepository,
   private val processRepository: SurveyProcessRepository,
+  private val activityRepository: ActivityRepository,
   private val emailService: SurveyEmailSender,
   private val taskScheduler: TaskScheduler,
   private val taskExecutor: SchedulingTaskExecutor,
@@ -112,89 +135,116 @@ class DkjsSurveyProcessEngine @Inject constructor(
   private val alertEmailSender: AlertEmailSender
 ) {
 
-  inner class ProcessContext(private val project: Project) {
+  inner class ProcessContext(
+    private val projectId: String,
+    internal val time: TimeConstraints
+  ) {
 
-    val time = timeConstraintsFactory.newTimeConstraints(project)
-
-    private val scheduledContext = ScheduledContext(project, time.scenario)
-
-    fun sendImmediately(mailType: MailType) {
-      if (isNotSent(mailType)) {
+    fun execute(activity: String, block: ActivityContext.() -> String) {
+      executeIfNotExecuted(activity) {
         taskExecutor.submit {
-          send(mailType)
+          logger.info("Executing activity: '$activity' for project: $projectId")
+          executeActivity(activity, block)
         }
       }
     }
 
-    fun scheduleMailAt(time: LocalDateTime, mailType: MailType) {
-      if (isNotSent(mailType)) {
-        scheduleAt(time, project) {
-          send(mailType)
-        }
+    fun schedule(activity: String, time: LocalDateTime, block: ActivityContext.() -> String) {
+      executeIfNotExecuted(activity) {
+        logger.info("Scheduling activity '$activity' at $time for project: $projectId")
+        taskScheduler.schedule(
+          {
+            logger.info("Running scheduled action for project: $projectId")
+            executeActivity(activity, block)
+          },
+          // TODO is it correct?
+          time.toInstant(ZoneOffset.UTC)
+        )
       }
     }
 
-    fun scheduleIfNotSent(
-      time: LocalDateTime,
-      mailType: Set<MailType>,
-      block: ScheduledContext.() -> Unit
-    ) {
-      if (isNotSent(mailType)) {
-        scheduleAt(time, project) {
-          block.invoke(scheduledContext)
-        }
+    private fun executeIfNotExecuted(activity: String, block: () -> Unit) {
+      val process = processRepository.findByIdOrNull(projectId)!!
+      if (!process.alreadyExecuted(activity)) {
+        block()
       }
     }
 
-    fun scheduleAt(time: LocalDateTime, block: ScheduledContext.() -> Unit) {
-      scheduleAt(time, project) {
-        block.invoke(scheduledContext)
+    private fun executeActivity(name: String, block: ActivityContext.() -> String) {
+      val project = projectRepository.findByIdOrNull(projectId)!!
+      val process = project.surveyProcess!!
+      val activity = try {
+        val result = block(ActivityContext(project, time.scenario))
+        Activity(
+          surveyProcessId = process.id,
+          name = name,
+          result = result
+        )
+      } catch (e: Exception) {
+        Activity(
+          surveyProcessId = process.id,
+          name,
+          failure = e.message
+        )
       }
+      process.activities.add(
+        activityRepository.save(activity)
+      )
+      if (activity.failed) {
+        sendAlert(project, time.scenario, "Survey process failed")
+        process.phase = SurveyProcess.Phase.FAILED
+      }
+      project.surveyProcess = processRepository.save(process)
+      projectRepository.save(project)
     }
-
-    private fun isNotSent(mailType: MailType): Boolean = isNotSent(setOf(mailType))
-
-    private fun isNotSent(mailTypes: Set<MailType>): Boolean =
-      !project.surveyProcess!!.isAlreadySent(mailTypes)
-
-    private fun send(mailType: MailType) = send(mailType, project, time.scenario)
 
   }
 
-  inner class ScheduledContext(
+  inner class ActivityContext(
     private val project: Project,
     private val scenario: Scenario
   ) {
 
-    fun send(mailType: MailType) = send(mailType, project, scenario)
-
-    fun hasNoAnswers() = typeformChecker.countSurveys(project, scenario) == 0
-
-    fun sendAlert(message: String) {
-      logger.info("Sending alert about project: ${project.id} - $message")
-      alertEmailSender.sendAlertEmail(
-        "Project: ${project.id} - $message",
-        """
-            $message
-
-            project: ${project.id},
-            name: ${project.name},
-            status: ${project.status},
-            provider id: ${project.provider.id}
-            provider name: ${project.provider.name}
-            scenario: ${scenario.name}
-            start: ${project.start}
-            end: ${project.end}
-            "
-        """.trimIndent()
+    fun send(mailType: MailType): String {
+      logger.info(
+        "Sending ${mailType.name} mail to project: ${project.id} " +
+          "in scenario ${scenario.name}"
       )
+      emailService.send(mailType, scenario, project)
+      return "Sent mail: ${mailType.name}"
     }
 
-    fun finishProcess() {
+    fun hasNoAnswers(): Boolean {
+      logger.info(
+        "Checking typeform answers for project: ${project.id}, scenario ${scenario.name}"
+      )
+      val count = typeformChecker.countSurveys(project, scenario)
+      val noAnswers = if (count == 0) {
+        logger.warn(
+          "No typeform surveys filled for project: ${project.id}, scenario ${scenario.name}"
+        )
+        true
+      } else {
+        logger.info(
+          "Typeform survey received for project: ${project.id}, scenario ${scenario.name}, count: $count"
+        )
+        false
+      }
+      return noAnswers
+    }
+
+    fun sendAlert(message: String): String {
+      logger.info("Sending alert about project: ${project.id} - $message")
+      sendAlert(project, scenario, message)
+      return "Alert sent: $message"
+    }
+
+    fun finishProcess(): String {
       logger.info("Survey process has finished for project: ${project.id}")
       val process = project.surveyProcess!!
       process.phase = SurveyProcess.Phase.FINISHED
       processRepository.save(process)
+      return "Process finished"
     }
 
   }
@@ -233,9 +283,10 @@ class DkjsSurveyProcessEngine @Inject constructor(
     logger.info("Handling project batch")
     // we need to persist all the projects asap
     val savedProjects = projects.map { project ->
-      project.surveyProcess = SurveyProcess(
+      val process = processRepository.save(SurveyProcess(
         project.id, SurveyProcess.Phase.ACTIVE
-      )
+      ))
+      project.surveyProcess = process
       projectRepository.save(project)
     }
     logger.info("Project batch persisted")
@@ -246,41 +297,31 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
   fun startProcess(project: Project) {
     logger.info("Starting process for project: ${project.id}")
-    val ctx = ProcessContext(project)
-    processDefinitions[ctx.time.scenario]!!.invoke(ctx)
+    val time = timeConstraintsFactory.newTimeConstraints(project)
+    val ctx = ProcessContext(project.id, time)
+    processDefinitions[time.scenario]!!(ctx)
   }
 
-  private fun send(mailType: MailType, project: Project, scenario: Scenario) {
-    logger.info("Sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}")
-    val process = project.surveyProcess!!
-    val notification = try {
-      emailService.send(mailType, scenario, project)
-      Notification(mailType = mailType)
-    } catch (e: MailException) {
-      logger.error("Error sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}", e)
-      Notification(mailType = mailType, failure = e.message)
-    }
-    process.notifications.add(notification)
-    if (notification.failure != null) {
-      process.phase = SurveyProcess.Phase.FAILED
-      alertEmailSender.sendAlertEmail(
-        "Survey process failed, project: ${project.id}",
-        "Error sending ${mailType.name} mail to project: ${project.id} in scenario ${scenario.name}\n\n" +
-            "${notification.failure}"
-      )
-    }
-    processRepository.save(process)
-  }
+  fun sendAlert(project: Project, scenario: Scenario, message: String) {
+    val contact = project.contactPerson
+    alertEmailSender.sendAlertEmail(
+      "$message, project: ${project.id}",
+      """
+            $message
 
-  private fun scheduleAt(date: LocalDateTime, project: Project, call: () -> Unit) {
-    logger.info("Scheduling action at $date for project: ${project.id}")
-    taskScheduler.schedule(
-      {
-        logger.info("Running scheduled action for project: ${project.id}")
-        call()
-      },
-      // TODO is it correct?
-      date.toInstant(ZoneOffset.UTC)
+            Project details:
+            - number: ${project.id}
+            - name: ${project.name}
+            - status: ${project.status}
+            - scenario: $scenario
+            - goals: ${project.goals}
+            - start: ${project.start}
+            - end: ${project.end}
+            - contact: ${contact.pronoun} ${contact.firstName} ${contact.lastName}
+            - email: ${contact.email}
+            - provider number: ${project.provider.id}
+            - provider name: ${project.provider.id}
+          """.trimIndent()
     )
   }
 

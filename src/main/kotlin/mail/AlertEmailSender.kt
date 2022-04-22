@@ -4,6 +4,7 @@
 
 package de.dkjs.survey.mail
 
+import de.dkjs.survey.engine.DkjsConfig
 import org.slf4j.Logger
 import org.springframework.mail.MailException
 import org.springframework.mail.SimpleMailMessage
@@ -16,6 +17,7 @@ import javax.inject.Singleton
 @Component
 class AlertEmailSender @Inject constructor(
   private val logger: Logger,
+  private val dkjsConfig: DkjsConfig,
   private val config: MailConfig,
   private val sender: JavaMailSender
 ) {
@@ -24,7 +26,7 @@ class AlertEmailSender @Inject constructor(
     val message = SimpleMailMessage().apply {
       setFrom(config.from)
       setTo(config.sendAlertsTo)
-      setSubject(subject)
+      setSubject("[${dkjsConfig.environment} Surveys] $subject")
       setText(body)
     }
     try {
