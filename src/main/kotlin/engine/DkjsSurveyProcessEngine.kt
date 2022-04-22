@@ -10,24 +10,21 @@ import de.dkjs.survey.mail.AlertEmailSender
 import de.dkjs.survey.mail.MailType
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.model.*
+import de.dkjs.survey.time.DkjsScheduler
+import de.dkjs.survey.time.TimeConstraints
+import de.dkjs.survey.time.TimeConstraintsFactory
 import de.dkjs.survey.typeform.response.TypeformResponseChecker
 import org.slf4j.Logger
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
-import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.scheduling.SchedulingTaskExecutor
-import org.springframework.scheduling.TaskScheduler
 import org.springframework.stereotype.Component
 import org.springframework.validation.annotation.Validated
-import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import javax.annotation.PostConstruct
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
 
 @Validated
 @ConfigurationProperties("dkjs")
@@ -43,82 +40,9 @@ data class DkjsConfig(
 
 )
 
-@Profile("test")
-@Validated
-@ConfigurationProperties("test")
-@ConstructorBinding
-data class TestConfig(
-
-  /**
-   * Test [TimeConstraints] are operating on second basis instead of day/week basis
-   * for time calculation.
-   */
-  @get:NotNull
-  val dayDurationAsNumberOfSeconds: Int
-
-)
-
-interface TimeConstraints {
-  val scenario: Scenario
-  val is14DaysProjectDuration: Boolean
-  val oneWeekBeforeProjectStarts: LocalDateTime
-  val oneWeekAfterProjectStarts: LocalDateTime
-  val twoWeeksAfterProjectStarts: LocalDateTime
-  val oneWeekBeforeProjectEnds: LocalDateTime
-  val oneWeekAfterProjectEnds: LocalDateTime
-  val twoWeeksAfterProjectEnds: LocalDateTime
-}
-
 fun defineProcess(block: DkjsSurveyProcessEngine.ProcessContext.() -> Unit):
     DkjsSurveyProcessEngine.ProcessContext.() -> Unit = block
 
-interface TimeConstraintsFactory {
-  fun newTimeConstraints(project: Project): TimeConstraints
-}
-
-@Component
-@Profile("prod")
-class ProductionTimeConstraintsFactory : TimeConstraintsFactory {
-  override fun newTimeConstraints(project: Project) = ProductionTimeConstraints(project)
-}
-
-@Component
-@Profile("test")
-class TestTimeConstraintsFactory @Inject constructor(
-  private val config: TestConfig
-) : TimeConstraintsFactory {
-  override fun newTimeConstraints(project: Project) = TestTimeConstraints(project, config)
-}
-
-class ProductionTimeConstraints(private val project: Project) : TimeConstraints {
-  override val scenario: Scenario get() =
-    if (Duration.between(project.start, project.end).toDays() <= 13) Scenario.RETRO
-    else Scenario.PRE_POST
-  override val is14DaysProjectDuration: Boolean get() = Duration.between(project.start, project.end).toDays() == 14L
-  override val oneWeekBeforeProjectStarts: LocalDateTime get() = project.start.minusWeeks(1)
-  override val oneWeekAfterProjectStarts: LocalDateTime get() = project.start.plusWeeks(1)
-  override val twoWeeksAfterProjectStarts: LocalDateTime get() = project.start.plusWeeks(2)
-  override val oneWeekBeforeProjectEnds: LocalDateTime get() = project.end.minusWeeks(1)
-  override val oneWeekAfterProjectEnds: LocalDateTime get() = project.end.plusWeeks(1)
-  override val twoWeeksAfterProjectEnds: LocalDateTime get() = project.end.plusWeeks(2)
-}
-
-class TestTimeConstraints(
-  private val project: Project,
-  testConfig: TestConfig
-) : TimeConstraints {
-  private val multiplier: Long = testConfig.dayDurationAsNumberOfSeconds.toLong()
-  override val scenario: Scenario get() =
-    if (Duration.between(project.start, project.end).toSeconds() <= 13 * multiplier) Scenario.RETRO
-    else Scenario.PRE_POST
-  override val is14DaysProjectDuration: Boolean get() = Duration.between(project.start, project.end).toSeconds() == (14 * multiplier)
-  override val oneWeekBeforeProjectStarts: LocalDateTime get() = project.start.minusSeconds(7 * multiplier)
-  override val oneWeekAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(7 * multiplier)
-  override val twoWeeksAfterProjectStarts: LocalDateTime get() = project.start.plusSeconds(14 * multiplier)
-  override val oneWeekBeforeProjectEnds: LocalDateTime get() = project.end.minusSeconds(7 * multiplier)
-  override val oneWeekAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(7 * multiplier)
-  override val twoWeeksAfterProjectEnds: LocalDateTime get() = project.end.plusSeconds(14 * multiplier)
-}
 
 @Singleton
 @Component
@@ -128,8 +52,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
   private val processRepository: SurveyProcessRepository,
   private val activityRepository: ActivityRepository,
   private val emailService: SurveyEmailSender,
-  private val taskScheduler: TaskScheduler,
-  private val taskExecutor: SchedulingTaskExecutor,
+  private val dkjsScheduler: DkjsScheduler,
   private val typeformChecker: TypeformResponseChecker,
   private val timeConstraintsFactory: TimeConstraintsFactory,
   private val alertEmailSender: AlertEmailSender
@@ -137,13 +60,14 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
   inner class ProcessContext(
     private val projectId: String,
+    internal val processStart: LocalDateTime,
+    internal val projectStart: LocalDateTime,
     internal val time: TimeConstraints
   ) {
 
     fun execute(activity: String, block: ActivityContext.() -> String) {
       executeIfNotExecuted(activity) {
-        taskExecutor.submit {
-          logger.info("Executing activity: '$activity' for project: $projectId")
+        dkjsScheduler.executeNow {
           executeActivity(activity, block)
         }
       }
@@ -152,14 +76,9 @@ class DkjsSurveyProcessEngine @Inject constructor(
     fun schedule(activity: String, time: LocalDateTime, block: ActivityContext.() -> String) {
       executeIfNotExecuted(activity) {
         logger.info("Scheduling activity '$activity' at $time for project: $projectId")
-        taskScheduler.schedule(
-          {
-            logger.info("Running scheduled action for project: $projectId")
-            executeActivity(activity, block)
-          },
-          // TODO is it correct?
-          time.toInstant(ZoneOffset.UTC)
-        )
+        dkjsScheduler.schedule(time) {
+          executeActivity(activity, block)
+        }
       }
     }
 
@@ -171,16 +90,26 @@ class DkjsSurveyProcessEngine @Inject constructor(
     }
 
     private fun executeActivity(name: String, block: ActivityContext.() -> String) {
+      logger.info("Executing activity: '$name', project: $projectId, scenario: ${time.scenario}")
       val project = projectRepository.findByIdOrNull(projectId)!!
       val process = project.surveyProcess!!
       val activity = try {
         val result = block(ActivityContext(project, time.scenario))
+        logger.info(
+          "Activity successfully executed: '$name' for project: " +
+            "$projectId, scenario: ${time.scenario}"
+        )
         Activity(
           surveyProcessId = process.id,
           name = name,
           result = result
         )
       } catch (e: Exception) {
+        logger.error(
+          "Activity failed: '$name' for project: " +
+              "$projectId, scenario: ${time.scenario}",
+          e
+        )
         Activity(
           surveyProcessId = process.id,
           name,
@@ -284,7 +213,8 @@ class DkjsSurveyProcessEngine @Inject constructor(
     // we need to persist all the projects asap
     val savedProjects = projects.map { project ->
       val process = processRepository.save(SurveyProcess(
-        project.id, SurveyProcess.Phase.ACTIVE
+        id = project.id,
+        phase = SurveyProcess.Phase.ACTIVE
       ))
       project.surveyProcess = process
       projectRepository.save(project)
@@ -298,7 +228,9 @@ class DkjsSurveyProcessEngine @Inject constructor(
   fun startProcess(project: Project) {
     logger.info("Starting process for project: ${project.id}")
     val time = timeConstraintsFactory.newTimeConstraints(project)
-    val ctx = ProcessContext(project.id, time)
+    val ctx = ProcessContext(
+      project.id, project.start, project.surveyProcess!!.start, time
+    )
     processDefinitions[time.scenario]!!(ctx)
   }
 

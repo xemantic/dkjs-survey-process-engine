@@ -14,32 +14,49 @@ import de.dkjs.survey.mail.MailType
  */
 fun defineRetroProcess() = defineProcess {
 
-  execute("send REMINDER_1_RETRO") {
-    send(MailType.REMINDER_1_RETRO)
-  }
+  if (processStart.isAfter(time.twoWeeksAfterProjectEnds)) {
 
-  schedule(
-    "send REMINDER_1_RETRO again 1 week before project ends",
-    time.oneWeekBeforeProjectEnds
-  ) {
-    send(MailType.REMINDER_1_RETRO)
-  }
-
-  schedule(
-    "send REMINDER_2_RETRO 1 week after project ends",
-    time.oneWeekAfterProjectEnds
-  ) {
-    send(MailType.REMINDER_2_RETRO)
-  }
-
-  schedule(
-    "end check",
-    time.twoWeeksAfterProjectEnds
-  ) {
-    if (hasNoAnswers()) {
-      sendAlert("No surveys received 2 weeks after project ended")
+    execute("send alert if now is 2 weeks after project ends") {
+      sendAlert("Project submitted 2 weeks after it ends")
+      finishProcess()
     }
-    finishProcess()
+
+  } else {
+
+    execute("send INFOMAIL_RETRO") {
+      send(MailType.INFOMAIL_RETRO)
+    }
+
+    if (processStart.isBefore(time.oneWeekAfterProjectEnds)) {
+      schedule(
+        "send REMINDER_1_RETRO again 1 week before project ends",
+        time.oneWeekBeforeProjectEnds
+      ) {
+        send(MailType.REMINDER_1_RETRO)
+      }
+    }
+
+    schedule(
+      "send REMINDER_2_RETRO 1 week after project ends",
+      time.oneWeekAfterProjectEnds
+    ) {
+      if (hasNoAnswers()) {
+        send(MailType.REMINDER_2_RETRO)
+      } else {
+        "Not sending REMINDER_2_RETRO because survey has answers"
+      }
+    }
+
+    schedule(
+      "end check",
+      time.twoWeeksAfterProjectEnds
+    ) {
+      if (hasNoAnswers()) {
+        sendAlert("No surveys received 2 weeks after project ended")
+      }
+      finishProcess()
+    }
+
   }
 
 }

@@ -9,13 +9,14 @@ CREATE TABLE provider (
 
 create table survey_process (
   id                      VARCHAR NOT NULL PRIMARY KEY,
+  start                   TIMESTAMP NOT NULL,
   phase                   VARCHAR NOT NULL
 );
 
 CREATE TABLE activity (
   name                    VARCHAR NOT NULL,
   survey_process_id       VARCHAR NOT NULL FOREIGN KEY REFERENCES survey_process(id),
-  executed_at             TIMESTAMP,
+  executed_at             TIMESTAMP NOT NULL,
   mail_type               VARCHAR,
   result                  VARCHAR,
   failure                 VARCHAR,

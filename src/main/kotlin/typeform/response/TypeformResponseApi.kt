@@ -9,6 +9,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.slf4j.Logger
 import org.springframework.stereotype.Component
 import javax.inject.Singleton
 
@@ -46,15 +47,21 @@ interface TypeformResponseService {
 @Singleton
 @Component
 class KtorTypeformResponseService constructor(
-  private val client: HttpClient
+  private val client: HttpClient,
+  private val logger: Logger
 ) : TypeformResponseService {
 
   override suspend fun countResponses(
     formId: String,
     projectId: String
-  ): Int = client.request("https://api.typeform.com/forms/$formId/responses") {
+  ): Int {
+    logger.info("Counting typeform responses, project: $projectId, form: $formId")
+    val count = client.request("https://api.typeform.com/forms/$formId/responses") {
       parameter("fields", "hidden")
       parameter("query", projectId)
     }.body<ResponsePage>().totalItems
+    logger.info("Counted typeform responses, project: $projectId, form: $formId, count: $count")
+    return count
+  }
 
 }
