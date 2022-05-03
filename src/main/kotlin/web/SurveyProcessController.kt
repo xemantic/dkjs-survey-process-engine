@@ -11,6 +11,7 @@ import de.dkjs.survey.csv.RowResult
 import de.dkjs.survey.engine.DkjsSurveyProcessEngine
 import de.dkjs.survey.model.Project
 import org.slf4j.Logger
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
@@ -45,6 +46,8 @@ class SurveyProcessController @Inject constructor(
     attributes: RedirectAttributes,
     httpSession: HttpSession
   ): String {
+
+    logger.info("Uploading projects from file: ${projectCsv.originalFilename}")
 
     val session = SessionView(httpSession)
     session.cleanDkjsAttributes()
@@ -84,18 +87,28 @@ class SurveyProcessController @Inject constructor(
     return "redirect:/"
   }
 
-  // TODO it should be rather AJAX call to prevent it from entering browser history
   @Suppress("unused")
   @GetMapping("/submit-projects")
-  fun submitProjects(httpSession: HttpSession): String {
+  fun submitProjects(httpSession: HttpSession): ResponseEntity<String> {
+
+    logger.info("Submitting projects from HTTP session")
+
     val session = SessionView(httpSession)
-    if (session.hasErrors) {
+    return if (session.hasErrors) { // should never happen in typical workflows
       logger.error("An attempt to submit projects with errors")
+      ResponseEntity.internalServerError().body("Cannot submit projects with errors")
     } else {
-      engine.handleProjects(session.projects)
-      session.cleanDkjsAttributes()
+      val projects = session.projects
+      if (projects != null && !projects.isEmpty()) {
+        logger.info("Submitted project count: ${projects.size}")
+        engine.handleProjects(projects)
+        session.cleanDkjsAttributes()
+        ResponseEntity.ok("Projects submitted")
+      } else { // should never happen in typical workflows
+        logger.error("An attempt to submit projects, but none stored in HTTP session")
+        ResponseEntity.internalServerError().body("No projects found to submit")
+      }
     }
-    return "redirect:/"
   }
 
 }
@@ -106,7 +119,7 @@ class SessionView(private val session: HttpSession) {
     get() = session.attribute("hasErrors") ?: false
     set(value) = session.setAttribute("hasErrors", value)
 
-  var projects: List<Project>
+  var projects: List<Project>?
     get() = session.attribute("projects")
     set(value) = session.setAttribute("projects", value)
 
