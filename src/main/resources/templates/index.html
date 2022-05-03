@@ -211,7 +211,19 @@
       });
 
       whenClicked("#action-submit-projects", () => {
-        window.location.replace("submit-projects");
+        fetch("submit-projects")
+          .then(response => {
+            if (response.ok) {
+              window.location.replace("/");
+            } else {
+              response.text().then((text) => {
+                alert(text);
+              });
+            }
+          })
+          .catch(error => {
+            alert(error);
+          });
       });
 
     }
