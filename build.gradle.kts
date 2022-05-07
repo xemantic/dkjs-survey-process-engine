@@ -26,6 +26,7 @@ val mockkVersion = "1.12.3"
 val hsqldbVersion = "2.6.1"
 val flywayVersion = "8.5.9"
 val byteBuddyVersion = "1.12.9"
+val springMockkVersion = "3.1.1"
 
 group = "de.dkjs.survey"
 version = "1.0-SNAPSHOT"
@@ -74,9 +75,12 @@ dependencies {
   runtimeOnly("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
   runtimeOnly("org.hsqldb:hsqldb:$hsqldbVersion")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-test") {
+    exclude(module = "mockito-core")
+  }
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
   testImplementation("io.mockk:mockk:$mockkVersion")
+  testImplementation("com.ninja-squad:springmockk:$springMockkVersion")
 }
 
 tasks.withType<KotlinCompile> {
