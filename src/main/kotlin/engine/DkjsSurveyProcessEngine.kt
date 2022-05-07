@@ -6,7 +6,6 @@ package de.dkjs.survey.engine
 
 import de.dkjs.survey.definePrePostProcess
 import de.dkjs.survey.defineRetroProcess
-import de.dkjs.survey.mail.AlertEmailSender
 import de.dkjs.survey.mail.MailType
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.model.*
@@ -51,17 +50,17 @@ class DkjsSurveyProcessEngine @Inject constructor(
   private val projectRepository: ProjectRepository,
   private val processRepository: SurveyProcessRepository,
   private val activityRepository: ActivityRepository,
-  private val emailService: SurveyEmailSender,
+  private val surveyEmailSender: SurveyEmailSender,
   private val dkjsScheduler: DkjsScheduler,
   private val typeformChecker: TypeformResponseChecker,
   private val timeConstraintsFactory: TimeConstraintsFactory,
-  private val alertEmailSender: AlertEmailSender
+  private val alertSender: AlertSender
 ) {
 
   inner class ProcessContext(
     private val projectId: String,
-    internal val processStart: LocalDateTime,
     internal val projectStart: LocalDateTime,
+    internal val processStart: LocalDateTime,
     internal val time: TimeConstraints
   ) {
 
@@ -120,7 +119,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
         activityRepository.save(activity)
       )
       if (activity.failed) {
-        sendAlert(project, time.scenario, "Survey process failed")
+        alertSender.sendProcessAlert("Survey process failed", project, time.scenario)
         process.phase = SurveyProcess.Phase.FAILED
       }
       project.surveyProcess = processRepository.save(process)
@@ -139,7 +138,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
         "Sending ${mailType.name} mail to project: ${project.id} " +
           "in scenario ${scenario.name}"
       )
-      emailService.send(mailType, scenario, project)
+      surveyEmailSender.send(mailType, scenario, project)
       return "Sent mail: ${mailType.name}"
     }
 
@@ -164,7 +163,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
     fun sendAlert(message: String): String {
       logger.info("Sending alert about project: ${project.id} - $message")
-      sendAlert(project, scenario, message)
+      alertSender.sendProcessAlert(message, project, scenario)
       return "Alert sent: $message"
     }
 
@@ -197,15 +196,6 @@ class DkjsSurveyProcessEngine @Inject constructor(
       startProcess(it)
     }
     logger.info("DkjsSurveyProcessEngine started")
-    alertEmailSender.sendAlertEmail(
-      "DkjsSurveyProcessEngine started",
-      """
-        Process summary:
-        active: ${activeProcesses.size}
-        finished: $finishedCount
-        failed: $failedCount
-      """.trimIndent()
-    )
   }
 
   fun handleProjects(projects: List<Project>) {
@@ -229,32 +219,12 @@ class DkjsSurveyProcessEngine @Inject constructor(
     logger.info("Starting process for project: ${project.id}")
     val time = timeConstraintsFactory.newTimeConstraints(project)
     val ctx = ProcessContext(
-      project.id, project.start, project.surveyProcess!!.start, time
+      projectId = project.id,
+      projectStart = project.start,
+      processStart = project.surveyProcess!!.start,
+      time = time
     )
     processDefinitions[time.scenario]!!(ctx)
-  }
-
-  fun sendAlert(project: Project, scenario: Scenario, message: String) {
-    val contact = project.contactPerson
-    alertEmailSender.sendAlertEmail(
-      "$message, project: ${project.id}",
-      """
-            $message
-
-            Project details:
-            - number: ${project.id}
-            - name: ${project.name}
-            - status: ${project.status}
-            - scenario: $scenario
-            - goals: ${project.goals}
-            - start: ${project.start}
-            - end: ${project.end}
-            - contact: ${contact.pronoun} ${contact.firstName} ${contact.lastName}
-            - email: ${contact.email}
-            - provider number: ${project.provider.id}
-            - provider name: ${project.provider.id}
-          """.trimIndent()
-    )
   }
 
 }
