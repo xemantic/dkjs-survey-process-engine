@@ -55,24 +55,24 @@ interface TimeConstraintsFactory {
 }
 
 @Component
-@Profile("prod")
-class ProductionTimeConstraintsFactory : TimeConstraintsFactory {
-  override fun newTimeConstraints(project: Project) = ProductionTimeConstraints(
+@Profile("standard-time")
+class StandardTimeConstraintsFactory : TimeConstraintsFactory {
+  override fun newTimeConstraints(project: Project) = StandardTimeConstraints(
     project.start, project.end
   )
 }
 
 @Component
-@Profile("test")
-class TestTimeConstraintsFactory @Inject constructor(
+@Profile("compressed-time")
+class CompressedTimeConstraintsFactory @Inject constructor(
   private val config: TimeConfig
 ) : TimeConstraintsFactory {
-  override fun newTimeConstraints(project: Project) = TestTimeConstraints(
+  override fun newTimeConstraints(project: Project) = CompressedTimeConstraints(
     project.start, project.end, config
   )
 }
 
-class ProductionTimeConstraints(
+class StandardTimeConstraints(
   private val start: LocalDateTime,
   private val end: LocalDateTime,
 ) : TimeConstraints {
@@ -87,7 +87,7 @@ class ProductionTimeConstraints(
   override val twoWeeksAfterProjectEnds: LocalDateTime get() = end.plusWeeks(2)
 }
 
-class TestTimeConstraints(
+class CompressedTimeConstraints(
   private val start: LocalDateTime,
   private val end: LocalDateTime,
   testConfig: TimeConfig
