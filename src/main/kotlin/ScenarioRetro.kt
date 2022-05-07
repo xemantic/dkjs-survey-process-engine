@@ -14,20 +14,13 @@ import de.dkjs.survey.mail.MailType
  */
 fun defineRetroProcess() = defineProcess {
 
-  if (processStart.isAfter(time.twoWeeksAfterProjectEnds)) {
-
-    execute("send alert if now is 2 weeks after project ends") {
-      sendAlert("Project submitted 2 weeks after it ends")
-      finishProcess()
-    }
-
-  } else {
+  if (processStart.isBefore(time.twoWeeksAfterProjectEnds)) {
 
     execute("send INFOMAIL_RETRO") {
       send(MailType.INFOMAIL_RETRO)
     }
 
-    if (processStart.isBefore(time.oneWeekAfterProjectEnds)) {
+    if (processStart.isBefore(time.oneWeekBeforeProjectEnds)) {
       schedule(
         "send REMINDER_1_RETRO again 1 week before project ends",
         time.oneWeekBeforeProjectEnds
@@ -54,6 +47,13 @@ fun defineRetroProcess() = defineProcess {
       if (hasNoAnswers()) {
         sendAlert("No surveys received 2 weeks after project ended")
       }
+      finishProcess()
+    }
+
+  } else {
+
+    execute("submitted too late") {
+      sendAlert("Submitted too late")
       finishProcess()
     }
 
