@@ -8,9 +8,11 @@ dkjs:
 spring:
   profiles:
     # separated by comma:
-    #  prod or test - test should be used also for development and CI
-    #  security - enables security - login window
-    active: test
+    #  standard-time - to be set on production, exclusive with compressed-time
+    #  compressed-time - should be used also for development and CI
+    #  security - enables security - login window, not necessary during development
+    #             but should be enabled on production and test system
+    active:
 
   # standard SMTP settings
   # note: using it with GMail requires enabling access to less-safe apps
