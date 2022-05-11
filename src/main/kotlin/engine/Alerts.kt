@@ -6,7 +6,6 @@ package de.dkjs.survey.engine
 
 import de.dkjs.survey.mail.AlertEmailSender
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.Scenario
 import org.springframework.stereotype.Component
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +14,7 @@ interface AlertSender {
 
   fun sendSystemAlert(message: String, details: String)
 
-  fun sendProcessAlert(message: String, project: Project, scenario: Scenario)
+  fun sendProcessAlert(message: String, project: Project)
 
 }
 
@@ -37,7 +36,7 @@ class DefaultAlertSender @Inject constructor(
     )
   }
 
-  override fun sendProcessAlert(message: String, project: Project, scenario: Scenario) {
+  override fun sendProcessAlert(message: String, project: Project) {
     val contact = project.contactPerson
     alertEmailSender.sendAlertEmail(
       subject = "[${dkjsConfig.environment}] $message, " +
@@ -49,7 +48,6 @@ class DefaultAlertSender @Inject constructor(
         - number: ${project.id}
         - name: ${project.name}
         - status: ${project.status}
-        - scenario: $scenario
         - goals: ${project.goals}
         - start: ${project.start}
         - end: ${project.end}
