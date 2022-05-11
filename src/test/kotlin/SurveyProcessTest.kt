@@ -63,20 +63,6 @@ class SurveyProcessTest : SurveyProcessTestBase() {
     }
   }
 
-  // TODO Alex - is REMINDIR_1_RETRO unconditional? (as on the 1st digram?)
-  /*
-  Matchers:
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(INFOMAIL_RETRO), eq(POST)))
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(REMINDER_1_RETRO), eq(POST)))
-SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(REMINDER_2_RETRO), eq(POST)))
-+AlertSender(defaultAlertSender bean#2).sendProcessAlert(eq(No survey responses received 2 weeks after project ended), any()))
-
-Calls:
-1) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@657ddd2b, INFOMAIL_RETRO, POST)
-2) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@22e469b7, REMINDER_1_RETRO, POST)
-3) +AlertSender(defaultAlertSender bean#2).sendProcessAlert(No survey responses received 2 weeks after project ended, de.dkjs.survey.model.Project@445057fd)
-
-   */
   @Test
   fun `test case 2a - project data gets into the system, the project has already started, but it didn't end yet, no answers`() {
     // given
@@ -85,34 +71,6 @@ Calls:
     val start = now - 1.days
     val end = now + 12.days
     numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
-      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
-    }
-  }
-
-  // TODO Alex - how about this test case?
-  @Test
-  @Disabled
-  fun `test case 3 - project data gets into the system, there are more than two weeks till the project end (this can also be before the project starts), but it didn't end yet`() {
-    // given
-    val projectId = "test case 3"
-    val now = now()
-    val start = now - 1.days
-    val end = now + 15.days
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
 
     // when
     uploadingProjectsCsv("""
@@ -222,28 +180,13 @@ Calls:
       surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
       surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
       surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      // TODO Kazik - fix this one
       surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST)
-      // TODO Alex - should we differenciate PRE and POST survey count?
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
 
   // TODO Alex - should it switch to RETRO scenario?
-  /*
-  Matchers:
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(INFOMAIL_PRE_POST), eq(PRE)))
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(REMINDER_1_T0), eq(PRE)))
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(REMINDER_2_T0), eq(PRE)))
-+AlertSender(defaultAlertSender bean#2).sendProcessAlert(eq(No survey responses received 2 weeks after project ended), any()))
-
-Calls:
-1) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@4e7c50cf, INFOMAIL_PRE_POST, PRE)
-2) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@7116af4c, REMINDER_1_T0, PRE)
-3) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@5177c674, REMINDER_2_T0, PRE)
-4) AlertSender(defaultAlertSender bean#2).sendProcessAlert(No survey responses (data t0) 2 weeks after project starts, de.dkjs.survey.model.Project@1bdba03b)
-5) SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@6c4c0046, REMINDER_1_T1, POST)
-6) +AlertSender(defaultAlertSender bean#2).sendProcessAlert(No survey responses received 2 weeks after project ended, de.dkjs.survey.model.Project@424b5acc)
-   */
   @Test
   fun `test case 7a - project data gets into the system more than a week before it starts, no typeform surveys 1 week after project start`() {
     // given
@@ -265,6 +208,9 @@ Calls:
       surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
       surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
       surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST) // conditional on tzpeform check
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T1_RETRO, SurveyType.POST)
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
