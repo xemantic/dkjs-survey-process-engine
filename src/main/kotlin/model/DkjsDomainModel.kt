@@ -12,9 +12,9 @@ import javax.validation.*
 import javax.validation.constraints.*
 import kotlin.reflect.KClass
 
-enum class Scenario {
-  RETRO,
-  PRE_POST
+enum class SurveyType {
+  PRE,
+  POST
 }
 
 @Entity
