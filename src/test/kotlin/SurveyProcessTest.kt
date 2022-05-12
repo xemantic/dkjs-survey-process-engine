@@ -17,11 +17,11 @@ import org.junit.jupiter.api.Test
 class SurveyProcessTest : SurveyProcessTestBase() {
 
   @Test
-  fun `test case 1 - project data gets into the system before the project starts`() {
+  fun 'test case 1 - project shorter than 14 days, project data gets into the system before the project starts, no data recorded during and after project' {
     // given
     val projectId = "test case 1"
-    val start = now() + 5.days
-    val end = start + 10.days
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 13.days
     numberOfSurveyResponses(SurveyType.POST, 0)
 
     // when
@@ -35,19 +35,19 @@ class SurveyProcessTest : SurveyProcessTestBase() {
     verifySequence {
       surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
       surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)     // conditional on typeform check SurveyType.POST
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
-
+  
+  
   @Test
-  fun `test case 2 - project data gets into the system, the project has already started, but it didn't end yet`() {
+  fun 'test case 1a - project shorter than 14 days, project data gets into the system before the project starts, data recorded during or after project' {
     // given
     val projectId = "test case 2"
-    val now = now()
-    val start = now - 1.days
-    val end = now + 12.days
-    numberOfSurveyResponses(SurveyType.POST, 42)
+    val start = now() + 1.days // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 13.days
+    numberOfSurveyResponses(SurveyType.POST, 3)
 
     // when
     uploadingProjectsCsv("""
@@ -64,12 +64,11 @@ class SurveyProcessTest : SurveyProcessTestBase() {
   }
 
   @Test
-  fun `test case 2a - project data gets into the system, the project has already started, but it didn't end yet, no answers`() {
+  fun 'test case 2 - project shorter than 14 days, the project has already started, but it didnt end yet, no answers are being recorded' {
     // given
     val projectId = "test case 2a"
-    val now = now()
-    val start = now - 1.days
-    val end = now + 12.days
+    val start = now() - 1.days 
+    val end = start + 12.days
     numberOfSurveyResponses(SurveyType.POST, 0)
 
     // when
@@ -83,18 +82,40 @@ class SurveyProcessTest : SurveyProcessTestBase() {
     verifySequence {
       surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
       surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)     // conditional on typeform check SurveyType.POST
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
 
+  
   @Test
-  fun `test case 4 - project data gets into the system, the project has already ended, but not more than one week elapsed after that and no typeform data has been entered yet`() {
+  fun 'test case 2a - project shorter than 14 days, the project has already started, but it didnt end yet, data is being recorded' {
+    // given
+    val projectId = "test case 2a"
+    val start = now() - 1.days 
+    val end = start + 12.days
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
+    }
+  }
+  
+  @Test
+  fun 'test case 3 - project shorter than 14 days, the project has already finished, no data recorded after the project' {
     // given
     val projectId = "test case 4"
-    val now = now()
-    val start = now - 10.days
-    val end = now - 5.days
+    val end = now() - 6.days  // this schuld read: schedule the sequence below if the project ended less than 7 days ago, e.g. 6 or 5 or 4 days ago
+    val start = end - 13.days
     numberOfSurveyResponses(SurveyType.POST, 0)
 
 
@@ -108,18 +129,144 @@ class SurveyProcessTest : SurveyProcessTestBase() {
     // then
     verifySequence {
       surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)    
+      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
+    }
+  }
+
+ @Test
+  fun 'test case 3a - project shorter than 14 days, the project has already finsihed, data recorded after the project' {
+    // given
+    val projectId = "test case 4"
+    val end = now() - 6.days  // this schuld read: schedule the sequence below if the project ended less than 7 days ago, e.g. 6 or 5 or 4 days ago
+    val start = end - 13.days
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
       surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
+    }
+  }
+
+  @Test
+  fun 'test case 4 - project duration is exactly 14 days, project data gets into the system more than a week before it starts, only pre data but no post data is being entered' {
+    // given
+    val projectId = "test case 4"
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 14.days
+    numberOfSurveyResponses(SurveyType.PRE, 3)
+    numberOfSurveyResponses(SurveyType.POST, 0)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST)      // conditional on typeform check SurveyType.POST
+      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
+    }
+  }
+
+   @Test
+  fun 'test case 4a - project duration is exactly 14 days, project data gets into the system more than a week before it starts, no data is being entered' {
+    // given
+    val projectId = "test case 4a"
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 14.days
+    numberOfSurveyResponses(SurveyType.PRE, 0)
+    numberOfSurveyResponses(SurveyType.POST, 0)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1_RETRO, SurveyType.POST) //the mailtext is specifically for switching into the retro track conditional on no t0 data for exactly 14 day projects
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T1_RETRO, SurveyType.POST) // conditional on typeform check SurveyType.POST
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
 
   @Test
-  fun `test case 5 - project data gets into the system, the project ended more than a week ago, but not yet two weeks and no typeform data has been entered yet`() {
+  fun 'test case 4b - project duration is exactly 14 days, project data gets into the system more than a week before it starts, all data is being entered' {
+    // given
+    val projectId = "test case 4b"
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 14.days
+    numberOfSurveyResponses(SurveyType.PRE, 3)
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+    }
+  }
+
+
+  @Test
+  fun 'test case 4c - project duration is exactly 14 days, project data gets into the system more than a week before it starts, only t1 data is being entered' {
+    // given
+    val projectId = "test case 4c"
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 14.days
+    numberOfSurveyResponses(SurveyType.PRE, 0)
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)         // conditional on typeform check SurveyType.PRE
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1_RETRO, SurveyType.POST)  //the mailtext is specifically for switching into the retro track conditional on no t0 data for exactly 14 day projects
+    }
+  }
+
+  @Test
+  fun 'test case 5 - project duration is over 14 days (e.g. 15,16,17 ...), and there is a week or less until it starts and only typeform data for t0 is recorded' {
     // given
     val projectId = "test case 5"
-    val now = now()
-    val start = now - 10.days
-    val end = now - 8.days
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 15.days     // this should read: the project ends 15 days or more after the project start
+    numberOfSurveyResponses(SurveyType.PRE, 3)
     numberOfSurveyResponses(SurveyType.POST, 0)
 
     // when
@@ -131,20 +278,107 @@ class SurveyProcessTest : SurveyProcessTestBase() {
 
     // then
     verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST)        // conditional on typeform check SurveyType.POST
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T1_RETRO, SurveyType.POST)  // conditional on typeform check SurveyType.POST    
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
-
-  // TODO ask Alex - in excel description it is 1 week, in testing criteria 2 weeks
+  
   @Test
-  fun `test case 6 - project data gets into the system, the project ended more than 2 weeks ago and there is no typeform data`() {
+  fun 'test case 5a - project duration is over 14 days (e.g. 15,16,17 ...), and there is a week or less until it starts and only typeform data for t1' {
+    // given
+    val projectId = "test case 5a"
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 15.days     // this should read: the project ends 15 days or more after the project start (e.g. 15 or 16 or 17 days etc.)
+    numberOfSurveyResponses(SurveyType.PRE, 0)
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)      // conditional on typeform check SurveyType.PRE
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST)     // conditional on typeform check SurveyType.POST
+    }
+  }
+  
+    @Test
+  fun 'test case 5b - project duration is over 14 days (e.g. 15,16,17 ...), and there is a week or less until it starts and data is being recorded for t0 and t1' {
+    // given
+    val projectId = "test case 5b"
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 15.days     // this should read: the project ends 15 days or more after the project start (e.g. 15 or 16 or 17 days etc.)
+    numberOfSurveyResponses(SurveyType.PRE, 3)
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+    }
+  }
+  
+  @Test
+  fun 'test case 5c - project duration is over 14 days (e.g. 15,16,17 ...), and there is a week or less until it starts and no data is recorded' {
+    // given
+    val projectId = "test case 5c"
+    val start = now() + 1.days    // this should read: schedule the sequence below for a project starting in 1 day or in 2 days or in 3 days etc. (1 day or more in the future)
+    val end = start + 15.days     // this should read: the project ends 15 days or more after the project start (e.g. 15 or 16 or 17 days etc.)
+    numberOfSurveyResponses(SurveyType.PRE, 0)
+    numberOfSurveyResponses(SurveyType.POST, 0)
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)           // conditional on typeform check SurveyType.PRE
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST)          // conditional on typeform check SurveyType.POST 
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T1_RETRO, SurveyType.POST)    // conditional on typeform check SurveyType.POST    
+      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
+    }
+  }
+  
+  // Alex: are there no remaining projects, that are over 14 days but under 49 days long?
+  
+  @Test
+  fun 'test case 6 - project data gets into the system, the project has a duration of at least 7 weeks, already started but at maximum one week ago and no typeform data is recorded' {
     // given
     val projectId = "test case 6"
-    val end = now() - 15.days
-    val start = end - 20.days
+    val start = now() - 7.days    // this should read: the project started 7 days ago or less (e.g. 7 days ago or 6 days ago or 5 days ago...)
+    val end = now() + 42.days     // this should read: the project ends in 42 days or more (e.g. in 42 days or 43 days or 44 days...)
+    numberOfSurveyResponses(SurveyType.PRE, 0)
     numberOfSurveyResponses(SurveyType.POST, 0)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
 
     // when
     uploadingProjectsCsv("""
@@ -155,18 +389,114 @@ class SurveyProcessTest : SurveyProcessTestBase() {
 
     // then
     verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1_RETRO, SurveyType.POST)    // conditional on typeform check SurveyType.POST 
+      surveyEmailSender.send(any(), MailType.REMINDER_2_T1_RETRO, SurveyType.POST)    // conditional on typeform check SurveyType.POST 
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
 
   @Test
-  fun `test case 7 - project data gets into the system more than a week before it starts, only PRE typeform surveys 1 week after project start`() {
+  fun 'test case 6a - project data gets into the system, the project has a duration of at least 7 weeks, already started but at maximum one week ago and no typeform data t0 but t1' {
+    // given
+    val projectId = "test case 6a"
+    val start = now() - 7.days    // this should read: the project started 7 days ago or less (e.g. 7 days ago or 6 days ago or 5 days ago...)
+    val end = now() + 42.days     // this should read: the project ends in 42 days or more (e.g. in 42 days or 43 days or 44 days...)
+    numberOfSurveyResponses(SurveyType.PRE, 0)
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1_RETRO, SurveyType.POST)  // conditional on typeform check SurveyType.POST 
+    }
+  }
+
+   @Test
+  fun 'test case 6b - project data gets into the system, the project has a duration of at least 7 weeks, already started but at maximum one week ago and no typeform data is recorded at t1 but at t0' {
+    // given
+    val projectId = "test case 6b"
+    val start = now() - 7.days    // this should read: the project started 7 days ago or less (e.g. 7 days ago or 6 days ago or 5 days ago...)
+    val end = now() + 42.days     // this should read: the project ends in 42 days or more (e.g. in 42 days or 43 days or 44 days...)
+    numberOfSurveyResponses(SurveyType.PRE, 3)
+    numberOfSurveyResponses(SurveyType.POST, 0)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST)      // conditional on typeform check SurveyType.POST 
+      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
+    }
+  }
+ 
+ @Test
+  fun 'test case 6c - project data gets into the system, the project has a duration of at least 7 weeks, already started but at maximum one week ago and data is recorded' {
+    // given
+    val projectId = "test case 6c"
+    val start = now() - 7.days    // this should read: the project started 7 days ago or less (e.g. 7 days ago or 6 days ago or 5 days ago...)
+    val end = now() + 42.days     // this should read: the project ends in 42 days or more (e.g. in 42 days or 43 days or 44 days...)
+    numberOfSurveyResponses(SurveyType.PRE, 3)
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
+    }
+  } 
+ 
+ 
+  @Test
+  fun 'test case 7 - project data gets into the system, the project has a duration of at least 7 weeks, already started but more than one week ago and no typeform data is recorded' {
     // given
     val projectId = "test case 7"
-    val start = now() + 8.days
-    val end = start + 15.days
-    numberOfSurveyResponses(SurveyType.PRE, 42)
+    val start = now() - 8.days    // this should read: the project started 8 days ago or more (e.g. 8 days ago or 9 days ago or 10 days ago)
+    val end = now() + 41.days     // this should read: the project ends in 41 days or more (e.g. in 42 days or 43 days or 44 days... corresponding to val start)
     numberOfSurveyResponses(SurveyType.POST, 0)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
 
     // when
     uploadingProjectsCsv("""
@@ -177,24 +507,25 @@ class SurveyProcessTest : SurveyProcessTestBase() {
 
     // then
     verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
-      // TODO Kazik - fix this one
-      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)   // conditional on typeform check SurveyType.POST 
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
-
-  // TODO Alex - should it switch to RETRO scenario?
-  @Test
-  fun `test case 7a - project data gets into the system more than a week before it starts, no typeform surveys 1 week after project start`() {
+ 
+ 
+    @Test
+  fun 'test case 7a - project data gets into the system, the project has a duration of at least 7 weeks, already started but more than one week ago and typeform data is recorded' {
     // given
     val projectId = "test case 7a"
-    val start = now() + 8.days
-    val end = start + 15.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
+    val start = now() - 8.days    // this should read: the project started 8 days ago or more (e.g. 8 days ago or 9 days ago or 10 days ago)
+    val end = now() + 41.days     // this should read: the project ends in 41 days or more (e.g. in 42 days or 43 days or 44 days... corresponding to val start)
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
 
     // when
     uploadingProjectsCsv("""
@@ -205,66 +536,23 @@ class SurveyProcessTest : SurveyProcessTestBase() {
 
     // then
     verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_T1, SurveyType.POST) // conditional on tzpeform check
-      surveyEmailSender.send(any(), MailType.REMINDER_2_T1_RETRO, SurveyType.POST)
-      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
     }
   }
-
+ 
+ 
   @Test
-  fun `test case 7b - project data gets into the system more than a week before it starts, no typeform surveys 1 week after project start`() {
-    // given
-    val projectId = "test case 7a"
-    val start = now() + 8.days
-    val end = start + 15.days
-    numberOfSurveyResponses(SurveyType.PRE, 42)
-    numberOfSurveyResponses(SurveyType.POST, 24)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.POST)
-    }
-  }
-
-  // TODO Alex - if there is no data, should it send retro survey?
-  /*
-
-  Matchers:
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(INFOMAIL_PRE_POST), eq(PRE)))
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(REMINDER_1_T0), eq(PRE)))
-+SurveyEmailSender(defaultSurveyEmailSender bean#1).send(any(), eq(REMINDER_2_T0), eq(PRE)))
-+AlertSender(defaultAlertSender bean#2).sendProcessAlert(eq(No survey responses received 2 weeks after project ended), any()))
-
-Calls:
-1) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@3a5b8d2e, INFOMAIL_PRE_POST, PRE)
-2) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@11fe8d35, REMINDER_1_T0, PRE)
-3) +SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@7c39cb92, REMINDER_2_T0, PRE)
-4) +AlertSender(defaultAlertSender bean#2).sendProcessAlert(No survey responses (data t0) 2 weeks after project starts, de.dkjs.survey.model.Project@4bbc731e)
-5) SurveyEmailSender(defaultSurveyEmailSender bean#1).send(de.dkjs.survey.model.Project@5e354c44, REMINDER_1_T1, POST)
-6) +AlertSender(defaultAlertSender bean#2).sendProcessAlert(No survey responses received 2 weeks after project ended, de.dkjs.survey.model.Project@8f622f)
-
-   */
-  @Test
-  fun `test case 8 - project data gets into the system and there is a week or less until it starts`() {
+  fun 'test case 8 - project data gets into the system, the project has a duration of exactly 14 days, already started and no typeform data is recorded' {
     // given
     val projectId = "test case 8"
-    val start = now() + 6.days
-    val end = start + 15.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
+    val start = now() - 1.days      // this should read: the project start one day ago or longer (e.g. 1 day ago or 2 days ago or 3 days ago...)
+    val end = now() + 13.days       // this should read: the project ends on its 14th day
     numberOfSurveyResponses(SurveyType.POST, 0)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
 
     // when
     uploadingProjectsCsv("""
@@ -275,21 +563,45 @@ Calls:
 
     // then
     verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)
-      alertSender.sendProcessAlert("No survey responses (data t0) 2 weeks after project starts", any())
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)     // conditional on typeform check SurveyType.POST 
+      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
+ 
+ 
+    @Test
+  fun 'test case 8 - project data gets into the system, the project has a duration of exactly 14 days, already started and typeform data is recorded' {
+    // given
+    val projectId = "test case 8a"
+    val start = now() - 1.days      // this should read: the project start one day ago or longer (e.g. 1 day ago or 2 days ago or 3 days ago...)
+    val end = now() + 13.days       // this should read: the project ends on its 14th day
+    numberOfSurveyResponses(SurveyType.POST, 3)
 
-  // TODO Alex - will be fixed with RETRO process definition fix
-  @Test
-  fun `test case 9 - project data gets into the system, the project has a duration of exactly 14 days, already started but at maximum one week ago and no typeform data has been entered yet`() {
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
+    }
+  }
+ 
+   @Test
+  fun 'test case 9 - project data gets into the system, regardless of project duration, ended one week ago and no typeform data is recorded' {
     // given
     val projectId = "test case 9"
-    val end = now() + 9.days
-    val start = end - 14.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
+    val end = now() - 6.days  // this should read: all projects that ended 6 days ago or less, regardless of project start and duration
     numberOfSurveyResponses(SurveyType.POST, 0)
 
 
@@ -306,26 +618,47 @@ Calls:
     // then
     verifySequence {
       surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)       
       alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
     }
   }
+  
+ @Test
+  fun 'test case 9a - project data gets into the system, regardless of project duration, ended one week ago and typeform data is recorded' {
+    // given
+    val projectId = "test case 9a"
+    val end = now() - 6.days    // this should read: all projects that ended 6 days ago or less, regardless of project start and duration
+    numberOfSurveyResponses(SurveyType.POST, 3)
 
-  @Test
-  fun `test case 10 - project data gets into the system, the project has a duration of exactly 14 days, already started but ended at maximum one week ago and no typeform data has been entered yet`() {
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
+    }
+  }
+
+ @Test
+  fun 'test case 10 - project data gets into the system, regardless of project duration, ended one week ago or more and typeform data is recorded' {
     // given
     val projectId = "test case 10"
-    val end = now() + 6.days
-    val start = end - 14.days
+    val end = now() - 7.days    // this should read: all projects that ended 7 days ago or more, regardless of project start and duration
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
 
     println("!!!!projectStart: $start")
     println("!!!!projectEnd: $end")
 
-
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
     // when
     uploadingProjectsCsv("""
       "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
@@ -334,179 +667,7 @@ Calls:
     waitingUntilProcessEnds(projectId)
 
     // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
-      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
-    }
-  }
-
-  @Test
-  fun `test case 11 - project data gets into the system, the project has a duration of exactly 14 days, already started and ended at least two weeks ago and no typeform data has been entered yet`() {
-    // given
-    val projectId = "test case 11"
-    val now = now()
-    val end = now - 15.days
-    val start = end - 14.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
-    }
-  }
-
-  @Test
-  fun `test case 12 - project data gets into the system, the project has a duration of over 14 days, already started but not longer than one week ago and no typeform data has been entered yet`() {
-    // given
-    val projectId = "test case 12"
-    val now = now()
-    val start = now - 5.days
-    val end = now + 10.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_T0, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)
-      alertSender.sendProcessAlert("No survey responses (data t0) 2 weeks after project starts", any())
-      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
-    }
-  }
-
-  @Test
-  fun `test case 13 - project data gets into the system, the project has a duration of over 14 days, already started more than one week ago but still has a week to go until it ends and no typeform data has been entered yet`() {
-    // given
-    val projectId = "test case 13"
-    val now = now()
-    val start = now - 10.days
-    val end = now + 6.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_T0, SurveyType.PRE)
-      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
-    }
-  }
-
-  @Test
-  fun `test case 14 - project data gets into the system, the project has a duration of over 14 days, already started more than one week ago but still has a week to go until it ends and typeform data has been entered `() {
-    // given
-    val projectId = "test case 14"
-    val now = now()
-    val start = now - 10.days
-    val end = now + 6.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA // one day before GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_T1, SurveyType.PRE)
-    }
-  }
-
-  @Test
-  fun `test case 15 - project data gets into the system, the project has a duration of over 14 days, has less than one week until it ends and no typeform data has been entered yet`() {
-    // given
-    val projectId = "test case 15"
-    val now = now()
-    val end = now + 5.days
-    val start = end - 15.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
-    }
-  }
-
-  @Test
-  fun `test case 16 - project data gets into the system, the project has a duration of over 14 days, has ended not more than one week ago and no t1 typeform data has been entered yet`() {
-    // given
-    val projectId = "test case 16"
-    val now = now()
-    val end = now - 5.days
-    val start = end - 15.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
-      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)
-    }
-  }
-
-  @Test
-  fun `test case 17 - project data gets into the system, the project has a duration of over 14 days and ended more than two weeks ago and no t1 typeform data has been entered yet`() {
-    // given
-    val projectId = "test case 17"
-    val now = now()
-    val end = now - 15.days
-    val start = end - 15.days
-    numberOfSurveyResponses(SurveyType.PRE, 0)
-    numberOfSurveyResponses(SurveyType.POST, 0)
-
-    // when
-    uploadingProjectsCsv("""
-      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
-      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
-    """)
-    waitingUntilProcessEnds(projectId)
-
-    // then
-    verifySequence {
-      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
+    // @Kazik, is it possible to create something like this? For every project that ended more than two weeks ago, don't send an email with alertSender.sendProcessAlert, but register the 'error' of abscence of data in the database
     }
   }
 
