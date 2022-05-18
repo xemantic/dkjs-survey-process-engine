@@ -365,7 +365,6 @@ class SurveyProcessTest : SurveyProcessTestBase() {
     }
   }
   
-  // Alex: are there no remaining projects, that are over 14 days but under 49 days long?
   
   @Test
   fun 'test case 6 - project data gets into the system, the project has a duration of at least 7 weeks, already started but at maximum one week ago and no typeform data is recorded' {
@@ -486,6 +485,61 @@ class SurveyProcessTest : SurveyProcessTestBase() {
   } 
  
  
+ @Test
+  fun 'test case 6.5 - project data gets into the system, the project has a duration of at least 7 weeks, already started but at maximum one week ago and no typeform data is recorded' {
+    // given
+    val projectId = "test case 6.5"
+    val start = now() - 7.days    // this should read: the project started 7 days ago or less (e.g. 7 days ago or 6 days ago or 5 days ago...)
+    val end = start + 15.days     
+    numberOfSurveyResponses(SurveyType.POST, 0)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_2_RETRO, SurveyType.POST)     // conditional on typeform check SurveyType.POST
+      alertSender.sendProcessAlert("No survey responses received 2 weeks after project ended", any())
+    }
+  }
+
+  @Test
+  fun 'test case 6.5a - project data gets into the system, the project has a duration of at least 7 weeks, already started but at maximum one week ago and no typeform data t0 but t1' {
+    // given
+    val projectId = "test case 6.5a"
+    val start = now() - 7.days    // this should read: the project started 7 days ago or less (e.g. 7 days ago or 6 days ago or 5 days ago...)
+    val end = start + 15.days
+    numberOfSurveyResponses(SurveyType.POST, 3)
+
+
+    println("!!!!projectStart: $start")
+    println("!!!!projectEnd: $end")
+
+    // when
+    uploadingProjectsCsv("""
+      "project.number";"project.status";"project.provider";"provider.number";"project.pronoun";"project.firstname";"project.lastname";"project.mail";"project.name";"participants.age1to5";"participants.age6to10";"participants.age11to15";"participants.age16to19";"participants.age20to26";"participants.worker";"project.goals";"project.start";"project.end"
+      "$projectId";"50 - bewilligt";"serious; business ÖA GmbH";123456;"Frau";"Maxi";"Musterfräulein";"p1urtümlich@example.com";"Make ducks cuter";0;0;250;50;0;NA;"01,05,03";"${start.dkjsDateTime}";"${end.dkjsDateTime}"
+    """)
+    waitingUntilProcessEnds(projectId)
+
+    // then
+    verifySequence {
+      surveyEmailSender.send(any(), MailType.INFOMAIL_RETRO, SurveyType.POST)
+      surveyEmailSender.send(any(), MailType.REMINDER_1_RETRO, SurveyType.POST)
+    }
+  }
+
+  
   @Test
   fun 'test case 7 - project data gets into the system, the project has a duration of at least 7 weeks, already started but more than one week ago and no typeform data is recorded' {
     // given
