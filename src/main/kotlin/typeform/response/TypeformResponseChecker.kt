@@ -5,7 +5,7 @@
 package de.dkjs.survey.typeform.response
 
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.Scenario
+import de.dkjs.survey.model.SurveyType
 import de.dkjs.survey.typeform.TypeformConfig
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
@@ -19,12 +19,9 @@ class TypeformResponseChecker @Inject constructor(
   private val config: TypeformConfig
 ) {
 
-  fun countSurveys(
-    project: Project,
-    scenario: Scenario
-  ): Int = runBlocking {
+  fun countSurveys(project: Project, surveyType: SurveyType): Int = runBlocking {
     service.countResponses(
-      config.forms.getFormId(project, scenario),
+      config.forms.getFormId(project, surveyType),
       project.id
     )
   }

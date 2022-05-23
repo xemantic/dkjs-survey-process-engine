@@ -5,7 +5,6 @@
 package de.dkjs.survey.time
 
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.Scenario
 import org.springframework.context.annotation.Profile
 import org.springframework.core.task.TaskExecutor
 import org.springframework.scheduling.TaskScheduler
@@ -40,8 +39,7 @@ class DkjsScheduler @Inject constructor(
 }
 
 interface TimeConstraints {
-  val scenario: Scenario
-  val isMoreThan14DaysProjectDuration: Boolean
+  val projectDurationInDays: Int
   val oneWeekBeforeProjectStarts: LocalDateTime
   val oneWeekAfterProjectStarts: LocalDateTime
   val twoWeeksAfterProjectStarts: LocalDateTime
@@ -76,9 +74,7 @@ class StandardTimeConstraints(
   private val start: LocalDateTime,
   private val end: LocalDateTime,
 ) : TimeConstraints {
-  override val scenario: Scenario get() =
-    if (Duration.between(start, end).toDays() <= 13) Scenario.RETRO else Scenario.PRE_POST
-  override val isMoreThan14DaysProjectDuration: Boolean get() = Duration.between(start, end).toDays() > 14L
+  override val projectDurationInDays: Int = Duration.between(start, end).toDays().toInt()
   override val oneWeekBeforeProjectStarts: LocalDateTime get() = start.minusWeeks(1)
   override val oneWeekAfterProjectStarts: LocalDateTime get() = start.plusWeeks(1)
   override val twoWeeksAfterProjectStarts: LocalDateTime get() = start.plusWeeks(2)
@@ -93,10 +89,7 @@ class CompressedTimeConstraints(
   testConfig: TimeConfig
 ) : TimeConstraints {
   private val multiplier: Long = testConfig.dayDurationAsNumberOfSeconds.toLong()
-  override val scenario: Scenario get() =
-    if (Duration.between(start, end).toSeconds() <= 13 * multiplier) Scenario.RETRO
-    else Scenario.PRE_POST
-  override val isMoreThan14DaysProjectDuration: Boolean get() = Duration.between(start, end).toSeconds() > (14 * multiplier)
+  override val projectDurationInDays: Int = (Duration.between(start, end).toSeconds() / multiplier).toInt()
   override val oneWeekBeforeProjectStarts: LocalDateTime get() = start.minusSeconds(7 * multiplier)
   override val oneWeekAfterProjectStarts: LocalDateTime get() = start.plusSeconds(7 * multiplier)
   override val twoWeeksAfterProjectStarts: LocalDateTime get() = start.plusSeconds(14 * multiplier)

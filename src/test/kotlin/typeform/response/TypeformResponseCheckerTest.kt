@@ -5,7 +5,7 @@
 package de.dkjs.survey.typeform.response
 
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.Scenario
+import de.dkjs.survey.model.SurveyType
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -28,7 +28,7 @@ class TypeformResponseCheckerTest @Autowired constructor(
     every { project.isGoalG } returns false
 
     // when
-    val count = checker.countSurveys(project, Scenario.RETRO)
+    val count = checker.countSurveys(project, SurveyType.POST)
 
     // then
     count shouldBeGreaterThan 0
@@ -43,7 +43,7 @@ class TypeformResponseCheckerTest @Autowired constructor(
     every { project.isGoalG } returns false
 
     // when
-    val count = checker.countSurveys(project, Scenario.RETRO)
+    val count = checker.countSurveys(project, SurveyType.POST)
 
     // then
     count shouldBe 0

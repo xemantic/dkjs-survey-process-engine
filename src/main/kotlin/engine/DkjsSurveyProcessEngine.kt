@@ -4,8 +4,7 @@
 
 package de.dkjs.survey.engine
 
-import de.dkjs.survey.definePrePostProcess
-import de.dkjs.survey.defineRetroProcess
+import de.dkjs.survey.defineSurveyProcess
 import de.dkjs.survey.mail.MailType
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.model.*
@@ -59,7 +58,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
   inner class ProcessContext(
     private val projectId: String,
-    internal val projectStart: LocalDateTime,
+    internal val projectStart: LocalDateTime, // TODO remove if never used
     internal val processStart: LocalDateTime,
     internal val time: TimeConstraints
   ) {
@@ -72,9 +71,41 @@ class DkjsSurveyProcessEngine @Inject constructor(
       }
     }
 
+    // TODO should be removed if turns unnecessary
+    fun scheduleCheck(
+      activity: String,
+      time: LocalDateTime,
+      check: ActivityContext.() -> Boolean,
+      onTrue: () -> Unit,
+      onFalse: () -> Unit) {
+
+      val process = processRepository.findByIdOrNull(projectId)!!
+      val maybeChecked = process.activities.find { it.name == activity }
+      if (maybeChecked == null) {
+        dkjsScheduler.schedule(time) {
+          executeActivity(activity) {
+            val result = check()
+            if (result) {
+              onTrue()
+            } else {
+              onFalse()
+            }
+            result.toString()
+          }
+        }
+      } else {
+        val result = maybeChecked.result.toBoolean()
+        if (result) {
+          onTrue()
+        } else {
+          onFalse()
+        }
+      }
+    }
+
     fun schedule(activity: String, time: LocalDateTime, block: ActivityContext.() -> String) {
       executeIfNotExecuted(activity) {
-        logger.info("Scheduling activity '$activity' at $time for project: $projectId")
+        logger.info("Process[${projectId}]: Scheduling activity '$activity' at $time")
         dkjsScheduler.schedule(time) {
           executeActivity(activity, block)
         }
@@ -89,14 +120,13 @@ class DkjsSurveyProcessEngine @Inject constructor(
     }
 
     private fun executeActivity(name: String, block: ActivityContext.() -> String) {
-      logger.info("Executing activity: '$name', project: $projectId, scenario: ${time.scenario}")
+      logger.info("Process[$projectId]: Executing activity: '$name'")
       val project = projectRepository.findByIdOrNull(projectId)!!
       val process = project.surveyProcess!!
       val activity = try {
-        val result = block(ActivityContext(project, time.scenario))
+        val result = block(ActivityContext(project))
         logger.info(
-          "Activity successfully executed: '$name' for project: " +
-            "$projectId, scenario: ${time.scenario}"
+          "Process[$projectId]: Activity successfully executed: '$name'"
         )
         Activity(
           surveyProcessId = process.id,
@@ -104,11 +134,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
           result = result
         )
       } catch (e: Exception) {
-        logger.error(
-          "Activity failed: '$name' for project: " +
-              "$projectId, scenario: ${time.scenario}",
-          e
-        )
+        logger.error("Process[$projectId]: Activity failed: '$name'", e)
         Activity(
           surveyProcessId = process.id,
           name,
@@ -119,7 +145,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
         activityRepository.save(activity)
       )
       if (activity.failed) {
-        alertSender.sendProcessAlert("Survey process failed", project, time.scenario)
+        alertSender.sendProcessAlert("Survey process failed", project)
         process.phase = SurveyProcess.Phase.FAILED
       }
       project.surveyProcess = processRepository.save(process)
@@ -129,46 +155,45 @@ class DkjsSurveyProcessEngine @Inject constructor(
   }
 
   inner class ActivityContext(
-    private val project: Project,
-    private val scenario: Scenario
+    private val project: Project
   ) {
 
-    fun send(mailType: MailType): String {
+    fun send(mailType: MailType, surveyType: SurveyType): String {
       logger.info(
-        "Sending ${mailType.name} mail to project: ${project.id} " +
-          "in scenario ${scenario.name}"
+        "Process[${project.id}]: Sending ${mailType.name} mail"
       )
-      surveyEmailSender.send(mailType, scenario, project)
+      surveyEmailSender.send(project, mailType, surveyType)
       return "Sent mail: ${mailType.name}"
     }
 
-    fun hasNoAnswers(): Boolean {
+    fun hasSurveyResponses(surveyType: SurveyType): Boolean {
       logger.info(
-        "Checking typeform answers for project: ${project.id}, scenario ${scenario.name}"
+        "Process[${project.id}]: Checking typeform answers"
       )
-      val count = typeformChecker.countSurveys(project, scenario)
-      val noAnswers = if (count == 0) {
-        logger.warn(
-          "No typeform surveys filled for project: ${project.id}, scenario ${scenario.name}"
-        )
-        true
-      } else {
-        logger.info(
-          "Typeform survey received for project: ${project.id}, scenario ${scenario.name}, count: $count"
-        )
-        false
+      val count = typeformChecker.countSurveys(project, surveyType)
+      return (count > 0).apply {
+        if (this) {
+          logger.info(
+            "Process[${project.id}]: typeform survey responses received: $count"
+          )
+        } else {
+          logger.warn(
+            "Process[${project.id}]: no typeform surveys responses received"
+          )
+        }
       }
-      return noAnswers
     }
 
+    fun hasNoSurveyResponses(surveyType: SurveyType): Boolean = ! hasSurveyResponses(surveyType)
+
     fun sendAlert(message: String): String {
-      logger.info("Sending alert about project: ${project.id} - $message")
-      alertSender.sendProcessAlert(message, project, scenario)
+      logger.info("Process[${project.id}]: Sending alert: $message")
+      alertSender.sendProcessAlert(message, project)
       return "Alert sent: $message"
     }
 
     fun finishProcess(): String {
-      logger.info("Survey process has finished for project: ${project.id}")
+      logger.info("Process[${project.id}]: Finished")
       val process = project.surveyProcess!!
       process.phase = SurveyProcess.Phase.FINISHED
       processRepository.save(process)
@@ -177,10 +202,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
   }
 
-  private val processDefinitions = mapOf(
-    Scenario.RETRO to defineRetroProcess(),
-    Scenario.PRE_POST to definePrePostProcess()
-  )
+  val processDefinition = defineSurveyProcess()
 
   @PostConstruct
   fun start() {
@@ -216,7 +238,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
   }
 
   fun startProcess(project: Project) {
-    logger.info("Starting process for project: ${project.id}")
+    logger.info("Process[${project.id}]: Starting")
     val time = timeConstraintsFactory.newTimeConstraints(project)
     val ctx = ProcessContext(
       projectId = project.id,
@@ -224,7 +246,7 @@ class DkjsSurveyProcessEngine @Inject constructor(
       processStart = project.surveyProcess!!.start,
       time = time
     )
-    processDefinitions[time.scenario]!!(ctx)
+    processDefinition(ctx)
   }
 
 }

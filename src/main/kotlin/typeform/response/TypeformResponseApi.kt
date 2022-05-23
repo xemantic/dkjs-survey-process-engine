@@ -56,7 +56,7 @@ class KtorTypeformResponseService constructor(
     projectId: String
   ): Int {
     logger.info("Counting typeform responses, project: $projectId, form: $formId")
-    val count = client.request("https://api.typeform.com/forms/$formId/responses") {
+    val count = client.get("https://api.typeform.com/forms/$formId/responses") {
       parameter("fields", "hidden")
       parameter("query", projectId)
     }.body<ResponsePage>().totalItems

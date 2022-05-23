@@ -5,9 +5,10 @@
 package de.dkjs.survey.typeform
 
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.Scenario
+import de.dkjs.survey.model.SurveyType
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -44,22 +45,22 @@ data class TypeformConfig(
   data class Forms(
 
     @get:NotEmpty
-    val retro: String,
+    val pre: String,
 
     @get:NotEmpty
-    val prePost: String,
+    val post: String,
 
     @get:NotEmpty
-    val goalGRetro: String,
+    val goalGPre: String,
 
     @get:NotEmpty
-    val goalGPrePost: String
+    val goalGPost: String
 
   ) {
 
-    fun getFormId(project: Project, type: Scenario): String = when (type) {
-      Scenario.RETRO -> if (project.isGoalG) goalGRetro else retro
-      Scenario.PRE_POST -> if (project.isGoalG) goalGPrePost else prePost
+    fun getFormId(project: Project, type: SurveyType): String = when (type) {
+      SurveyType.PRE -> if (project.isGoalG) goalGPre else pre
+      SurveyType.POST -> if (project.isGoalG) goalGPost else post
     }
 
   }
@@ -74,6 +75,15 @@ class TypeformApiSetup(@Inject private val config: TypeformConfig) {
       json(Json {
         ignoreUnknownKeys = true
       })
+    }
+    install(HttpTimeout) {
+      requestTimeoutMillis = 30000
+      connectTimeoutMillis = 30000
+      socketTimeoutMillis = 30000
+    }
+    install(HttpRequestRetry) {
+      retryOnServerErrors(maxRetries = 5)
+      exponentialDelay()
     }
     install(Auth) {
       bearer {

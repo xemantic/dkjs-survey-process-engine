@@ -16,8 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 @DkjsSurveyProcessEngineTest
-class DkjsSchedulerTest @Autowired constructor(
-  val scheduler: DkjsScheduler
+class DkjsSchedulerTest(
+    @Autowired private val scheduler: DkjsScheduler
 ) {
 
   @Test
@@ -85,6 +85,23 @@ class DkjsSchedulerTest @Autowired constructor(
     actionTime shouldNotBe null
     val duration = Duration.between(now, actionTime).toMillis()
     duration shouldBeGreaterThanOrEqualTo 1000
+  }
+
+  @Test
+  fun `should not trigger scheduled action before scheduled time`() {
+    // given
+    val now = LocalDateTime.now()
+    val inOneSecond = now.plusSeconds(1)
+    val passed = AtomicReference(false)
+
+    // when
+    scheduler.schedule(inOneSecond) {
+      passed.set(true)
+    }
+    Thread.sleep(500) // wait .5 sec
+
+    // then
+    passed.get() shouldBe false
   }
 
 }
