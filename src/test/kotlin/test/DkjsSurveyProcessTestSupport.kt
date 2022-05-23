@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -138,6 +139,8 @@ abstract class SurveyProcessTestBase {
 
   fun now(): LocalDateTime = LocalDateTime.now()
 
+  val Int.days: Duration get() = Duration.ofSeconds(this.toLong())
+
   fun uploadingProjectsCsv(csv: String) {
 
     var jSessionId: String? = null
@@ -179,14 +182,14 @@ abstract class SurveyProcessTestBase {
     }
   }
 
-  fun numberOfFilledSurveys(count: Int) {
-    every { typeformResponseChecker.countSurveys(any(), any()) } returns count
+  fun numberOfSurveyResponses(surveyType: SurveyType, count: Int) {
+    every { typeformResponseChecker.countSurveys(any(), surveyType) } returns count
   }
 
   @BeforeEach
   fun beforeTest() {
     justRun { surveyEmailSender.send(any(), any(), any()) }
-    justRun { alertSender.sendProcessAlert(any(), any(), any()) }
+    justRun { alertSender.sendProcessAlert(any(), any()) }
   }
 
   @AfterEach
