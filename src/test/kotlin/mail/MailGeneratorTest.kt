@@ -72,12 +72,12 @@ class MailGeneratorTest {
 
     // when
     val mail = mailGenerator.generate(
-      MailType.INFOMAIL_PRE_POST, project, Scenario.PRE_POST
+      project, MailType.INFOMAIL_PRE_POST, SurveyType.PRE
     )
 
-    // TODO which SenarioType should be chosen?
+    // TODO which SurveyType should be chosen?
     val typeformLink = typeformSurveyLinkGenerator.generate(
-      project, Scenario.PRE_POST
+      project, SurveyType.PRE
     )
     val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
 
