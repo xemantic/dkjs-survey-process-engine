@@ -12,9 +12,9 @@ import javax.inject.Singleton
 
 interface AlertSender {
 
-  fun sendSystemAlert(message: String)
+  fun sendSystemAlert(message: String, details: String)
 
-  fun sendProcessAlert(project: Project, message: String)
+  fun sendProcessAlert(message: String, project: Project)
 
 }
 
@@ -25,18 +25,37 @@ class DefaultAlertSender @Inject constructor(
   private val alertEmailSender: AlertEmailSender
 ) : AlertSender {
 
-  override fun sendSystemAlert(message: String) {
+  override fun sendSystemAlert(message: String, details: String) {
     alertEmailSender.sendAlertEmail(
-      "[${dkjsConfig.environment}] $message",
-      message
+      subject = "[${dkjsConfig.environment}] $message",
+      body = """
+        $message
+
+        $details
+      """.trimIndent()
     )
   }
 
-  override fun sendProcessAlert(project: Project, message: String) {
+  override fun sendProcessAlert(message: String, project: Project) {
+    val contact = project.contactPerson
     alertEmailSender.sendAlertEmail(
-      "[${dkjsConfig.environment}] $message, " +
+      subject = "[${dkjsConfig.environment}] $message, " +
           "project.number: ${project.id}, project: ${project.name}",
-      "$message\n\n$project"
+      body = """
+        $message
+
+        Project details:
+        - number: ${project.id}
+        - name: ${project.name}
+        - status: ${project.status}
+        - goals: ${project.goals}
+        - start: ${project.start}
+        - end: ${project.end}
+        - contact: ${contact.pronoun} ${contact.firstName} ${contact.lastName}
+        - email: ${contact.email}
+        - provider number: ${project.provider.id}
+        - provider name: ${project.provider.id}
+      """.trimIndent()
     )
   }
 

@@ -5,11 +5,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.6.20"
-  kotlin("plugin.serialization") version "1.6.20"
-  kotlin("plugin.spring") version "1.6.20"
-  kotlin("plugin.jpa") version "1.6.20"
-  id("org.springframework.boot") version "2.6.6"
+  kotlin("jvm") version "1.6.21"
+  kotlin("plugin.serialization") version "1.6.21"
+  kotlin("plugin.spring") version "1.6.21"
+  kotlin("plugin.jpa") version "1.6.21"
+  id("org.springframework.boot") version "2.6.7"
   id("com.github.ben-manes.versions") version "0.42.0"
   id("com.gorylenko.gradle-git-properties") version "2.4.0"
 }
@@ -24,8 +24,9 @@ val hibernateValidatorVersion = "7.0.4.Final"
 val kotestVersion = "5.2.3"
 val mockkVersion = "1.12.3"
 val hsqldbVersion = "2.6.1"
-val flywayVersion = "8.5.8"
+val flywayVersion = "8.5.9"
 val byteBuddyVersion = "1.12.9"
+val springMockkVersion = "3.1.1"
 
 group = "de.dkjs.survey"
 version = "1.0-SNAPSHOT"
@@ -74,9 +75,12 @@ dependencies {
   runtimeOnly("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
   runtimeOnly("org.hsqldb:hsqldb:$hsqldbVersion")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-test") {
+    exclude(module = "mockito-core")
+  }
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
   testImplementation("io.mockk:mockk:$mockkVersion")
+  testImplementation("com.ninja-squad:springmockk:$springMockkVersion")
 }
 
 tasks.withType<KotlinCompile> {

@@ -211,7 +211,19 @@
       });
 
       whenClicked("#action-submit-projects", () => {
-        window.location.replace("submit-projects");
+        fetch("submit-projects")
+          .then(response => {
+            if (response.ok) {
+              window.location.replace("/");
+            } else {
+              response.text().then((text) => {
+                alert(text);
+              });
+            }
+          })
+          .catch(error => {
+            alert(error);
+          });
       });
 
     }
@@ -297,7 +309,18 @@
         <i class="material-icons mdc-list-item__graphic" aria-hidden="true">search</i>
         <span class="mdc-list-item__text">Explore Database</span>
       </a>
+      <hr class="mdc-list-divider"/>
+      <a id="nav-action-logout" class="mdc-list-item" href="logout">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">logout</i>
+        <span class="mdc-list-item__text">Log Out</span>
+      </a>
     </nav>
+  </div>
+  <div class="mdc-drawer__header">
+    <h6 class="mdc-drawer__subtitle">
+      Developed with &hearts; by <a href="https://xemantic.com/">xemantic</a>
+    </h6>
   </div>
 </aside>
 <!-- will block the main panel when drawer is open, scrim has to be the following element -->

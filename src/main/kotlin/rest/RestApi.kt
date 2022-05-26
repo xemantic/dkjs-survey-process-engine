@@ -4,6 +4,7 @@
 
 package de.dkjs.survey.rest
 
+import de.dkjs.survey.model.Activity
 import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.Provider
 import de.dkjs.survey.model.SurveyProcess
@@ -23,7 +24,8 @@ class RestApiConfiguration {
       configuration.exposeIdsFor(
         Project::class.java,
         Provider::class.java,
-        SurveyProcess::class.java
+        SurveyProcess::class.java,
+        Activity::class.java
       )
     }
 
