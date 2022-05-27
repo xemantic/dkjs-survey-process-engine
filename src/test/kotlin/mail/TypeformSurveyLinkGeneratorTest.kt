@@ -17,6 +17,7 @@ class TypeformSurveyLinkGeneratorTest {
     clientId = "foo",
     urlBase = "https://aufleben.typeform.com/to/",
     forms = TypeformConfig.Forms(
+      impuls = "LZewTxb9",
       pre = "O5yJuV9b",
       post = "waBTYjMv",
       goalGPre = "XYMgbimk",

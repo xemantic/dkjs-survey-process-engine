@@ -547,7 +547,7 @@
                 </div>
               </td>
               <td class="mdc-data-table__cell"
-                  th:text="${T(de.dkjs.survey.model.DkjsDomainModelKt).goalsToCapitalLetters(project.goals)}">
+                  th:text="${T(de.dkjs.survey.model.DkjsDomainModelKt).goalsToUiLabel(project.goals)}">
               </td>
               <td class="mdc-data-table__cell mdc-data-table__cell--numeric"
                   th:text="${project.participants.age1to5} ?: 'N/A'">

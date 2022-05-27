@@ -85,32 +85,41 @@ fun SurveyProcess.addTestActivity(name: String) {
   )
 }
 
-fun projectWithGoals(id: String, vararg goals: Int) = Project(
-  id          = id,
-  status      = "",
-  name        = "",
-  provider = Provider(
-    id        = "",
-    name      = ""
-  ),
-  contactPerson = ContactPerson(
-    pronoun   = "",
-    firstName = "",
-    lastName  = "",
-    email     = ""
-  ),
-  goals       = goals.toSet(),
-  participants = Participants(
-    age1to5   = -1,
-    age6to10  = -1,
-    age11to15 = -1,
-    age16to19 = -1,
-    age20to26 = -1,
-    worker    = -1
-  ),
-  start       = LocalDateTime.MIN,
-  end         = LocalDateTime.MIN
+fun projectWithGoals(goals: List<Int>): Project = projectWithGoals(
+  id = "foo",
+  goals = goals
 )
+
+fun projectWithGoals(id: String, vararg goals: Int): Project =
+  projectWithGoals(id, goals.toList())
+
+fun projectWithGoals(id: String, goals: List<Int>): Project =
+  Project(
+    id          = id,
+    status      = "",
+    name        = "",
+    provider = Provider(
+      id        = "",
+      name      = ""
+    ),
+    contactPerson = ContactPerson(
+      pronoun   = "",
+      firstName = "",
+      lastName  = "",
+      email     = ""
+    ),
+    goals       = goals.toSet(),
+    participants = Participants(
+      age1to5   = -1,
+      age6to10  = -1,
+      age11to15 = -1,
+      age16to19 = -1,
+      age20to26 = -1,
+      worker    = -1
+    ),
+    start       = LocalDateTime.MIN,
+    end         = LocalDateTime.MIN
+  )
 
 const val TEST_PROCESS_TIMEOUT = 60000
 

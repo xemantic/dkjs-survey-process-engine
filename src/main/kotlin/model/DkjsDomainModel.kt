@@ -13,6 +13,7 @@ import javax.validation.constraints.*
 import kotlin.reflect.KClass
 
 enum class SurveyType {
+  IMPULS,
   PRE,
   POST
 }
@@ -204,12 +205,17 @@ class Activity(
 
 }
 
-fun goalsToCapitalLetters(goals: Set<Int>): String =
+fun goalsToUiLabel(goals: Set<Int>): String =
   goals
-    .filter { it != 1 }
     .sorted()
     .map { goalToCapitalLetter(it) }
     .joinToString(", ")
+
+fun goalsToSequenceOfSmallLetters(goals: Set<Int>): String =
+  goals
+    .sorted()
+    .map { goalToSmallLetter(it) }
+    .joinToString("")
 
 fun goalToCapitalLetter(goal: Int): Char = goalToLetter(goal, 64)
 

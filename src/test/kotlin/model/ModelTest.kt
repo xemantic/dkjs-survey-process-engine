@@ -32,11 +32,18 @@ class ModelTest {
   }
 
   @Test
-  fun `should return goals as alphabet letters (goal 1 is removed)`() {
-    goalsToCapitalLetters(setOf(1)) shouldBe ""
-    goalsToCapitalLetters(setOf(1, 2, 3)) shouldBe "B, C"
-    goalsToCapitalLetters(setOf(1, 5, 2)) shouldBe "B, E"
-    goalsToCapitalLetters(setOf(1, 5, 2, 3)) shouldBe "B, C, E"
+  fun `should return goals as a label consisting out of capital alphabet letters separated by commas`() {
+    goalsToUiLabel(setOf(1)) shouldBe "A"
+    goalsToUiLabel(setOf(1, 2, 3)) shouldBe "A, B, C"
+    goalsToUiLabel(setOf(1, 5, 2)) shouldBe "A, B, E"
+  }
+
+  @Test
+  fun `should return goals as a list of label consisting out of alphabet letters`() {
+    goalsToSequenceOfSmallLetters(setOf(1)) shouldBe "a"
+    goalsToSequenceOfSmallLetters(setOf(1, 2)) shouldBe "ab"
+    goalsToSequenceOfSmallLetters(setOf(1, 2, 3)) shouldBe "abc"
+    goalsToSequenceOfSmallLetters(setOf(1, 5, 2)) shouldBe "abe"
   }
 
 }

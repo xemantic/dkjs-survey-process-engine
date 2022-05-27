@@ -54,11 +54,15 @@ data class TypeformConfig(
     val goalGPre: String,
 
     @get:NotEmpty
-    val goalGPost: String
+    val goalGPost: String,
+
+    @get:NotEmpty
+    val impuls: String
 
   ) {
 
     fun getFormId(project: Project, type: SurveyType): String = when (type) {
+      SurveyType.IMPULS -> impuls
       SurveyType.PRE -> if (project.isGoalG) goalGPre else pre
       SurveyType.POST -> if (project.isGoalG) goalGPost else post
     }

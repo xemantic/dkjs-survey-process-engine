@@ -4,7 +4,7 @@
 
 package de.dkjs.survey.mail
 
-import de.dkjs.survey.documents.SurveyDocumentPdfLinkGenerator
+import de.dkjs.survey.documents.SurveyPdfDocumentsLinkGenerator
 import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.SurveyType
 import de.dkjs.survey.time.dkjsDate
@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @Component
 class MailGenerator @Inject constructor(
   private val typeformSurveyLinkGenerator: TypeformSurveyLinkGenerator,
-  private val surveyDocumentPdfLinkGenerator: SurveyDocumentPdfLinkGenerator,
+  private val surveyPdfDocumentsLinkGenerator: SurveyPdfDocumentsLinkGenerator,
   private val templateEngine: SpringTemplateEngine
 ) {
 
@@ -29,7 +29,7 @@ class MailGenerator @Inject constructor(
     surveyType: SurveyType
   ): MailData {
     val formLink = typeformSurveyLinkGenerator.generate(project, surveyType)
-    val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
+    val pdfLink = surveyPdfDocumentsLinkGenerator.generate(project, surveyType)
 
     val ctx = Context().apply {
       setVariable("projectName", project.name)
@@ -47,4 +47,5 @@ class MailGenerator @Inject constructor(
 
     return MailData(subject, bodyHTML)
   }
+
 }

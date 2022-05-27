@@ -5,6 +5,8 @@
 package de.dkjs.survey.documents
 
 import de.dkjs.survey.model.Project
+import de.dkjs.survey.model.SurveyType
+import de.dkjs.survey.model.goalsToSequenceOfSmallLetters
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.stereotype.Component
@@ -25,11 +27,20 @@ data class DocumentsConfig(
 
 @Singleton
 @Component
-class SurveyDocumentPdfLinkGenerator(
+class SurveyPdfDocumentsLinkGenerator(
   @Inject private val config: DocumentsConfig
 ) {
 
-  // TODO we need a rule for generating these
-  fun generate(project: Project) = "${config.urlBase}/TODO-we-need-to-establish-format"
+  fun generate(project: Project, surveyType: SurveyType) = if (project.isGoalG) {
+    "${config.urlBase}quali${surveyType.pdfLinkFix}"
+  } else {
+    "${config.urlBase}${surveyType.pdfLinkFix}-${goalsToSequenceOfSmallLetters(project.goals)}"
+  }
 
+}
+
+private val SurveyType.pdfLinkFix get() = when (this) {
+  SurveyType.IMPULS -> "imp"
+  SurveyType.PRE -> "pre"
+  SurveyType.POST -> "repo"
 }
