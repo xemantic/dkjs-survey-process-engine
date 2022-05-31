@@ -4,7 +4,7 @@
 
 package de.dkjs.survey.mail
 
-import de.dkjs.survey.documents.SurveyDocumentPdfLinkGenerator
+import de.dkjs.survey.documents.SurveyPdfDocumentsLinkGenerator
 import de.dkjs.survey.model.*
 import de.dkjs.survey.test.DkjsSurveyProcessEngineTest
 import de.dkjs.survey.time.dkjsDate
@@ -34,7 +34,7 @@ class MailGeneratorTest {
   private lateinit var typeformSurveyLinkGenerator: TypeformSurveyLinkGenerator
 
   @Inject
-  private lateinit var surveyDocumentPdfLinkGenerator: SurveyDocumentPdfLinkGenerator
+  private lateinit var surveyPdfDocumentsLinkGenerator: SurveyPdfDocumentsLinkGenerator
 
   @Test
   fun `should generate mail from project data and template`() {
@@ -76,10 +76,9 @@ class MailGeneratorTest {
     )
 
     // TODO which SurveyType should be chosen?
-    val typeformLink = typeformSurveyLinkGenerator.generate(
-      project, SurveyType.PRE
-    )
-    val pdfLink = surveyDocumentPdfLinkGenerator.generate(project)
+    val surveyType = SurveyType.PRE
+    val typeformLink = typeformSurveyLinkGenerator.generate(project, surveyType)
+    val pdfLink = surveyPdfDocumentsLinkGenerator.generate(project, surveyType)
 
     // then
     mail.subject shouldBe "Informationen zur Evaluation Ihres " +
