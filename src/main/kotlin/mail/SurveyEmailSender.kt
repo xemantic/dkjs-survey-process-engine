@@ -5,7 +5,7 @@
 package de.dkjs.survey.mail
 
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.Scenario
+import de.dkjs.survey.model.SurveyType
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Component
@@ -16,17 +16,17 @@ import javax.mail.internet.MimeMessage
 interface SurveyEmailSender {
 
   /**
-   * Sends email based on the the specified [template] and [scenario] to [project].
+   * Sends email based on the the specified input.
    *
-   * @param template the email template.
-   * @param scenario the scenario type.
    * @param project the project related to this email.
+   * @param mailType the email template.
+   * @param surveyType the survey type.
    * @throws org.springframework.mail.MailException
    */
   fun send(
-    template: MailType,
-    scenario: Scenario,
-    project: Project
+    project: Project,
+    mailType: MailType,
+    surveyType: SurveyType,
   )
 
 }
@@ -54,11 +54,11 @@ class DefaultSurveyEmailSender @Inject constructor(
 ) : SurveyEmailSender {
 
   override fun send(
-    template: MailType,
-    scenario: Scenario,
-    project: Project
+    project: Project,
+    mailType: MailType,
+    surveyType: SurveyType
   ) {
-    val mailData = mailGenerator.generate(template, project, scenario)
+    val mailData = mailGenerator.generate(project, mailType, surveyType)
     val message = newMessage(mailData, project.contactPerson.email)
     mailSender.send(message)
   }

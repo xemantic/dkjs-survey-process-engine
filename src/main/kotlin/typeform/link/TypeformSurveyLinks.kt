@@ -5,7 +5,7 @@
 package de.dkjs.survey.typeform.link
 
 import de.dkjs.survey.model.Project
-import de.dkjs.survey.model.Scenario
+import de.dkjs.survey.model.SurveyType
 import de.dkjs.survey.typeform.TypeformConfig
 import org.springframework.stereotype.Component
 import javax.inject.Inject
@@ -19,8 +19,8 @@ class TypeformSurveyLinkGenerator(
 
   fun generate(
     project: Project,
-    scenario: Scenario
-  ) = "${config.urlBase}${config.forms.getFormId(project, scenario)}" +
+    surveyType: SurveyType
+  ) = "${config.urlBase}${config.forms.getFormId(project, surveyType)}" +
       "#project_id=${project.id}" +
       if (project.isGoalG) "" else "&" + toUrlBlocks(project.goals)
 

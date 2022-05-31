@@ -9,23 +9,28 @@ CREATE TABLE provider (
 
 create table survey_process (
   id                      VARCHAR NOT NULL PRIMARY KEY,
+  start                   TIMESTAMP NOT NULL,
   phase                   VARCHAR NOT NULL
 );
 
-CREATE TABLE notification (
-  id                      INTEGER NOT NULL PRIMARY KEY,
+CREATE TABLE activity (
+  name                    VARCHAR NOT NULL,
   survey_process_id       VARCHAR NOT NULL FOREIGN KEY REFERENCES survey_process(id),
-  sent_at                 TIMESTAMP,
+  executed_at             TIMESTAMP NOT NULL,
   mail_type               VARCHAR,
-  failure                 VARCHAR
+  result                  VARCHAR,
+  failure                 VARCHAR,
+  PRIMARY KEY (name, survey_process_id),
 );
+
+CREATE INDEX ix_activity_executed_at ON activity (executed_at);
 
 CREATE TABLE project (
   id                      VARCHAR NOT NULL PRIMARY KEY,
   name                    VARCHAR NOT NULL,
   status                  VARCHAR NOT NULL,
   provider_id             VARCHAR NOT NULL FOREIGN KEY REFERENCES provider(id),
-  survey_process_id       VARCHAR NOT NULL FOREIGN KEY REFERENCES survey_process(id),
+  survey_process_id       VARCHAR FOREIGN KEY REFERENCES survey_process(id),
   contact_email           VARCHAR NOT NULL,
   contact_first_name      VARCHAR NOT NULL,
   contact_last_name       VARCHAR NOT NULL,

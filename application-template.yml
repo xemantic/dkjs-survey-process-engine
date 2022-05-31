@@ -8,9 +8,11 @@ dkjs:
 spring:
   profiles:
     # separated by comma:
-    #  prod or test - test should be used also for development and CI
-    #  security - enables security - login window
-    active: test
+    #  standard-time - to be set on production, exclusive with compressed-time
+    #  compressed-time - should be used also for development and CI
+    #  security - enables security - login window, not necessary during development
+    #             but should be enabled on production and test system
+    active:
 
   # standard SMTP settings
   # note: using it with GMail requires enabling access to less-safe apps
@@ -43,10 +45,10 @@ typeform:
   # base URL of typeform forms
   urlBase:
   forms:
-    retro: O5yJuV9b
-    prePost: waBTYjMv
-    goalGRetro: XYMgbimk
-    goalGPrePost: W1x2Lslz
+    pre: waBTYjMv
+    post: O5yJuV9b
+    goalGPre: W1x2Lslz
+    goalGPost: XYMgbimk
 
 # Required by WebSecurityConfig to enable authentication.
 # Gotcha: the password should identify the encoder, e.g.:
@@ -56,3 +58,8 @@ typeform:
 credentials:
   username:
   password:
+
+time:
+  timeZone: Europe/Berlin
+  # applied only for profile test, value 1 -> 1 day = 1s; 60 -> 1 day = 1m
+  dayDurationAsNumberOfSeconds:

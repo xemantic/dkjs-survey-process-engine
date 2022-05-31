@@ -6,12 +6,13 @@ dkjs:
   environment: CI
 
 spring:
-  #profiles:
+  profiles:
     # separated by comma:
-    #  prod or test - test should be used also for development and CI
-    #  security - enables security - login window
-    # setting it will crash CI build
-    #active: test, ci
+    #  standard-time - to be set on production, exclusive with compressed-time
+    #  compressed-time - should be used also for development and CI
+    #  security - enables security - login window, not necessary during development
+    #             but should be enabled on production and test system
+    active: test, compressed-time
 
   # standard SMTP settings
   # note: using it with GMail requires enabling access to less-safe apps
@@ -40,15 +41,14 @@ mail:
 
 typeform:
   # typeform client id - API key
-  #clientId: ${TYPEFORM_CLIENT_ID}
-  clientId: abc
+  clientId: ${TYPEFORM_CLIENT_ID}
   # base URL of typeform forms
   urlBase: https://aufleben.typeform.com/to/
   forms:
-    retro: O5yJuV9b
-    prePost: waBTYjMv
-    goalGRetro: XYMgbimk
-    goalGPrePost: W1x2Lslz
+    pre: waBTYjMv
+    post: O5yJuV9b
+    goalGPre: W1x2Lslz
+    goalGPost: XYMgbimk
 
 # Required by WebSecurityConfig to enable authentication.
 # Gotcha: the password should identify the encoder, e.g.:
@@ -58,3 +58,8 @@ typeform:
 credentials:
   username:
   password:
+
+time:
+  timeZone: UTC
+  # applied only for profile test, value 1 -> 1 day = 1s; 60 -> 1 day = 1m
+  dayDurationAsNumberOfSeconds: 1
