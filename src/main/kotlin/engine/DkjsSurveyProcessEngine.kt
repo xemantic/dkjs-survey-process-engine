@@ -58,8 +58,9 @@ class DkjsSurveyProcessEngine @Inject constructor(
 
   inner class ProcessContext(
     private val projectId: String,
-    internal val projectStart: LocalDateTime, // TODO remove if never used
     internal val processStart: LocalDateTime,
+    internal val projectStart: LocalDateTime,
+    internal val projectEnd: LocalDateTime,
     internal val time: TimeConstraints
   ) {
 
@@ -220,12 +221,13 @@ class DkjsSurveyProcessEngine @Inject constructor(
     logger.info("DkjsSurveyProcessEngine started")
   }
 
-  fun handleProjects(projects: List<Project>) {
+  fun handleProjects(projects: List<Project>, processStartTime: LocalDateTime) {
     logger.info("Handling project batch")
     // we need to persist all the projects asap
     val savedProjects = projects.map { project ->
       val process = processRepository.save(SurveyProcess(
         id = project.id,
+        start = processStartTime,
         phase = SurveyProcess.Phase.ACTIVE
       ))
       project.surveyProcess = process
@@ -238,12 +240,16 @@ class DkjsSurveyProcessEngine @Inject constructor(
   }
 
   fun startProcess(project: Project) {
-    logger.info("Process[${project.id}]: Starting")
+    val process = project.surveyProcess!!
+    logger.info("Process[${project.id}]: Starting - process start: ${process.start}, project duration: ${project.start} - ${project.end}")
     val time = timeConstraintsFactory.newTimeConstraints(project)
     val ctx = ProcessContext(
       projectId = project.id,
+      // we want to keep the original detailed project start date, but in the same time align
+      // process start with midnight, full second, etc, to make sharp time ranges predictable
+      processStart = process.start,
       projectStart = project.start,
-      processStart = project.surveyProcess!!.start,
+      projectEnd = project.end,
       time = time
     )
     processDefinition(ctx)
