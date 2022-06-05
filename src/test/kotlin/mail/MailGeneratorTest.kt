@@ -14,9 +14,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.util.*
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 import javax.inject.Inject
-
-// TODO review this test
 
 /**
  * [MailGenerator] integration test.
@@ -57,6 +56,7 @@ class MailGeneratorTest {
       //participantCount = 42,
       surveyProcess = SurveyProcess(
         id = "42",
+        start = LocalDateTime.now(),
         phase = SurveyProcess.Phase.ACTIVE
       ),
       status = "foo",
@@ -92,4 +92,5 @@ class MailGeneratorTest {
     mail.bodyHTML shouldContain typeformLink.escapeHTML()
     mail.bodyHTML shouldContain pdfLink.escapeHTML()
   }
+
 }
