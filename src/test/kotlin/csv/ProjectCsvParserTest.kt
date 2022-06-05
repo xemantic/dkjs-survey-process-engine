@@ -6,7 +6,6 @@ package de.dkjs.survey.csv
 
 import de.dkjs.survey.csv.Column.*
 import de.dkjs.survey.csv.RowResult.RowError
-import de.dkjs.survey.model.Project
 import de.dkjs.survey.model.ProjectRepository
 import de.dkjs.survey.model.Provider
 import de.dkjs.survey.model.ProviderRepository
@@ -19,7 +18,6 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.springframework.data.repository.findByIdOrNull
-import java.io.ByteArrayInputStream
 import java.util.*
 import javax.validation.Validation
 
@@ -385,12 +383,6 @@ class ProjectCsvParserTest {
   }
 
   // -- test utilities
-
-  private fun ProjectCsvParser.parse(csv: String): List<Project> = ByteArrayInputStream(
-    csv.trimIndent().toByteArray()
-  ).use {
-    this.parse { it }
-  }
 
   private fun databaseIsEmpty() {
     every { providerRepository.findById(any()) } returns Optional.empty()
