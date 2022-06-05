@@ -31,7 +31,7 @@ spring:
 
 documents:
   # base URL of the website holding pre-generated survey PDF documents
-  urlBase: https://www.auf-leben.org/documents/
+  urlBase: https://www.auf-leben.org/evaluation/
 
 mail:
   # the email address from which surveys mails are being sent
