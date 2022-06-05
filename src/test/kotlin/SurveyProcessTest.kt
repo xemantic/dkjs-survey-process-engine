@@ -185,7 +185,8 @@ class SurveyProcessTest : SurveyProcessTestBase() {
     }
   }
 
-   @Test
+  @Test
+  // TODO test case altered
   fun `test case 4a - project duration is exactly 14 days, project data gets into the system more than a week before it starts, no data is being entered`() {
     // given
     val projectId = "test case 4a"
@@ -216,7 +217,6 @@ class SurveyProcessTest : SurveyProcessTestBase() {
   }
 
   @Test
-  //@Disabled
   // TODO Alex, we switched off this test case because INFOMAIL_T1 is not being sent in the process if there are responses, we have to clarify
   fun `test case 4b - project duration is exactly 14 days, project data gets into the system more than a week before it starts, all data is being entered`() {
     // given
