@@ -140,7 +140,7 @@ class SurveyProcess(
   @Id
   var id: String, // should be always the same as project id
 
-  var start: LocalDateTime = LocalDateTime.now(),
+  var start: LocalDateTime,
 
   @Enumerated(EnumType.STRING)
   var phase: Phase,
