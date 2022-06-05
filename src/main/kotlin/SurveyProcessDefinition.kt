@@ -82,7 +82,11 @@ fun defineSurveyProcess() = defineProcess {
             "send REMINDER_2_RETRO 1 week after project ends",
             time.oneWeekAfterProjectEnds
           ) {
-            send(MailType.REMINDER_2_RETRO, SurveyType.POST)
+            if (hasNoSurveyResponses(SurveyType.POST)) {
+              send(MailType.REMINDER_2_RETRO, SurveyType.POST)
+            } else {
+              "Not sending REMINDER_2_RETRO because POST survey has responses"
+            }
           }
 
         } else {
@@ -179,9 +183,6 @@ fun defineSurveyProcess() = defineProcess {
 
         }
 
-
-
-
       } else { // >14
 
         if (processStart.isBefore(time.oneWeekAfterProjectStarts)) {
@@ -215,17 +216,6 @@ fun defineSurveyProcess() = defineProcess {
             send(MailType.INFOMAIL_T1, SurveyType.POST)
           }
 
-//      schedule(
-//        "send REMINDER_1_T1_RETRO 1 week after project ends",
-//        time.oneWeekBeforeProjectEnds
-//      ) {
-//        if (hasNoSurveyResponses(SurveyType.POST)) {
-//          send(MailType.REMINDER_1_T1_RETRO, SurveyType.POST)
-//        } else {
-//          "Not sending REMINDER_1_T1_RETRO because PRE survey has responses"
-//        }
-//      }
-
           schedule(
             "send REMINDER_1_T1 and/or REMINDER_2_T1_RETRO 1 week after project ends",
             time.oneWeekAfterProjectEnds
@@ -241,48 +231,71 @@ fun defineSurveyProcess() = defineProcess {
                   "Not sending REMINDER_2_T1_RETRO because POST survey has responses"
                 }
           }
-        } else { // entering retro
 
-          execute("send INFOMAIL_RETRO") {
-            send(MailType.INFOMAIL_RETRO, SurveyType.POST)
-          }
+        } else {
 
-          schedule(
-            "send REMINDER_1_RETRO 1 week before project ends",
-            time.oneWeekBeforeProjectEnds
-          ) {
-            send(MailType.REMINDER_1_RETRO, SurveyType.POST)
+          if (time.projectDurationInDays < 49) {
+
+            execute("send INFOMAIL_RETRO") {
+              send(MailType.INFOMAIL_RETRO, SurveyType.POST)
+            }
+
+            schedule(
+              "send REMINDER_1_RETRO 1 week before project ends",
+              time.oneWeekBeforeProjectEnds
+            ) {
+              send(MailType.REMINDER_1_RETRO, SurveyType.POST)
+            }
+
+            schedule(
+              "send REMINDER_2_RETRO 1 week after project ends",
+              time.oneWeekAfterProjectEnds
+            ) {
+              if (hasNoSurveyResponses(SurveyType.POST)) {
+                send(MailType.REMINDER_2_RETRO, SurveyType.POST)
+              } else {
+                "Not sending REMINDER_2_RETRO because POST survey has responses"
+              }
+            }
+
+          } else {
+
+            execute("send INFOMAIL_PRE_POST") {
+              send(MailType.INFOMAIL_PRE_POST, SurveyType.PRE)
+            }
+
+            execute(
+              "send REMINDER_1_T0 immediately",
+            ) {
+              send(MailType.REMINDER_1_T0, SurveyType.PRE)
+            }
+
+            schedule(
+              "send INFOMAIL_T1 and/or REMINDER_1_T1_RETRO 1 week before project ends",
+              time.oneWeekBeforeProjectEnds
+            ) {
+              send(MailType.INFOMAIL_T1, SurveyType.POST) + " + " +
+                  if (hasNoSurveyResponses(SurveyType.POST)) {
+                    send(MailType.REMINDER_1_T1_RETRO, SurveyType.POST)
+                  } else {
+                    "Not sending REMINDER_1_T1_RETRO because POST survey has responses"
+                  }
+            }
+
+            schedule(
+              "send REMINDER_2_T1_RETRO 1 week after project ends",
+              time.oneWeekAfterProjectEnds
+            ) {
+              if (hasNoSurveyResponses(SurveyType.POST)) {
+                send(MailType.REMINDER_2_T1_RETRO, SurveyType.POST)
+              } else {
+                "Not sending REMINDER_2_T1_RETRO because POST survey has responses"
+              }
+            }
+
           }
 
         }
-
-//      scheduleCheck(
-//        "check survey response 1 week after project starts",
-//        time.oneWeekAfterProjectStarts,
-//        check = { hasSurveyResponses(SurveyType.PRE) },
-//        onTrue = {
-//
-//        },
-//        onFalse = {
-//
-////          schedule(
-////            "send REMINDER_1_T1 and/or REMINDER_2_T1_RETRO 1 week after project ends",
-////            time.oneWeekAfterProjectEnds
-////          ) {
-////            if (hasNoSurveyResponses(SurveyType.PRE)) {
-////              send(MailType.REMINDER_1_T1, SurveyType.POST)
-////            } else {
-////              "Not sending REMINDER_1_T1 because PRE survey has responses"
-////            } + " + " +
-////            if (hasNoSurveyResponses(SurveyType.POST)) {
-////              send(MailType.REMINDER_2_T1_RETRO, SurveyType.POST)
-////            } else {
-////              "Not sending REMINDER_2_T1_RETRO because POST survey has responses"
-////            }
-////          }
-//
-//        }
-//      )
 
       }
 
@@ -305,87 +318,3 @@ fun defineSurveyProcess() = defineProcess {
   }
 
 }
-
-
-
-//    else if (time.projectDurationInDays == 14) {
-//
-//      execute("send INFOMAIL_RETRO") {
-//        send(MailType.INFOMAIL_RETRO, SurveyType.POST)
-//      }
-//
-//      println("!!!!processStart: $processStart")////          execute("send REMINDER_1_T1_RETRO 1 week after project starts") {
-////            send(MailType.REMINDER_1_T1_RETRO, SurveyType.POST)
-////          }
-////
-////          schedule(
-////            "send REMINDER_2_T1_RETRO 1 week after project ends",
-////            time.oneWeekAfterProjectEnds
-////          ) {
-////            if (hasNoSurveyResponses(SurveyType.POST)) {
-////              send(MailType.REMINDER_2_T1_RETRO, SurveyType.POST)
-////            } else {
-////              "Not sending REMINDER_2_T1_RETRO because POST survey has responses"
-////            }
-////          }
-//      println("!!!!oneWeekBeforeProjectEnds: ${time.oneWeekBeforeProjectEnds}")
-//
-//      if (processStart.isAfter(time.oneWeekBeforeProjectEnds)) {
-//        schedule(
-//          "send REMINDER_1_RETRO one week after project starts",
-//          time.oneWeekBeforeProjectStarts
-//        ) {
-//          send(MailType.REMINDER_1_RETRO, SurveyType.POST)
-//        }
-//      }
-//
-//      schedule(
-//        "send REMINDER_2_RETRO 1 week after project ends",
-//        time.oneWeekAfterProjectEnds
-//      ) {
-//        if (hasNoSurveyResponses(SurveyType.POST)) {
-//          send(MailType.REMINDER_2_RETRO, SurveyType.POST)
-//        } else {
-//          "Not sending REMINDER_2_RETRO because POST survey has responses"
-//        }
-//      }
-//
-////      scheduleCheck(
-////        "check survey response 1 week after project starts",
-////        time.oneWeekAfterProjectStarts,
-////        check = { hasSurveyResponses(SurveyType.PRE) },
-////        onTrue = {
-////
-////          schedule(
-////            "send INFOMAIL_T1 1 week before project ends",
-////            time.oneWeekBeforeProjectEnds
-////          ) {
-////            send(MailType.INFOMAIL_T1, SurveyType.POST)
-////          }
-////
-////          if (processStart.isBefore(time.oneWeekAfterProjectStarts)) {
-////
-////          }
-////
-////        },
-////        onFalse = {
-////
-////          execute("send REMINDER_1_T1_RETRO 1 week after project starts") {
-////            send(MailType.REMINDER_1_T1_RETRO, SurveyType.POST)
-////          }
-////
-////          schedule(
-////            "send REMINDER_2_T1_RETRO 1 week after project ends",
-////            time.oneWeekAfterProjectEnds
-////          ) {
-////            if (hasNoSurveyResponses(SurveyType.POST)) {
-////              send(MailType.REMINDER_2_T1_RETRO, SurveyType.POST)
-////            } else {
-////              "Not sending REMINDER_2_T1_RETRO because POST survey has responses"
-////            }
-////          }
-////
-////        }
-////      )
-//
-//    }
