@@ -12,7 +12,7 @@ spring:
     #  compressed-time - should be used also for development and CI
     #  security - enables security - login window, not necessary during development
     #             but should be enabled on production and test system
-    active: compressed-time
+    active: ci,test,compressed-time
 
   # standard SMTP settings
   # note: using it with GMail requires enabling access to less-safe apps
