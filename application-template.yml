@@ -48,8 +48,8 @@ typeform:
     impuls: LZewTxb9
     pre: PoPWc4nm
     post: IGz0ULpp
-    goalGPre: W1x2Lslz
-    goalGPost: XYMgbimk
+    goalGPre: XYMjbimk
+    goalGPost: W1x2LslZ
 
 # Required by WebSecurityConfig to enable authentication.
 # Gotcha: the password should identify the encoder, e.g.:
