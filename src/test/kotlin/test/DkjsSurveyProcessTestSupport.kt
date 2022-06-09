@@ -7,8 +7,10 @@ package de.dkjs.survey.test
 import com.ninjasquad.springmockk.MockkBean
 import de.dkjs.survey.csv.Column
 import de.dkjs.survey.csv.CsvParsingException
+import de.dkjs.survey.csv.ProjectCsvParser
 import de.dkjs.survey.csv.RowResult
 import de.dkjs.survey.engine.AlertSender
+import de.dkjs.survey.engine.DkjsSurveyProcessEngine
 import de.dkjs.survey.mail.SurveyEmailSender
 import de.dkjs.survey.model.*
 import de.dkjs.survey.typeform.response.TypeformResponseChecker
@@ -29,9 +31,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
+import java.io.ByteArrayInputStream
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 // utilities useful in testing
 
@@ -121,6 +125,12 @@ fun projectWithGoals(id: String, goals: List<Int>): Project =
     end         = LocalDateTime.MIN
   )
 
+fun ProjectCsvParser.parse(csv: String): List<Project> = ByteArrayInputStream(
+  csv.trimIndent().toByteArray()
+).use {
+  this.parse { it }
+}
+
 const val TEST_PROCESS_TIMEOUT = 60000
 
 const val PROCESS_STATE_POLLING_INTERVAL = 200L
@@ -137,6 +147,12 @@ abstract class SurveyProcessTestBase {
   @Autowired
   lateinit var client: WebTestClient
 
+  @Autowired
+  lateinit var engine: DkjsSurveyProcessEngine
+
+  @Autowired
+  lateinit var parser: ProjectCsvParser
+
   @MockkBean
   lateinit var surveyEmailSender: SurveyEmailSender
 
@@ -146,11 +162,16 @@ abstract class SurveyProcessTestBase {
   @MockkBean
   lateinit var typeformResponseChecker: TypeformResponseChecker
 
-  fun now(): LocalDateTime = LocalDateTime.now()
+  fun now(): LocalDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)
 
   val Int.days: Duration get() = Duration.ofSeconds(this.toLong())
 
-  fun uploadingProjectsCsv(csv: String) {
+  fun uploadingProjectsCsv(csv: String, processStartTime: LocalDateTime) {
+    val projects = parser.parse(csv)
+    engine.handleProjects(projects, processStartTime)
+  }
+
+  fun uploadingProjectsCsvThroughHttp(csv: String) {
 
     var jSessionId: String? = null
 

@@ -20,8 +20,8 @@ class TypeformSurveyLinkGeneratorTest {
       impuls = "LZewTxb9",
       pre = "O5yJuV9b",
       post = "waBTYjMv",
-      goalGPre = "XYMgbimk",
-      goalGPost = "W1x2Lslz"
+      goalGPre = "XYMjbimk",
+      goalGPost = "W1x2LslZ"
     )
   )
 
@@ -120,7 +120,7 @@ class TypeformSurveyLinkGeneratorTest {
     val link = generator.generate(project, surveyType)
 
     // then
-    link shouldBe "https://aufleben.typeform.com/to/W1x2Lslz#project_id=GoalGRetroProject"
+    link shouldBe "https://aufleben.typeform.com/to/W1x2LslZ#project_id=GoalGRetroProject"
   }
 
   @Test
@@ -134,7 +134,7 @@ class TypeformSurveyLinkGeneratorTest {
     val link = generator.generate(project, surveyType)
 
     // then
-    link shouldBe "https://aufleben.typeform.com/to/XYMgbimk#project_id=GoalGPrePostProject"
+    link shouldBe "https://aufleben.typeform.com/to/XYMjbimk#project_id=GoalGPrePostProject"
   }
 
 }

@@ -6,6 +6,7 @@ package de.dkjs.survey.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.data.repository.CrudRepository
+import org.springframework.data.rest.core.annotation.RepositoryRestResource
 import java.time.LocalDateTime
 import javax.persistence.*
 import javax.validation.*
@@ -140,7 +141,7 @@ class SurveyProcess(
   @Id
   var id: String, // should be always the same as project id
 
-  var start: LocalDateTime = LocalDateTime.now(),
+  var start: LocalDateTime,
 
   @Enumerated(EnumType.STRING)
   var phase: Phase,
@@ -238,6 +239,7 @@ interface ProviderRepository : CrudRepository<Provider, String>
 interface SurveyProcessRepository : CrudRepository<SurveyProcess, String>
 
 @Suppress("unused") // used automagically by spring-data-rest
+@RepositoryRestResource(exported = false)
 interface ActivityRepository : CrudRepository<Activity, Int>
 
 @MustBeDocumented

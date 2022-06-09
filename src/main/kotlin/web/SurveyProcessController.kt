@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 import org.springframework.web.util.UriComponentsBuilder
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.servlet.http.HttpSession
 
@@ -101,7 +102,7 @@ class SurveyProcessController @Inject constructor(
       val projects = session.projects
       if (projects != null && !projects.isEmpty()) {
         logger.info("Submitted project count: ${projects.size}")
-        engine.handleProjects(projects)
+        engine.handleProjects(projects, LocalDateTime.now())
         session.cleanDkjsAttributes()
         ResponseEntity.ok("Projects submitted")
       } else { // should never happen in typical workflows

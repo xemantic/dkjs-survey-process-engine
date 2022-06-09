@@ -31,7 +31,7 @@ spring:
 
 documents:
   # base URL of the website holding pre-generated survey PDF documents
-  urlBase:
+  urlBase: https://www.auf-leben.org/evaluation/
 
 mail:
   # the email address from which surveys mails are being sent
@@ -48,8 +48,8 @@ typeform:
     impuls: LZewTxb9
     pre: PoPWc4nm
     post: IGz0ULpp
-    goalGPre: W1x2Lslz
-    goalGPost: XYMgbimk
+    goalGPre: XYMjbimk
+    goalGPost: W1x2LslZ
 
 # Required by WebSecurityConfig to enable authentication.
 # Gotcha: the password should identify the encoder, e.g.:
@@ -63,4 +63,4 @@ credentials:
 time:
   timeZone: Europe/Berlin
   # applied only for profile test, value 1 -> 1 day = 1s; 60 -> 1 day = 1m
-  dayDurationAsNumberOfSeconds:
+  dayDurationAsNumberOfSeconds: 1
