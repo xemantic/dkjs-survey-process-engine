@@ -11,7 +11,6 @@ import org.springframework.scheduling.TaskScheduler
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /**
@@ -47,11 +46,6 @@ interface TimeConstraints {
   val oneWeekBeforeProjectEnds: LocalDateTime
   val oneWeekAfterProjectEnds: LocalDateTime
   val twoWeeksAfterProjectEnds: LocalDateTime
-
-  /**
-   * Truncates/aligns given time according to time compression criteria.
-   */
-  fun truncate(time: LocalDateTime): LocalDateTime
 }
 
 interface TimeConstraintsFactory {
@@ -87,7 +81,6 @@ class StandardTimeConstraints(
   override val oneWeekBeforeProjectEnds: LocalDateTime get() = end.minusWeeks(1)
   override val oneWeekAfterProjectEnds: LocalDateTime get() = end.plusWeeks(1)
   override val twoWeeksAfterProjectEnds: LocalDateTime get() = end.plusWeeks(2)
-  override fun truncate(time: LocalDateTime): LocalDateTime = time.truncatedTo(ChronoUnit.DAYS)
 }
 
 class CompressedTimeConstraints(
@@ -103,5 +96,4 @@ class CompressedTimeConstraints(
   override val oneWeekBeforeProjectEnds: LocalDateTime get() = end.minusSeconds(7 * multiplier)
   override val oneWeekAfterProjectEnds: LocalDateTime get() = end.plusSeconds(7 * multiplier)
   override val twoWeeksAfterProjectEnds: LocalDateTime get() = end.plusSeconds(14 * multiplier)
-  override fun truncate(time: LocalDateTime): LocalDateTime = time.truncatedTo(ChronoUnit.SECONDS)
 }
