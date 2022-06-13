@@ -186,6 +186,7 @@ data class ActivityId(
 class Activity(
 
   @Id
+  @JsonIgnore
   val surveyProcessId: String,
 
   @Id

@@ -11,6 +11,7 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -20,6 +21,7 @@ class TypeformResponseCheckerTest @Autowired constructor(
 ) {
 
   @Test
+  @Disabled // disabled as undine project disappeared from typeform, can be enabled again if any POST project is added
   fun `should count existing responses in typeform for a given project`() {
     // given
     val project = mockk<Project>()
