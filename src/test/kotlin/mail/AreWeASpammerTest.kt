@@ -19,8 +19,8 @@ class AreWeASpammerTest(
   @Test
   @Disabled // intentionally disabled as it is a one time action run to verify
   fun `send email to mail tester`() {
-    val from = "evaluation@dkjs.de"
-    val to = "test-j4qiumbt3@srv1.mail-tester.com" // replace with the mail supplied by the tester
+    val from = "evaluation.aufleben@dkjs.de"
+    val to = "test-m9kx58dw5@srv1.mail-tester.com" // replace with the mail supplied by the tester
     val message = mailSender.createMimeMessage()
     MimeMessageHelper(
       message,
