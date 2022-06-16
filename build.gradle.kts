@@ -5,27 +5,27 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.6.21"
-  kotlin("plugin.serialization") version "1.6.21"
-  kotlin("plugin.spring") version "1.6.21"
-  kotlin("plugin.jpa") version "1.6.21"
-  id("org.springframework.boot") version "2.6.7"
+  kotlin("jvm") version "1.7.0"
+  kotlin("plugin.serialization") version "1.7.0"
+  kotlin("plugin.spring") version "1.7.0"
+  kotlin("plugin.jpa") version "1.7.0"
+  id("org.springframework.boot") version "2.7.0"
   id("com.github.ben-manes.versions") version "0.42.0"
-  id("com.gorylenko.gradle-git-properties") version "2.4.0"
+  id("com.gorylenko.gradle-git-properties") version "2.4.1"
 }
 
 apply(plugin = "io.spring.dependency-management")
 
-val kotlinxCoroutinesVersion = "1.6.1"
-val kotlinxSerializationVersion = "1.3.2"
-val ktorVersion = "2.0.0"
+val kotlinxCoroutinesVersion = "1.6.2"
+val kotlinxSerializationVersion = "1.3.3"
+val ktorVersion = "2.0.2"
 val opencsvVersion = "5.6"
 val hibernateValidatorVersion = "7.0.4.Final"
-val kotestVersion = "5.2.3"
-val mockkVersion = "1.12.3"
+val kotestVersion = "5.3.1"
+val mockkVersion = "1.12.4"
 val hsqldbVersion = "2.6.1"
-val flywayVersion = "8.5.9"
-val byteBuddyVersion = "1.12.9"
+val flywayVersion = "8.5.13"
+val byteBuddyVersion = "1.12.10"
 val springMockkVersion = "3.1.1"
 
 group = "de.dkjs.survey"

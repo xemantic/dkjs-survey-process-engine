@@ -11,6 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.slf4j.Logger
 import org.springframework.stereotype.Component
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Serializable
@@ -47,7 +48,7 @@ interface TypeformResponseService {
 @Singleton
 @Component
 class KtorTypeformResponseService constructor(
-  private val client: HttpClient,
+  @Named("typeformHttpClient") private val client: HttpClient,
   private val logger: Logger
 ) : TypeformResponseService {
 
