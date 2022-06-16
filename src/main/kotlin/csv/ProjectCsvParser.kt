@@ -1,6 +1,7 @@
 /*
  * dkjs-survey-process-engine - https://www.dkjs.de/
  * Copyright (C) 2022 Kazimierz Pogoda / https://xemantic.com
+ * Copyright (c) 2022 Abe Pazos
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
