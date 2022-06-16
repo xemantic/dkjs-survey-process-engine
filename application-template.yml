@@ -64,3 +64,8 @@ time:
   timeZone: Europe/Berlin
   # applied only for profile test, value 1 -> 1 day = 1s; 60 -> 1 day = 1m
   dayDurationAsNumberOfSeconds: 1
+
+# enable logging on DEV and PROD servers
+#logging:
+#  file:
+#    path: logs

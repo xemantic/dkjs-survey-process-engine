@@ -94,7 +94,7 @@ class TypeformApiSetup(@Inject private val config: TypeformConfig) {
         loadTokens {
           BearerTokens(
             accessToken = config.clientId,
-            refreshToken = ""
+            refreshToken = config.clientId
           )
         }
       }
