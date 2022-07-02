@@ -33,7 +33,7 @@ data class TimeConfig(
    * Test [TimeConstraints] are operating on second basis instead of day/week basis
    * for time calculation.
    *
-   * Note: will be ignored for profile `prod`
+   * Note: will be ignored for profile `standard-time`
    */
   @get:NotNull
   val dayDurationAsNumberOfSeconds: Int,
