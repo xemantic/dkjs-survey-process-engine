@@ -229,6 +229,9 @@
       });
 
       whenClicked("#action-submit-projects", () => {
+        const submitButton = element("#action-submit-projects");
+        submitButton.disabled = true;
+        submitButton.querySelector(".mdc-button__label").innerText = "Submitting projects, it might take a while...";
         fetch("submit-projects")
           .then(response => {
             if (response.ok) {
